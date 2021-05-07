@@ -1,21 +1,43 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, {Component} from "react";
+import Configuration from "./Configuration";
+import Messaging from "./Messaging";
+import EventLog from "./EventLog";
 
-export default class App extends React.Component {
+class App extends Component {
 	constructor(props) {
 		super(props);
-		this.hello = "Hello";
+
+		this.state = {
+			deviceIdentification: "",
+			accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
+			apiDomain: "https://api.parley.nu",
+		};
+
+		this.handleOnConfigurationChange = this.handleOnConfigurationChange.bind(this);
 	}
 
 	render() {
 		return (
-			<div>
-				{this.hello}
-				{" "}
-				{this.props.name}
-			</div>
+			<>
+				<Configuration
+					accountIdentification={this.state.accountIdentification}
+					apiDomain={this.state.apiDomain}
+					deviceIdentification={this.state.deviceIdentification}
+					onChange={this.handleOnConfigurationChange}
+				/>
+				<Messaging
+					accountIdentification={this.state.accountIdentification}
+					apiDomain={this.state.apiDomain}
+					deviceIdentification={this.state.deviceIdentification}
+				/>
+				<EventLog />
+			</>
 		);
+	}
+
+	handleOnConfigurationChange(domID, domValue) {
+		this.setState({[domID]: domValue});
 	}
 }
 
-App.propTypes = {name: PropTypes.string};
+export default App;
