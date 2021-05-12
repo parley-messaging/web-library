@@ -1,3 +1,9 @@
+/*
+ * This script contains wrapper functions for making API calls
+ * You can use this script on it's own or you can make use of the
+ * event based implementation in ApiEventTarget.js
+ */
+
 import Config from "./Config";
 
 export default class Api {

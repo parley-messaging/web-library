@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {apiSingleton} from "./Api";
+import {apiEventTargetSingleton} from "./Api";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
 
@@ -23,7 +23,7 @@ class Messaging extends Component {
 		this.handleOnSendEvent = this.handleOnSendEvent.bind(this);
 		this.handleOnRefreshEvent = this.handleOnRefreshEvent.bind(this);
 
-		this.apiEventTarget = apiSingleton(this.props.apiDomain);
+		this.apiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
 	}
 
 	componentDidMount() {

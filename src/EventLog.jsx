@@ -4,7 +4,7 @@
  */
 
 import React, {Component} from "react";
-import {apiSingleton} from "./Api";
+import {apiEventTargetSingleton} from "./Api";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -12,7 +12,7 @@ class EventLog extends Component {
 		this.state = {events: []};
 
 		// Step 1: Initialize the ApiEventTarget
-		this.ApiEventTarget = apiSingleton();
+		this.ApiEventTarget = apiEventTargetSingleton();
 
 		this.handleOnEvent = this.handleOnEvent.bind(this);
 	}
