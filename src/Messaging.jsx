@@ -23,26 +23,26 @@ class Messaging extends Component {
 		this.handleOnSendEvent = this.handleOnSendEvent.bind(this);
 		this.handleOnRefreshEvent = this.handleOnRefreshEvent.bind(this);
 
-		this.api = apiSingleton(this.props.apiDomain);
+		this.apiEventTarget = apiSingleton(this.props.apiDomain);
 	}
 
 	componentDidMount() {
 		// Register event listeners for API events
-		this.api.addEventListener(this.api.events.onSubscribe, this.handleOnRegisterEvent);
-		this.api.addEventListener(this.api.events.onSendMessage, this.handleOnSendEvent);
-		this.api.addEventListener(this.api.events.onGetMessages, this.handleOnRefreshEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
 	}
 
 	componentWillUnmount() {
 		// Un-register event listeners for API events
-		this.api.removeEventListener(this.api.events.onSubscribe, this.handleOnRegisterEvent);
-		this.api.removeEventListener(this.api.events.onSendMessage, this.handleOnSendEvent);
-		this.api.removeEventListener(this.api.events.onGetMessages, this.handleOnRefreshEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
 	}
 
 	componentDidUpdate() {
-		// Update api domain whenever we get a re-render (probably when apiDomain changes)
-		this.api.setDomain(this.props.apiDomain);
+		// Update apiEventTarget domain whenever we get a re-render (probably when apiDomain changes)
+		this.apiEventTarget.Api.setDomain(this.props.apiDomain);
 	}
 
 	render() {
@@ -78,15 +78,15 @@ class Messaging extends Component {
 	}
 
 	handleOnRegisterClick() {
-		this.api.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification);
+		this.apiEventTarget.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification);
 	}
 
 	handleOnRefreshClick() {
-		this.api.getMessages(this.props.accountIdentification, this.props.deviceIdentification);
+		this.apiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification);
 	}
 
 	handleOnSendClick() {
-		this.api.sendMessage(
+		this.apiEventTarget.sendMessage(
 			this.state.messageInputValue,
 			this.props.accountIdentification,
 			this.props.deviceIdentification,
