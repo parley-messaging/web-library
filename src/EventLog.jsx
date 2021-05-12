@@ -9,24 +9,23 @@ import {apiSingleton} from "./Api";
 class EventLog extends Component {
 	constructor(props) {
 		super(props);
-
 		this.state = {events: []};
 
-		// API Event handlers
-		this.handleOnEvent = this.handleOnEvent.bind(this);
-
+		// Step 1: Initialize the ApiEventTarget
 		this.ApiEventTarget = apiSingleton();
+
+		this.handleOnEvent = this.handleOnEvent.bind(this);
 	}
 
 	componentDidMount() {
-		// Register event listeners for API events
+		// Step 2: Register event listeners for API events
 		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
 		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
 		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
 	}
 
 	componentWillUnmount() {
-		// Un-register event listeners for API events
+		// Step 3: Un-register event listeners for API events
 		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
 		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
 		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
@@ -46,19 +45,20 @@ class EventLog extends Component {
 		);
 	}
 
-	formatEventString(event) {
-		// eslint-disable-next-line compat/compat
-		const time = this.convertTimestampToDate(performance.timeOrigin + event.timeStamp);
-		return `${time} Event: ${event.type} has triggered`;
-	}
-
 	handleOnEvent(event) {
+		// Step 4: Do something when an event is triggered, in this case save it to the list
 		this.setState(prevState => ({
 			events: [
 				...prevState.events,
 				event,
 			],
 		}));
+	}
+
+	formatEventString(event) {
+		// eslint-disable-next-line compat/compat
+		const time = this.convertTimestampToDate(performance.timeOrigin + event.timeStamp);
+		return `${time} Event: ${event.type} has triggered`;
 	}
 
 	convertTimestampToDate(timestamp) {
