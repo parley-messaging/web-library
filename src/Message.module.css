@@ -1,0 +1,55 @@
+.container {
+	display: block;
+	margin-bottom: 10px;
+	padding: 0 30px;
+}
+.container:before {
+	content: "";
+	display: table;
+}
+.container.admin {
+	display: grid;
+	-ms-grid-columns: -webkit-max-content;
+	-ms-grid-columns: max-content;
+	grid-template-columns: -webkit-max-content;
+	grid-template-columns: max-content;
+	-ms-grid-rows: auto auto;
+	grid-template-rows: auto auto;
+}
+.message {
+	padding: 8px 10px;
+	border-radius: 5px;
+	display: -ms-grid;
+	display: grid;
+	-ms-grid-columns: auto;
+	grid-template-columns: auto;
+	-ms-grid-rows: auto auto;
+	grid-template-rows: auto auto;
+	position: relative;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	word-break: break-word;
+	-ms-word-break: break-all;
+	-ms-hyphens: auto;
+	-webkit-hyphens: auto;
+	hyphens: auto;
+	max-width: 190px;
+	white-space: pre-wrap;
+}
+.user .message {
+	border-radius: 0 10px 10px;
+	background: #e7e3e0;
+	color: #535353;
+	float: left;
+}
+.agent .message {
+	border-radius: 10px 10px 0;
+	background: #4A5E83;
+	color: #FFF;
+	float: right;
+}
+.name {
+	padding: 0 0 5px;
+	color: rgba(0,0,0,.68);
+	font-size: 13px;
+}

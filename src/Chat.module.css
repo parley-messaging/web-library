@@ -1,0 +1,9 @@
+.chat {
+	width: 300px;
+	height: 500px;
+	max-height: 80%;
+	min-height: 300px;
+	bottom: 90px;
+	right: 20px;
+	border-radius: 5px;
+}

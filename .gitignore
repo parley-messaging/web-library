@@ -1,0 +1,11 @@
+# Recommended IDEA files to ignore as per https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+/.idea/workspace.xml
+/.idea/usage.statistics.xml
+/.idea/shelf
+
+dist
+lib
+node_modules
+.cache
+ssl
+/.parcel-cache/
