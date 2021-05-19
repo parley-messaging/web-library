@@ -336,7 +336,8 @@
 				"logical": "ignore",
 				"prop": "ignore"
 			}
-		]
+		],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	},
 	"settings": {
 		"react": {
