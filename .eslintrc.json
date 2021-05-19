@@ -1,4 +1,5 @@
 {
+	"parser": "@babel/eslint-parser",
 	"env": {
 		"browser": true,
 		"es2021": true
@@ -120,7 +121,6 @@
 		"block-spacing": "error",
 		"brace-style": "error",
 		"camelcase": "error",
-		"capitalized-comments": ["error", "always", {"ignorePattern": "noinspection"}],
 		"comma-dangle": ["error", "always-multiline"],
 		"comma-spacing": "error",
 		"comma-style": "error",
@@ -180,8 +180,8 @@
 		],
 		"max-nested-callbacks": ["error", {"max": 4}],
 		"max-statements-per-line": "error",
-		"multiline-comment-style": "error",
-		"multiline-ternary": ["error", "never"],
+		"multiline-comment-style": ["error", "separate-lines"],
+		"multiline-ternary": ["error", "always-multiline"],
 		"new-cap": "error",
 		"new-parens": "error",
 		"newline-per-chained-call": "error",
@@ -276,6 +276,10 @@
 		"react/no-access-state-in-setstate": ["error"],
 		"react/no-array-index-key": ["error"],
 		"react/no-danger": ["error"],
+		"react/sort-prop-types": ["error", {
+			"sortShapeProp": true,
+			"ignoreCase": true
+		}],
 		"react/jsx-closing-bracket-location": ["error"],
 		"react/jsx-closing-tag-location": ["error"],
 		"react/jsx-curly-newline": ["error"],
@@ -335,7 +339,8 @@
 				"logical": "ignore",
 				"prop": "ignore"
 			}
-		]
+		],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	},
 	"settings": {
 		"react": {

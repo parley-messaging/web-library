@@ -9,5 +9,3 @@ node_modules
 .cache
 ssl
 /.parcel-cache/
-/.idea/dataSources.local.xml
-/.idea/php.xml
