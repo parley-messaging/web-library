@@ -1,7 +1,5 @@
-/*
- * This component shows a basic way of implementing the ApiEventTarget
- * It shows how to initialize it and how you can listen for events
- */
+// This component shows a basic way of implementing the ApiEventTarget
+// It shows how to initialize it and how you can listen for events
 
 import React, {Component} from "react";
 import {apiEventTargetSingleton} from "./Api";

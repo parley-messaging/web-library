@@ -12,17 +12,6 @@ class Messaging extends Component {
 			messages: [],
 		};
 
-		// DOM handlers
-		this.handleOnMessageChange = this.handleOnMessageChange.bind(this);
-		this.handleOnRegisterClick = this.handleOnRegisterClick.bind(this);
-		this.handleOnRefreshClick = this.handleOnRefreshClick.bind(this);
-		this.handleOnSendClick = this.handleOnSendClick.bind(this);
-
-		// API Event handlers
-		this.handleOnRegisterEvent = this.handleOnRegisterEvent.bind(this);
-		this.handleOnSendEvent = this.handleOnSendEvent.bind(this);
-		this.handleOnRefreshEvent = this.handleOnRefreshEvent.bind(this);
-
 		this.apiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
 	}
 
@@ -73,19 +62,19 @@ class Messaging extends Component {
 		);
 	}
 
-	handleOnMessageChange(event) {
+	handleOnMessageChange = (event) => {
 		this.setState({messageInputValue: event.target.value});
 	}
 
-	handleOnRegisterClick() {
+	handleOnRegisterClick = () => {
 		this.apiEventTarget.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification);
 	}
 
-	handleOnRefreshClick() {
+	handleOnRefreshClick = () => {
 		this.apiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification);
 	}
 
-	handleOnSendClick() {
+	handleOnSendClick = () => {
 		this.apiEventTarget.sendMessage(
 			this.state.messageInputValue,
 			this.props.accountIdentification,
@@ -93,7 +82,7 @@ class Messaging extends Component {
 		);
 	}
 
-	handleOnRegisterEvent(event) {
+	handleOnRegisterEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			console.error("onSubscribe event error", event.detail);
@@ -105,7 +94,7 @@ class Messaging extends Component {
 		this.handleOnRefreshClick();
 	}
 
-	handleOnRefreshEvent(event) {
+	handleOnRefreshEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			console.error("onGetMessages event error", event.detail);
@@ -117,7 +106,7 @@ class Messaging extends Component {
 		this.setState({messages: event.detail.data});
 	}
 
-	handleOnSendEvent(event) {
+	handleOnSendEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			console.error("onSendMessage event error", event.detail);
@@ -131,9 +120,9 @@ class Messaging extends Component {
 }
 
 Messaging.propTypes = {
-	deviceIdentification: PropTypes.string,
 	accountIdentification: PropTypes.string,
 	apiDomain: PropTypes.string,
+	deviceIdentification: PropTypes.string,
 };
 
 export default Messaging;

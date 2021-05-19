@@ -1,8 +1,6 @@
-/*
- * This script contains the entrypoint for the Api scripts.
- * It can create a singleton of the ApiEventTarget class for you
- * so you dont have to recreate it each time you need it.
- */
+// This script contains the entrypoint for the Api scripts.
+// It can create a singleton of the ApiEventTarget class for you
+// so you dont have to recreate it each time you need it.
 
 import ApiEventTarget from "./ApiEventTarget";
 

@@ -1,8 +1,6 @@
-/*
- * This script is an event based implementation of the Api.js script.
- * It provides subscribable events which get fired upon response of the API.
- * This way you can listen for responses on multiple locations.
- */
+// This script is an event based implementation of the Api.js script.
+// It provides subscribable events which get fired upon response of the API.
+// This way you can listen for responses on multiple locations.
 
 import ApiResponseEvent from "./ApiResponseEvent";
 import Api from "./Api";

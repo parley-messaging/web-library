@@ -47,9 +47,9 @@ class Configuration extends React.Component {
 }
 
 Configuration.propTypes = {
-	deviceIdentification: PropTypes.string,
 	accountIdentification: PropTypes.string,
 	apiDomain: PropTypes.string,
+	deviceIdentification: PropTypes.string,
 	onChange: PropTypes.func,
 };
 
