@@ -1,7 +1,10 @@
 # Develop
 
 ## Initial configuration
-To help develop this library you will need to set-up you environment. Follow the steps below to get started
+To help develop this library you will need to set-up you environment. Follow the steps below to get started.
+
+Due to some limitations we require you to install your project on your WSL host (if you are on windows).
+You can find more info on how to enable WSL on windows 10 here: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
 1. Make sure your (wsl) hosts file contains the following
 	```

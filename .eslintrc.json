@@ -277,6 +277,10 @@
 		"react/no-access-state-in-setstate": ["error"],
 		"react/no-array-index-key": ["error"],
 		"react/no-danger": ["error"],
+		"react/sort-prop-types": ["error", {
+			"sortShapeProp": true,
+			"ignoreCase": true
+		}],
 		"react/jsx-closing-bracket-location": ["error"],
 		"react/jsx-closing-tag-location": ["error"],
 		"react/jsx-curly-newline": ["error"],
@@ -318,7 +322,6 @@
 		"react/jsx-props-no-multi-spaces": ["error"],
 		"react/jsx-sort-default-props": ["error"],
 		"react/jsx-sort-props": ["error"],
-		"react/sort-prop-types": ["error"],
 		"react/jsx-tag-spacing": [
 			"error", {
 				"closingSlash": "never",
@@ -337,7 +340,8 @@
 				"logical": "ignore",
 				"prop": "ignore"
 			}
-		]
+		],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	},
 	"settings": {
 		"react": {
