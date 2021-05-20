@@ -85,10 +85,8 @@ class Messaging extends Component {
 	handleOnRegisterEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
-			console.error("onSubscribe event error", event.detail);
-			return;
+			throw new Error(`onRegister event error: ${event.detail}`);
 		}
-		console.log("onSubscribe event", event.detail);
 
 		// Actual handler
 		this.handleOnRefreshClick();
@@ -97,10 +95,8 @@ class Messaging extends Component {
 	handleOnRefreshEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
-			console.error("onGetMessages event error", event.detail);
-			return;
+			throw new Error(`onRefresh event error: ${event.detail}`);
 		}
-		console.log("onGetMessages event", event.detail);
 
 		// Actual handler
 		this.setState({messages: event.detail.data});
@@ -109,10 +105,8 @@ class Messaging extends Component {
 	handleOnSendEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
-			console.error("onSendMessage event error", event.detail);
-			return;
+			throw new Error(`onSendMessage event error: ${event.detail}`);
 		}
-		console.log("onSendMessage event", event.detail);
 
 		// Actual handler
 		this.handleOnRefreshClick();

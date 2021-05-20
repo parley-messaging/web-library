@@ -6,8 +6,9 @@ import ApiEventTarget from "./ApiEventTarget";
 
 let apiObject = null;
 export function apiEventTargetSingleton(apiDomain) {
-	if(!apiObject)
+	if(!apiObject) {
 		apiObject = new ApiEventTarget(apiDomain);
+	}
 
 	return apiObject;
 }

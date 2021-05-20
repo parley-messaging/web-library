@@ -26,7 +26,7 @@ export default class ApiEventTarget extends EventTarget {
 			})
 			.catch((error) => {
 				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				console.error(`Error occured during Fetch()`, error);
+				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 
@@ -38,7 +38,7 @@ export default class ApiEventTarget extends EventTarget {
 			})
 			.catch((error) => {
 				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				console.error(`Error occured during Fetch()`, error);
+				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 
@@ -50,7 +50,7 @@ export default class ApiEventTarget extends EventTarget {
 			})
 			.catch((error) => {
 				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				console.error(`Error occured during Fetch()`, error);
+				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 }
