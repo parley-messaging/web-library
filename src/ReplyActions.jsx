@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 
-class MyComponent extends Component {
+class ReplyActions extends Component {
 	render() {
 		return (
 			<div>
@@ -11,6 +11,9 @@ class MyComponent extends Component {
 	}
 }
 
-MyComponent.propTypes = {};
+ReplyActions.propTypes = {
+	allowEmoji: PropTypes.bool,
+	allowFileUpload: PropTypes.bool,
+};
 
-export default MyComponent;
+export default ReplyActions;

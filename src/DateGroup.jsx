@@ -8,9 +8,11 @@ class DateGroup extends Component {
 		const toSecondsMultiplier = 1000;
 
 		return (
-			<span className={styles.date}>
-				{new Date(this.props.timestamp * toSecondsMultiplier).toLocaleDateString()}
-			</span>
+			<div className={styles.container}>
+				<span className={styles.date}>
+					{new Date(this.props.timestamp * toSecondsMultiplier).toLocaleDateString()}
+				</span>
+			</div>
 		);
 	}
 }

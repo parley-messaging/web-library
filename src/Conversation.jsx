@@ -1,21 +1,16 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import styles from "./Conversation.module.css";
 
 // components
 import DateGroup from "./DateGroup";
 import Message from "./Message";
 import QuickReplies from "./QuickReplies";
-
-// import Announcement from "./Announcement";
+import Announcement from "./Announcement";
 
 class Conversation extends Component {
 	constructor(props) {
 		super(props);
-
-		// bind functions
-		this.getMessages = this.getMessages.bind(this);
-
-		// this.toggleMenu = this.toggleMenu.bind(this);
 
 		this.renderedDates = [];
 
@@ -28,9 +23,17 @@ class Conversation extends Component {
 
 	componentDidMount() {
 		this.getMessages();
+		this.getStickyMessage();
 	}
 
-	getMessages() {
+	getStickyMessage = () => {
+		const message = "Sorry we are closed right know. We will be open next day from 09:00 - 17:55";
+
+		// eslint-disable-next-line no-invalid-this
+		this.setState(() => ({stickyMessage: message}));
+	};
+
+	getMessages = () => {
 		const messageArray = [
 			{
 				id: 159296,
@@ -130,22 +133,24 @@ class Conversation extends Component {
 			},
 		];
 
-		this.setState(() => ({
-			messages: messageArray,
-			renderedDates: [],
-		}));
+		// eslint-disable-next-line no-invalid-this
+		this.renderedDates = [];
+		// eslint-disable-next-line no-invalid-this
+		this.setState(() => ({messages: messageArray.reverse()}));
 	}
 
-	setRenderedDate(date) {
+	setRenderedDate = (date) => {
+		// eslint-disable-next-line no-invalid-this
 		if(this.renderedDates.includes(date))
 			return false;
 
+		// eslint-disable-next-line no-invalid-this
 		this.renderedDates.push(date);
 
 		return true;
 	}
 
-	getDateFromTimestamp(timestamp) {
+	getDateFromTimestamp = (timestamp) => {
 		const toSecondsMultiplier = 1000;
 		return new Date(timestamp * toSecondsMultiplier).toLocaleDateString();
 	}
@@ -155,7 +160,8 @@ class Conversation extends Component {
 
 		return (
 			<>
-				<span>{this.props.welcomeMessage}</span>
+				{this.props.welcomeMessage &&
+					<Announcement className={styles.welcome} message={this.props.welcomeMessage} />}
 				{this.state.messages.map(message => (
 					<React.Fragment key={message.id}>
 						{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
@@ -165,7 +171,8 @@ class Conversation extends Component {
 							<QuickReplies />}
 					</React.Fragment>
 				))}
-				{/* <Announcement />*/}
+				{this.state.stickyMessage &&
+					<Announcement className={styles.sticky} message={this.state.stickyMessage} />}
 			</>
 		);
 	}

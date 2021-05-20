@@ -9,10 +9,6 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// Bind functions
-		this.toggleChat = this.toggleChat.bind(this);
-		this.toggleMenu = this.toggleMenu.bind(this);
-
 		// State
 		this.state = {
 			showChat: false,
@@ -20,11 +16,13 @@ export default class App extends React.Component {
 		};
 	}
 
-	toggleChat() {
+	toggleChat = () => {
+		// eslint-disable-next-line no-invalid-this
 		this.setState(state => ({showChat: !state.showChat}));
 	}
 
-	toggleMenu() {
+	toggleMenu = () => {
+		// eslint-disable-next-line no-invalid-this
 		this.setState(state => ({
 			showChat: !state.showChat,
 			showMenu: !state.showMenu,
@@ -33,6 +31,8 @@ export default class App extends React.Component {
 
 	render() {
 		const title = "Hallo";
+		const welcomeMessage = "Welcome to our support chat, you can expect a response in ~1 minute.";
+
 		return (
 			<>
 				<Launcher handleOnClick={this.toggleChat} />
@@ -44,7 +44,7 @@ export default class App extends React.Component {
 						menuAction={this.toggleMenu}
 						minimizeAction={this.toggleMenu}
 						title={title}
-						welcomeMessage={title}
+						welcomeMessage={welcomeMessage}
 					/>}
 			</>
 		);

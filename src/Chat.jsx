@@ -9,6 +9,9 @@ import ReplyActions from "./ReplyActions";
 
 class Chat extends Component {
 	render() {
+		const allowEmoji = false;
+		const allowFileUpload = false;
+
 		return (
 			<div className={styles.chat}>
 				<Header
@@ -17,8 +20,8 @@ class Chat extends Component {
 					minimizeAction={this.props.minimizeAction}
 					title={this.props.title}
 				/>
-				<Conversation />
-				<ReplyActions />
+				<Conversation welcomeMessage={this.props.welcomeMessage} />
+				<ReplyActions allowEmoji={allowEmoji} allowFileUpload={allowFileUpload} />
 			</div>
 		);
 	}

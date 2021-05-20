@@ -1,13 +1,18 @@
+/* region Container */
 .container {
 	display: block;
 	margin-bottom: 10px;
 	padding: 0 30px;
 }
-.container:before {
+.container:before,.container:after {
 	content: "";
 	display: table;
 }
-.container.admin {
+.container:after {
+	clear: both;
+}
+.container.agent {
+	display: -ms-grid;
 	display: grid;
 	-ms-grid-columns: -webkit-max-content;
 	-ms-grid-columns: max-content;
@@ -16,6 +21,8 @@
 	-ms-grid-rows: auto auto;
 	grid-template-rows: auto auto;
 }
+/* endregion */
+/* region Message */
 .message {
 	padding: 8px 10px;
 	border-radius: 5px;
@@ -36,20 +43,33 @@
 	max-width: 190px;
 	white-space: pre-wrap;
 }
+.message P {
+	margin: 0;
+}
 .user .message {
-	border-radius: 0 10px 10px;
-	background: #e7e3e0;
-	color: #535353;
-	float: left;
+	border-radius: 10px 10px 0;
+	background: var(--user-background-color, #4A5E83);
+	color: var(--user-text-color, #FFFFFF);
+	float: right;
 }
 .agent .message {
-	border-radius: 10px 10px 0;
-	background: #4A5E83;
-	color: #FFF;
-	float: right;
+	border-radius: 0 10px 10px;
+	background: var(--account-background-color, #e7e3e0);
+	color: var(--account-text-color, #535353);
+	float: left;
 }
 .name {
 	padding: 0 0 5px;
-	color: rgba(0,0,0,.68);
+	color: var(--agent-name-color, rgba(0,0,0,.68));
 	font-size: 13px;
 }
+/* endregion */
+/* region Time */
+.time {
+	font-size: 10px;
+	display: block;
+	clear: both;
+	padding-top: 5px;
+	text-align: right;
+}
+/* endregion */

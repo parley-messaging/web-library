@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown";
 import Image from "./Image";
 
 class Message extends Component {
-	showTime(timestamp) {
+	showTime = (timestamp) => {
 		const toSecondsMultiplier = 1000;
 		return new Date(timestamp * toSecondsMultiplier).toLocaleTimeString();
 	}
@@ -15,6 +15,8 @@ class Message extends Component {
 	render() {
 		const typeIdUser = 1; // 1 user, 2 agent
 		const classNames = `${styles.container} ${this.props.message.typeId === typeIdUser ? styles.user : styles.agent}`;
+
+		// TODO: Markdown opties, alleen link ondersteunen [nog geen oplossing gevonden]
 
 		return (
 			<div className={classNames}>
@@ -24,14 +26,9 @@ class Message extends Component {
 					</div>}
 				<div className={styles.message}>
 					{this.props.message.media ?
-						<Image
-							description={this.props.message.media.description}
-							id={this.props.message.media.id}
-						/> :
-						<ReactMarkdown>
-							{this.props.message.message}
-						</ReactMarkdown>}
-					<span>
+						<Image media={this.props.message.media} /> :
+						<ReactMarkdown children={this.props.message.message} skipHtml={true} />}
+					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
 					</span>
 				</div>
@@ -56,7 +53,8 @@ Message.propTypes = {
 			id: PropTypes.string.isRequired,
 			description: PropTypes.string,
 		}),
-		status: PropTypes.number.isRequired,
+
+		// status: PropTypes.number.isRequired, // TODO: What is status?
 	}),
 };
 
