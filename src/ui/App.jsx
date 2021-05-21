@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import styles from "./App.module.css";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -9,7 +10,7 @@ export default class App extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<div className={styles.app}>
 				{this.hello}
 				{" "}
 				{this.props.name}

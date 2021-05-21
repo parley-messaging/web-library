@@ -3,11 +3,23 @@
 	"version": "2.0.0",
 	"description": "Front-end solution for Parley",
 	"private": true,
-	"main": "index.js",
+	"main": "dist/main/index.js",
+	"module": "dist/module/index.js",
+	"app": "dist/app/index.js",
+	"targets": {
+		"app": {
+			"context": "browser",
+			"isLibrary": false,
+			"outputFormat": "commonjs",
+			"scopeHoist": true,
+			"source": "src/api/index.js",
+			"sourceMap": false
+		}
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
-		"build": "npx parcel build index.html"
+		"build": "npx parcel build --target=app src/api/index.js"
 	},
 	"repository": {
 		"type": "git",
@@ -56,5 +68,6 @@
 	},
 	"browserslist": [
 		"defaults"
-	]
+	],
+	"sideEffects": false
 }
