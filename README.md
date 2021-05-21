@@ -39,3 +39,16 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 	```
 	npm start
 	```
+ 
+## Building
+We have build targets for different occasions;
+- `browser`: This build is minified and should be used directly in the browser
+  See 
+- `module`: This build should be used as a JS Module inside your own code
+  ```js
+  import * as Parley from "/path/to/index.js";
+  ```
+To build all the targets use the following command
+```
+npm run build
+```

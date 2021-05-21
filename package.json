@@ -3,23 +3,52 @@
 	"version": "2.0.0",
 	"description": "Front-end solution for Parley",
 	"private": true,
-	"main": "dist/main/index.js",
-	"module": "dist/module/index.js",
-	"app": "dist/app/index.js",
+	"api-module": "dist/api/module/index.js",
+	"api-browser": "dist/api/browser/index.js",
+	"ui-module": "dist/ui/module/index.js",
+	"ui-browser": "dist/ui/browser/index.js",
 	"targets": {
-		"app": {
+		"api-module": {
+			"distDir": "dist/api/module/",
 			"context": "browser",
-			"isLibrary": false,
-			"outputFormat": "commonjs",
+			"isLibrary": true,
+			"outputFormat": "esmodule",
 			"scopeHoist": true,
-			"source": "src/api/index.js",
+			"sourceMap": true
+		},
+		"api-browser": {
+			"distDir": "dist/api/browser/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "global",
+			"scopeHoist": true,
+			"sourceMap": false
+		},
+		"ui-module": {
+			"distDir": "dist/ui/module/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "esmodule",
+			"scopeHoist": true,
+			"sourceMap": true
+		},
+		"ui-browser": {
+			"distDir": "dist/ui/browser/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "global",
+			"scopeHoist": true,
 			"sourceMap": false
 		}
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
-		"build": "npx parcel build --target=app src/api/index.js"
+		"build": "npm run build:api-module && npm run build:api-browser && npm run build:ui-module && npm run build:ui-browser",
+		"build:api-module": "npx parcel build --target api-module src/api/index.js",
+		"build:api-browser": "npx parcel build --target api-browser src/api/browser_wrapper.js",
+		"build:ui-module": "npx parcel build --target ui-module src/ui/index.jsx",
+		"build:ui-browser": "npx parcel build --target ui-browser src/ui/browser_wrapper.js"
 	},
 	"repository": {
 		"type": "git",

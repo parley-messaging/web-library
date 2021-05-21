@@ -6,12 +6,14 @@
 		  content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Document</title>
+
+	<link href="../../../dist/ui/browser/index.css" rel="stylesheet"/>
 </head>
 <body>
-<div id="app"></div>
-<script src="../../dist/main/index.js">
-	import * as test from "../../dist/main/index.js";
-	test();
-</script>
+	<div id="app"></div>
+	<script src="../../../dist/ui/browser/index.js"></script>
+	<script>
+		window.parley.start();
+	</script>
 </body>
 </html>
