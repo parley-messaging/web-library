@@ -52,3 +52,7 @@ To build all the targets use the following command
 ```
 npm run build
 ```
+
+TODO: Decide how we are going to tackle the UI code
+Now we can't build the UI code as a `module` because it `import`s a `.css` file
+which is not allowed in `<script type="module"> ... </script>` ..

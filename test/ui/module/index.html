@@ -7,17 +7,16 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Document</title>
 
-	<link href="../../../dist/module/index.css" rel="stylesheet"/>
+	<link href="../../../dist/ui/module/index.css" rel="stylesheet"/>
 </head>
 <body>
 	<div id="app"></div>
-	<script src="https://unpkg.com/react@16.7.0/umd/react.production.min.js"></script>
-	<script src="https://unpkg.com/react-dom@16.7.0/umd/react-dom.production.min.js"></script>
 	<!-- TODO: Below loads index.css and that is not allowed here.. -->
 
-<!--	<script type="module">-->
-<!--		import { start } from "../../../dist/module/index.js";-->
-<!--		start();-->
-<!--	</script>-->
+	<script type="module">
+		// import * as styles from "../../../dist/ui/module/index.css";
+		import { start } from "../../../dist/ui/module/index.js";
+		start();
+	</script>
 </body>
 </html>
