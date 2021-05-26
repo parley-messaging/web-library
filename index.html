@@ -6,54 +6,47 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<!--Taken from https://www.triodos.com/-->
-	<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline'">
-	<meta http-equiv="Content-Security-Policy" content="img-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="font-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="frame-src https://www.youtube.com">
-	<meta http-equiv="Content-Security-Policy" content="child-src https://www.youtube.com">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-	<!---->
-
 	<title>Document</title>
-	<style>
-		:root {
-			--font: 'OpenSans', sans-serif;
-			--background-color: #FFFFFF;
-			--background-image: ''; /* TODO: Not used */
-			--nav-background-color: #4A5E83;
-			--nav-text-color: #FFFFFF;
-			--date-color: #404040;
-			--input-background-color: #218259; /* TODO: Not used */
-			--input-text-color: #FFFFFF; /* TODO: Not used */
-			--user-background-color: #4A5E83;
-			--user-text-color: #FFFFFF;
-			--user-sent-color: #009900; /* TODO: Not used */
-			--user-time-color: #e7e3e0;
-			--account-background-color: #e7e3e0;
-			--account-text-color: #535353;
-			--account-time-color: #303d56;
-			--info-text-color: #535353;
-			--agent-name-color: rgba(0, 0, 0, 0.68);
-			--button-label: false;
-			--button-label-background-color: #6d83ad;
-			--button-label-text-color: #FFFFFF;
-			--messenger-icon-background-color: #4A5E83;
-			--link-color: #4891f5;
-			--popup-text-color: #070721;
-			--popup-close-button-background-color: var(--nav-background-color);
-			--popup-text-line-height: 15px;
-			--popup-textarea-color: #6A6A7A;
-			--close-alert-left-button-background-color: var(--nav-background-color);
-			--close-alert-left-button-color: #FFFFFF;
-			--close-alert-right-button-background-color: #E6E6E8;
-			--close-alert-right-button-color: #070721;
-		}
-	</style>
+<!--	<style>-->
+<!--		:root {-->
+<!--			&#45;&#45;font: 'OpenSans', sans-serif;-->
+<!--			&#45;&#45;background-color: #FFFFFF;-->
+<!--			&#45;&#45;background-image: ''; /* TODO: Not used */-->
+<!--			&#45;&#45;nav-background-color: #4A5E83;-->
+<!--			&#45;&#45;nav-text-color: #FFFFFF;-->
+<!--			&#45;&#45;date-color: #404040;-->
+<!--			&#45;&#45;input-background-color: #218259; /* TODO: Not used */-->
+<!--			&#45;&#45;input-text-color: #FFFFFF; /* TODO: Not used */-->
+<!--			&#45;&#45;user-background-color: #4A5E83;-->
+<!--			&#45;&#45;user-text-color: #FFFFFF;-->
+<!--			&#45;&#45;user-sent-color: #009900; /* TODO: Not used */-->
+<!--			&#45;&#45;user-time-color: #e7e3e0;-->
+<!--			&#45;&#45;account-background-color: #e7e3e0;-->
+<!--			&#45;&#45;account-text-color: #535353;-->
+<!--			&#45;&#45;account-time-color: #303d56;-->
+<!--			&#45;&#45;info-text-color: #535353;-->
+<!--			&#45;&#45;agent-name-color: rgba(0, 0, 0, 0.68);-->
+<!--			&#45;&#45;button-label: false;-->
+<!--			&#45;&#45;button-label-background-color: #6d83ad;-->
+<!--			&#45;&#45;button-label-text-color: #FFFFFF;-->
+<!--			&#45;&#45;messenger-icon-background-color: #4A5E83;-->
+<!--			&#45;&#45;link-color: #4891f5;-->
+<!--			&#45;&#45;popup-text-color: #070721;-->
+<!--			&#45;&#45;popup-close-button-background-color: var(&#45;&#45;nav-background-color);-->
+<!--			&#45;&#45;popup-text-line-height: 15px;-->
+<!--			&#45;&#45;popup-textarea-color: #6A6A7A;-->
+<!--			&#45;&#45;close-alert-left-button-background-color: var(&#45;&#45;nav-background-color);-->
+<!--			&#45;&#45;close-alert-left-button-color: #FFFFFF;-->
+<!--			&#45;&#45;close-alert-right-button-background-color: #E6E6E8;-->
+<!--			&#45;&#45;close-alert-right-button-color: #070721;-->
+<!--		}-->
+<!--	</style>-->
 </head>
 <body>
     <div id="app"></div>
-    <script src="src/ui/index.jsx"></script>
+    <script src="./src/ui/browser_wrapper.js"></script>
+	<script>
+		window.parley.start();
+	</script>
 </body>
 </html>
