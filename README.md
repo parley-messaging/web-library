@@ -39,3 +39,22 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 	```
 	npm start
 	```
+ 
+## Building
+When building we transform the code so it works on browsers.
+If you want to use the code in a module you'll need to install it using NPM.
+
+**TODO: Explain how to install using NPM**
+
+Our UI and backend code is split into 2 sections:
+- `src/ui`
+- `src/api`
+
+We have 2 build scripts:
+- `npm run build:ui-browser`
+- `npm run build:api-browser`
+
+To build all the targets use the following command
+```
+npm run build
+```

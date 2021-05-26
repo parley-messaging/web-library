@@ -3,11 +3,50 @@
 	"version": "2.0.0",
 	"description": "Front-end solution for Parley",
 	"private": true,
-	"main": "index.js",
+	"api-module": "dist/api/module/index.js",
+	"api-browser": "dist/api/browser/index.js",
+	"ui-module": "dist/ui/module/index.js",
+	"ui-browser": "dist/ui/browser/index.js",
+	"targets": {
+		"api-module": {
+			"distDir": "dist/api/module/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "esmodule",
+			"scopeHoist": true,
+			"sourceMap": true
+		},
+		"api-browser": {
+			"distDir": "dist/api/browser/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "global",
+			"scopeHoist": true,
+			"sourceMap": false
+		},
+		"ui-module": {
+			"distDir": "dist/ui/module/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "esmodule",
+			"scopeHoist": true,
+			"sourceMap": true
+		},
+		"ui-browser": {
+			"distDir": "dist/ui/browser/",
+			"context": "browser",
+			"isLibrary": true,
+			"outputFormat": "global",
+			"scopeHoist": true,
+			"sourceMap": false
+		}
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
-		"build": "npx parcel build index.html"
+		"build": "npm run build:api-module && npm run build:api-browser && npm run build:ui-module && npm run build:ui-browser",
+		"build:api-browser": "npx parcel build --target api-browser src/api/browser_wrapper.js",
+		"build:ui-browser": "npx parcel build --target ui-browser src/ui/browser_wrapper.js"
 	},
 	"repository": {
 		"type": "git",
@@ -45,6 +84,7 @@
 		"@fortawesome/fontawesome-pro": "^5.15.3",
 		"@fortawesome/pro-regular-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
+		"@babel/plugin-syntax-jsx": "^7.12.13",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
@@ -61,9 +101,10 @@
 		"eslint-plugin-compat": "^3.9.0",
 		"eslint-plugin-jsx-a11y": "^6.4.1",
 		"eslint-plugin-react": "^7.23.2",
-		"parcel": "^2.0.0-nightly.651"
+		"parcel": "^2.0.0-beta.3.1"
 	},
 	"browserslist": [
 		"defaults"
-	]
+	],
+	"sideEffects": false
 }
