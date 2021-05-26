@@ -45,9 +45,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
 		"build": "npm run build:api-module && npm run build:api-browser && npm run build:ui-module && npm run build:ui-browser",
-		"build:api-module": "npx parcel build --target api-module src/api/index.js",
 		"build:api-browser": "npx parcel build --target api-browser src/api/browser_wrapper.js",
-		"build:ui-module": "npx parcel build --target ui-module src/ui/index.jsx",
 		"build:ui-browser": "npx parcel build --target ui-browser src/ui/browser_wrapper.js"
 	},
 	"repository": {

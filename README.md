@@ -41,18 +41,20 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 	```
  
 ## Building
-We have build targets for different occasions;
-- `browser`: This build is minified and should be used directly in the browser
-  See 
-- `module`: This build should be used as a JS Module inside your own code
-  ```js
-  import * as Parley from "/path/to/index.js";
-  ```
+When building we transform the code so it works on browsers.
+If you want to use the code in a module you'll need to install it using NPM.
+
+**TODO: Explain how to install using NPM**
+
+Our UI and backend code is split into 2 sections:
+- `src/ui`
+- `src/api`
+
+We have 2 build scripts:
+- `npm run build:ui-browser`
+- `npm run build:api-browser`
+
 To build all the targets use the following command
 ```
 npm run build
 ```
-
-TODO: Decide how we are going to tackle the UI code
-Now we can't build the UI code as a `module` because it `import`s a `.css` file
-which is not allowed in `<script type="module"> ... </script>` ..
