@@ -1,3 +1,3 @@
-import {start} from "./index";
+import {start} from "./index.jsx";
 
 window.parley = {start};

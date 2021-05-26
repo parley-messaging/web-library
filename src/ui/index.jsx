@@ -14,7 +14,7 @@ function start() {
 	} else {
 		import("@axe-core/react").then((axe) => {
 			// noinspection JSUnresolvedFunction
-			axe.default(React, ReactDOM, axeInspectionTimoutMs);
+			// axe.default(React, ReactDOM, axeInspectionTimoutMs);
 			ReactDOM.render(app, mountNode);
 		});
 	}
