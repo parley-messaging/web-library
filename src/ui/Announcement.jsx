@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Announcement.module.css";
+import * as styles from "./Announcement.module.css";
 import ReactMarkdown from "react-markdown";
 
 class Announcement extends Component {

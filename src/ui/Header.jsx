@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Header.module.css";
+import * as styles from "./Header.module.css";
 
 // components
 import HeaderButton from "./Buttons/HeaderButton";

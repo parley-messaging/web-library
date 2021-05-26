@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Conversation.module.css";
+import * as styles from "./Conversation.module.css";
 
 // components
 import DateGroup from "./DateGroup";

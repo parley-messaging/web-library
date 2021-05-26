@@ -1,5 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
+import {config} from "@fortawesome/fontawesome-svg-core";
+
+// Make sure this is before any other `fontawesome` API calls
+config.autoAddCss = false;
 
 // Components
 import Launcher from "./Launcher";

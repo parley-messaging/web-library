@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Launcher.module.css";
+import * as styles from "./Launcher.module.css";
 
 class Launcher extends Component {
 	render() {
