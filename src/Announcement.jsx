@@ -6,9 +6,9 @@ import ReactMarkdown from "react-markdown";
 class Announcement extends Component {
 	render() {
 		return (
-			<div className={styles.center}>
+			<span className={styles.center}>
 				<ReactMarkdown children={this.props.message} skipHtml={true} />
-			</div>
+			</span>
 		);
 	}
 }

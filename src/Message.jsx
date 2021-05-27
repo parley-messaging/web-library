@@ -9,7 +9,11 @@ import Image from "./Image";
 class Message extends Component {
 	showTime = (timestamp) => {
 		const toSecondsMultiplier = 1000;
-		return new Date(timestamp * toSecondsMultiplier).toLocaleTimeString();
+		return new Date(timestamp * toSecondsMultiplier).toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+			hour12: false,
+		});
 	}
 
 	render() {
@@ -27,7 +31,9 @@ class Message extends Component {
 				<div className={styles.message}>
 					{this.props.message.media ?
 						<Image media={this.props.message.media} /> :
-						<ReactMarkdown children={this.props.message.message} skipHtml={true} />}
+						this.props.message.typeId === typeIdUser ?
+							this.props.message.message :
+							<ReactMarkdown children={this.props.message.message} skipHtml={true} />}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
 					</span>

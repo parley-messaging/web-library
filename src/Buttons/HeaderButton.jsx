@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import styles from "./HeaderButton.module.css";
 
 // Requirements
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -10,15 +11,24 @@ import {faTimes} from "@fortawesome/pro-regular-svg-icons/faTimes";
 class HeaderButton extends Component {
 	render() {
 		let icon;
-		if(this.props.icon === "menu")
+		let className;
+		if(this.props.icon === "menu") {
 			icon = faBars;
-		if(this.props.icon === "minimize")
+			className = styles.menu;
+		}
+		if(this.props.icon === "minimize") {
 			icon = faWindowMinimize;
-		if(this.props.icon === "close")
+			className = styles.minimize;
+		}
+		if(this.props.icon === "close") {
 			icon = faTimes;
+			className = styles.close;
+		}
 
 		return (
-			<FontAwesomeIcon icon={icon} onClick={this.props.handleOnClick} />
+			<button className={className} onClick={this.props.handleOnClick}>
+				<FontAwesomeIcon icon={icon} />
+			</button>
 		);
 	}
 }

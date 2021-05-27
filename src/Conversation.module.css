@@ -1,3 +1,16 @@
+.wrapper {
+	display: -ms-grid;
+	display: grid;
+	-ms-grid-columns: auto;
+	grid-template-columns: auto;
+	-ms-grid-rows: minmax(50%,100%) auto;
+	grid-template-rows: minmax(50%,100%) auto;
+	max-width: inherit;
+}
+.body {
+	width: 300px;
+	overflow-y: auto;
+}
 .welcome {
 	padding: 10px 0;
 	margin: 0 40px;

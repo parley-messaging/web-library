@@ -1,0 +1,20 @@
+.mobile {
+	position: unset;
+	right: unset;
+	bottom: unset;
+	width: 25px;
+	height: 25px;
+	margin: auto;
+	/* Only use when you have 2 buttons */
+	/*-ms-grid-row: 2;*/
+	/*grid-row-start: 2;*/
+	/*-ms-grid-row-span: 0;*/
+	/*grid-row-end: 2;*/
+	z-index: 2;
+	padding: 0;
+	font-size: 25px;
+	color: var(--messenger-icon-background-color, #4A5E83);
+	background-color: transparent;
+	cursor: pointer;
+	border: none;
+}

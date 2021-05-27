@@ -30,7 +30,7 @@ export default class App extends React.Component {
 	}
 
 	render() {
-		const title = "Hallo";
+		const title = "Default Chat - EN";
 		const welcomeMessage = "Welcome to our support chat, you can expect a response in ~1 minute.";
 
 		return (

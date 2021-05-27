@@ -1,0 +1,26 @@
+.footer {
+	border-radius: 0 0 5px 5px;
+	z-index: 1999;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 5px;
+	background: #fff;
+	box-shadow: 0 -1px 3px 0 rgb(0 0 0 / 7%);
+	display: -ms-grid;
+	display: grid;
+	-ms-grid-columns: auto 11%; /* Use 18% when you have 2 buttons */
+	grid-template-columns: auto 11%; /* Use 18% when you have 2 buttons */
+	-ms-grid-rows: auto;
+	grid-template-rows: auto;
+}
+.actions {
+	display: -ms-grid;
+	display: grid;
+	/* Only use when you have 2 buttons */
+	/*-ms-grid-columns: 1fr 1fr;*/
+	/*grid-template-columns: 1fr 1fr;*/
+	grid-template-rows: auto -webkit-max-content;
+	grid-template-rows: auto max-content;
+	-ms-grid-rows: 1fr auto;
+	z-index: 1;
+}

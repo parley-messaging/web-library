@@ -88,7 +88,7 @@ class Conversation extends Component {
 			{
 				id: 159287,
 				time: 1620309834,
-				message: "Test message #3, this one has a markdown [link](https://google.com)",
+				message: "Test message #3",
 				image: null,
 				typeId: 1,
 				agent: null,
@@ -102,7 +102,7 @@ class Conversation extends Component {
 			{
 				id: 159284,
 				time: 1620309772,
-				message: "Test message #2",
+				message: "Test message #2, this one has a markdown [link](https://google.com)",
 				image: null,
 				typeId: 2,
 				agent: {
@@ -159,21 +159,31 @@ class Conversation extends Component {
 		const messageTypeAgent = 2;
 
 		return (
-			<>
-				{this.props.welcomeMessage &&
-					<Announcement className={styles.welcome} message={this.props.welcomeMessage} />}
-				{this.state.messages.map(message => (
-					<React.Fragment key={message.id}>
-						{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
-							<DateGroup timestamp={message.time} />}
-						<Message message={message} />
-						{message.typeId === messageTypeAgent && message.quickReplies && message.quickReplies.length &&
-							<QuickReplies />}
-					</React.Fragment>
-				))}
-				{this.state.stickyMessage &&
-					<Announcement className={styles.sticky} message={this.state.stickyMessage} />}
-			</>
+			<div className={styles.wrapper}>
+				<div className={styles.body}>
+					{this.props.welcomeMessage &&
+						<div className={styles.welcome}>
+							<Announcement message={this.props.welcomeMessage} />
+						</div>}
+					{this.state.messages.map(message => (
+						<React.Fragment key={message.id}>
+							{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
+								<DateGroup timestamp={message.time} />}
+							<Message message={message} />
+							{message.typeId === messageTypeAgent &&
+							message.quickReplies && message.quickReplies.length &&
+								<QuickReplies />}
+						</React.Fragment>
+					))}
+					{this.state.stickyMessage &&
+						<div className={styles.sticky}>
+							<Announcement message={this.state.stickyMessage} />
+						</div>}
+				</div>
+				<div className={styles.error}>
+
+				</div>
+			</div>
 		);
 	}
 }

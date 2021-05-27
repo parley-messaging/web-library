@@ -21,7 +21,10 @@ class Chat extends Component {
 					title={this.props.title}
 				/>
 				<Conversation welcomeMessage={this.props.welcomeMessage} />
-				<ReplyActions allowEmoji={allowEmoji} allowFileUpload={allowFileUpload} />
+				<ReplyActions
+					allowEmoji={allowEmoji}
+					allowFileUpload={allowFileUpload}
+				/>
 			</div>
 		);
 	}
