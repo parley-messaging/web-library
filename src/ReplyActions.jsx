@@ -33,18 +33,15 @@ class ReplyActions extends Component {
 	}
 
 	render() {
-		const isMobile = true;
-
 		return (
 			<div className={styles.footer}>
 				<ReplyText
-					className={styles.reply}
 					handleOnChange={this.changeReply}
 					handleOnSubmit={this.sendReply}
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
-					{isMobile && this.state.reply !== "" &&
+					{this.props.isMobile && this.state.reply !== "" &&
 						<MobileSubmit handleOnClick={this.sendReply} />}
 				</div>
 			</div>
@@ -55,6 +52,7 @@ class ReplyActions extends Component {
 ReplyActions.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
+	isMobile: PropTypes.bool,
 };
 
 export default ReplyActions;

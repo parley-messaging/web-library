@@ -44,11 +44,13 @@
 	"dependencies": {
 		"@fortawesome/fontawesome-pro": "^5.15.3",
 		"@fortawesome/pro-regular-svg-icons": "^5.15.3",
+		"@fortawesome/pro-solid-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
-		"react-markdown": "^6.0.2"
+		"react-markdown": "^6.0.2",
+		"react-textarea-autosize": "^8.3.2"
 	},
 	"devDependencies": {
 		"@axe-core/react": "^4.1.1",

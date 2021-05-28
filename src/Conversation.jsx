@@ -56,7 +56,7 @@ class Conversation extends Component {
 			{
 				id: 159293,
 				time: 1620309867,
-				message: ":lollipop:",
+				message: "😷🤧",
 				image: null,
 				typeId: 1,
 				agent: null,
@@ -70,7 +70,7 @@ class Conversation extends Component {
 			{
 				id: 159290,
 				time: 1620309858,
-				message: "Test message #4, this one has an emoji :+1:",
+				message: "Test message #4, this one has an emoji 🤧",
 				image: null,
 				typeId: 2,
 				agent: {

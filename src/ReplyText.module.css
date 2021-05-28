@@ -1,13 +1,5 @@
-.text {
-	overflow-y: hidden;
-	overflow-x: hidden;
-	width: 100%;
-	max-height: 125px;
-}
 .text textarea{
-	overflow: hidden;
 	overflow-wrap: break-word;
-	height: 32px;
 	border: none;
 	resize: none;
 	white-space: normal;

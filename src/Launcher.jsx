@@ -22,26 +22,28 @@ class Launcher extends Component {
 		const path2D = "M491.347,338.156c13.518-19.896,20.272-41.255,20.272-64.098c0-23.411-7.139-45.303-21.409-65.666 c-14.277-20.362-33.694-37.305-58.245-50.819c4.374,14.274,6.563,28.739,6.563,43.398c0,25.503-6.368,49.676-19.129,72.519 c-12.752,22.836-31.025,43.01-54.816,60.524c-22.08,15.988-47.205,28.261-75.377,36.829 c-28.164,8.562-57.573,12.848-88.218,12.848c-5.708,0-14.084-0.377-25.122-1.137c38.256,25.119,83.177,37.685,134.756,37.685 c16.371,0,33.119-1.526,50.251-4.571c23.6,16.755,50.06,28.931,79.37,36.549c6.852,1.718,15.037,3.237,24.554,4.568 c2.283,0.195,4.381-0.476,6.283-1.995c1.903-1.526,3.142-3.614,3.71-6.276c-0.089-1.143,0-1.77,0.287-1.861 c0.281-0.09,0.233-0.712-0.144-1.852c-0.376-1.144-0.568-1.715-0.568-1.715l-0.712-1.424c-0.198-0.376-0.52-0.903-0.999-1.567 c-0.476-0.66-0.855-1.14-1.143-1.427c-0.28-0.284-0.705-0.763-1.28-1.424c-0.568-0.66-0.951-1.092-1.143-1.283 c-0.951-1.143-3.139-3.521-6.564-7.139c-3.429-3.613-5.899-6.42-7.422-8.418c-1.523-1.999-3.665-4.757-6.424-8.282 c-2.758-3.518-5.14-7.183-7.139-10.991c-1.998-3.806-3.949-7.995-5.852-12.56C459.281,374.855,477.843,358.059,491.347,338.156z";
 
 		return (
-			<button className={styles.button} onClick={this.props.handleOnClick}>
-				<svg
-					aria-label={areaLabel}
-					display={display}
-					fill={fill}
-					name={name}
-					preserveAspectRatio={preserveAspectRatio}
-					role={role}
-					version={version}
-					viewBox={viewBox}
-					x={x}
-					xmlSpace={xmlSpace}
-					xmlns={xmlns}
-					xmlnsXlink={xlink}
-					y={y}
-				>
-					<path d={path1D} />
-					<path d={path2D} />
-				</svg>
-			</button>
+			<div className={styles.launcher}>
+				<button onClick={this.props.handleOnClick}>
+					<svg
+						aria-label={areaLabel}
+						display={display}
+						fill={fill}
+						name={name}
+						preserveAspectRatio={preserveAspectRatio}
+						role={role}
+						version={version}
+						viewBox={viewBox}
+						x={x}
+						xmlSpace={xmlSpace}
+						xmlns={xmlns}
+						xmlnsXlink={xlink}
+						y={y}
+					>
+						<path d={path1D} />
+						<path d={path2D} />
+					</svg>
+				</button>
+			</div>
 		);
 	}
 }

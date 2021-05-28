@@ -9,3 +9,4 @@ node_modules
 .cache
 ssl
 /.parcel-cache/
+/.npmrc

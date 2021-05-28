@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Date.module.css";
+import styles from "./DateGroup.module.css";
 
 
 class DateGroup extends Component {

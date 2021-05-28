@@ -4,7 +4,7 @@ import styles from "./MobileSubmit.module.css";
 
 // Requirements
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowCircleRight} from "@fortawesome/pro-regular-svg-icons/faArrowCircleRight";
+import {faArrowCircleRight} from "@fortawesome/pro-solid-svg-icons/faArrowCircleRight";
 
 class MobileSubmit extends Component {
 	render() {

@@ -11,9 +11,11 @@ class Chat extends Component {
 	render() {
 		const allowEmoji = false;
 		const allowFileUpload = false;
+		const isMobile = false;
+		const className = `${styles.chat} ${isMobile ? styles.mobile : ""}`;
 
 		return (
-			<div className={styles.chat}>
+			<div className={className}>
 				<Header
 					closeAction={this.props.closeAction}
 					menuAction={this.props.menuAction}
@@ -24,6 +26,7 @@ class Chat extends Component {
 				<ReplyActions
 					allowEmoji={allowEmoji}
 					allowFileUpload={allowFileUpload}
+					isMobile={isMobile}
 				/>
 			</div>
 		);

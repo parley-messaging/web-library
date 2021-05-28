@@ -6,12 +6,9 @@
 *, ::after, ::before {
 	box-sizing: border-box;
 }
-button {
-	font-size: 24px;
-}
 .chat {
 	width: 300px;
-	height: 500px;
+	height: 500px; /* TODO: We hebben een min en max height en defineren height wat is het effect dan nog van max/min..? */
 	max-height: 80%;
 	min-height: 300px;
 	bottom: 90px;
@@ -20,15 +17,23 @@ button {
 	box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
 	position: fixed;
 	z-index: 2002;
-	background: #FFF;
-	font-family: OpenSans,sans-serif;
+	background: var(--background-color, #FFFFFF);
 	display: -ms-grid;
 	display: grid;
 	-ms-grid-columns: 1fr;
 	grid-template-columns: 1fr;
 	-ms-grid-rows: 45px minmax(0,1fr) auto;
 	grid-template-rows: 45px minmax(0,1fr) auto;
-	transform: scale(1);
-	transform-origin: bottom right;
-	transition: transform 250ms ease-in-out,opacity .1s linear 150ms;
+}
+.chat.mobile {
+	width: 100vw;
+	width: -webkit-fill-available;
+	height: 100vh;
+	height: -webkit-fill-available;
+	max-height: unset;
+	border-radius: 0;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }

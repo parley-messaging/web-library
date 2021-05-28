@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./ReplyText.module.css";
+import TextareaAutosize from "react-textarea-autosize";
 
 class ReplyText extends Component {
 	onKey = (e) => {
@@ -14,10 +15,12 @@ class ReplyText extends Component {
 
 	render() {
 		const placeholder = "Type here your message...";
+		const maxRows = 3;
 
 		return (
 			<div className={styles.text}>
-				<textarea
+				<TextareaAutosize
+					maxRows={maxRows}
 					onChange={this.props.handleOnChange}
 					onKeyDown={this.onKey}
 					placeholder={placeholder}
