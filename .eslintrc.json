@@ -8,7 +8,8 @@
 		"eslint:recommended",
 		"plugin:react/recommended",
 		"plugin:jsx-a11y/recommended",
-		"plugin:compat/recommended"
+		"plugin:compat/recommended",
+		"plugin:cypress/recommended"
 	],
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -20,7 +21,8 @@
 	"plugins": [
 		"react",
 		"jsx-a11y",
-		"@babel"
+		"@babel",
+		"cypress"
 	],
 	"rules": {
 		//Possible errors
