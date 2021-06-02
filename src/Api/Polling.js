@@ -1,67 +1,102 @@
-// TODO: Poll messages ever X time with increasing delays
-
+const maxIntervalAmount = 5;
 const secondInMs = 1000;
 const minuteOrHourMultiplier = 60;
 const dayMultiplier = 24;
-const intervals = [
+const defaultIntervals = [
 	"2s", "5s", "10s", "30s", "1m", "5m", "15m", "30m", "2h", "5h", "6h",
 ];
-const intervalTimeValue = {
+const intervalTimeUnits = {
+	ms: 1,
 	s: secondInMs,
 	m: secondInMs * minuteOrHourMultiplier,
 	h: secondInMs * minuteOrHourMultiplier * minuteOrHourMultiplier,
 	d: secondInMs * minuteOrHourMultiplier * minuteOrHourMultiplier * dayMultiplier,
 };
-let currentIntervalID = 0;
-let currentIntervalAmount = 0;
-const maxIntervalAmount = 5;
-let intervalHandle;
 
-/**
- * Convert something like `"2m"` to 2 minutes in ms;
- * `minute = 1000 * 60, 2 minutes = 2 * (1000 * 60)`
- *
- * @param intervalId
- * @return {number} The time in milliseconds
- */
-function intervalToValue(intervalId) {
-	const regex = /(?<time>\d+)(?<timeValue>\w)/u;
-	const interval = intervals[intervalId];
-	const {groups: {time, timeValue}} = regex.exec(interval);
-	return time * intervalTimeValue[timeValue];
-}
+export default class PollingService {
+	constructor(api, accountIdentification, deviceIdentification, customIntervals) {
+		this.createDefaults();
 
-/**
- * Start polling
- * @param api ApiEventTarget
- * @param accountIdentification string
- * @param deviceIdentification string
- */
-function startPolling(api, accountIdentification, deviceIdentification) {
-	intervalHandle = window.setInterval(() => {
-		// Get messages
-		api.getMessages(accountIdentification, deviceIdentification);
-
-		// Increase poll counter for this interval
-		currentIntervalAmount++;
-
-		// Stop interval when counter reaches max
-		if(currentIntervalAmount === maxIntervalAmount) {
-			// Stop/Remove the interval from the window
-			window.clearInterval(intervalHandle);
-
-			// Only update to the next interval if there is one
-			if(currentIntervalID < intervals.length) {
-				currentIntervalID++;
-			}
-
-			// Re-start polling
-			startPolling(api, accountIdentification, deviceIdentification);
+		this.api = api;
+		this.accountIdentification = accountIdentification;
+		this.deviceIdentification = deviceIdentification;
+		if(customIntervals !== undefined) {
+			this.currentIntervals = customIntervals;
 		}
-	}, intervalToValue(currentIntervalID));
+	}
+
+	/**
+	 * Creates default values
+	 */
+	createDefaults() {
+		this.currentIntervals = defaultIntervals;
+		this.currentIntervalID = 0;
+		this.currentIntervalAmount = 0;
+		this.intervalHandle = null;
+	}
+
+	/**
+	 * Convert something like `"2m"` to 2 minutes in ms;
+	 * `minute = 1000 * 60, 2 minutes = 2 * (1000 * 60)`
+	 *
+	 * @return {number} The time in milliseconds
+	 * @param intervalAsString
+	 */
+	static intervalToValue(intervalAsString) {
+		const regex = /(?<timeValue>\d+)(?<timeUnit>\w+)/u;
+		const {groups: {timeValue, timeUnit}} = regex.exec(intervalAsString);
+
+		return timeValue * intervalTimeUnits[timeUnit];
+	}
+
+	/**
+	 * Start polling
+	 */
+	startPolling() {
+		this.intervalHandle = window.setInterval(() => {
+			// Get messages
+			this.api.getMessages(this.accountIdentification, this.deviceIdentification);
+
+			// Increase poll counter for this interval
+			this.currentIntervalAmount++;
+
+			// Stop interval when counter reaches max
+			if(this.currentIntervalAmount === maxIntervalAmount) {
+				// Stop/Remove the interval from the window
+				window.clearInterval(this.intervalHandle);
+
+				// Only update to the next interval if there is one
+				if(this.currentIntervalID < this.currentIntervals.length) {
+					this.currentIntervalID++;
+				}
+
+				// Re-start polling
+				this.startPolling();
+			}
+		}, PollingService.intervalToValue(this.currentIntervals[this.currentIntervalID]));
+	}
+
+	/**
+	 * Stops the polling interval
+	 */
+	stopPolling() {
+		window.clearInterval(this.intervalHandle);
+	}
+
+	/**
+	 * Stops polling and restarts it
+	 *
+	 */
+	restartPolling() {
+		this.stopPolling();
+		this.startPolling();
+	}
+
+	/**
+	 * Returns the amount of times we run a singel interval
+	 * @return {number}
+	 */
+	static getMaxIntervalAmount() {
+		return maxIntervalAmount;
+	}
 }
-
-// TODO: Function to stop polling
-// TODO: Function to reset polling
-
-export default {startPolling};
