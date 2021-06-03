@@ -4,11 +4,15 @@
 
 import ApiResponseEvent from "./ApiResponseEvent";
 import Api from "./Api";
+import PollingService from "./Polling";
 
 export default class ApiEventTarget extends EventTarget {
 	constructor(apiDomain) {
 		super();
+
 		this.Api = new Api(apiDomain);
+		this.PollingService = null;
+
 		this.events = {
 			onSubscribe: "onSubscribe",
 			onSendMessage: "onSendMessage",
@@ -52,5 +56,22 @@ export default class ApiEventTarget extends EventTarget {
 				// TODO: These errors are not 4xx statuses, so what should we do with them?
 				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
+	}
+
+	/**
+	 * Creates the PollingService in which you can start polling
+	 * example: `ApiEventTarget.PollingService.startPolling()`
+	 *
+	 * @param accountIdentification
+	 * @param deviceIdentification
+	 * @param customIntervals example `["2s", "5s", "30s", "1m"]`
+	 */
+	initializePollingService(accountIdentification, deviceIdentification, customIntervals) {
+		this.PollingService = new PollingService(
+			this,
+			accountIdentification,
+			deviceIdentification,
+			customIntervals,
+		);
 	}
 }

@@ -1,8 +1,6 @@
-// This component shows a basic way of implementing the ApiEventTarget
-// It shows how to initialize it and how you can listen for events
-
 import React, {Component} from "react";
-import {apiEventTargetSingleton} from "./Api";
+import PropTypes from "prop-types";
+import ApiEventTarget from "./Api/ApiEventTarget";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -10,7 +8,7 @@ class EventLog extends Component {
 		this.state = {events: []};
 
 		// Step 1: Initialize the ApiEventTarget
-		this.ApiEventTarget = apiEventTargetSingleton();
+		this.ApiEventTarget = this.props.api;
 
 		this.handleOnEvent = this.handleOnEvent.bind(this);
 	}
@@ -34,8 +32,8 @@ class EventLog extends Component {
 		return (
 			<div>
 				<h2>{header}</h2>
-				{this.state.events.reverse().map(event => (
-					<div key={event}>
+				{[...this.state.events].reverse().map(event => (
+					<div key={event.timeStamp}>
 						{this.formatEventString(event)}
 					</div>
 				))}
@@ -64,5 +62,7 @@ class EventLog extends Component {
 		return `[${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`;
 	}
 }
+
+EventLog.propTypes = {api: PropTypes.instanceOf(ApiEventTarget)};
 
 export default EventLog;

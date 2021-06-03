@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {apiEventTargetSingleton} from "./Api";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
+import EventLog from "./EventLog";
 
 class Messaging extends Component {
 	constructor(props) {
@@ -10,6 +11,7 @@ class Messaging extends Component {
 		this.state = {
 			messageInputValue: "",
 			messages: [],
+			registered: false,
 		};
 
 		this.apiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
@@ -20,6 +22,10 @@ class Messaging extends Component {
 		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
 		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
 		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
+
+		if(this.state.registered) {
+			this.apiEventTarget.PollingService.startPolling();
+		}
 	}
 
 	componentWillUnmount() {
@@ -27,6 +33,8 @@ class Messaging extends Component {
 		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
 		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
 		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
+
+		this.apiEventTarget.PollingService.stopPolling();
 	}
 
 	componentDidUpdate() {
@@ -58,6 +66,7 @@ class Messaging extends Component {
 				<button id={sendButton} onClick={this.handleOnSendClick}>{sendButtonText}</button>
 				<button id={refreshButton} onClick={this.handleOnRefreshClick}>{refreshButtonText}</button>
 				<MessageList messages={this.state.messages} />
+				<EventLog api={this.apiEventTarget} />
 			</>
 		);
 	}
@@ -89,7 +98,10 @@ class Messaging extends Component {
 		}
 
 		// Actual handler
+		this.setState({registered: true});
 		this.handleOnRefreshClick();
+		this.apiEventTarget.initializePollingService(this.props.accountIdentification, this.props.deviceIdentification);
+		this.apiEventTarget.PollingService.startPolling();
 	}
 
 	handleOnRefreshEvent = (event) => {
@@ -109,7 +121,8 @@ class Messaging extends Component {
 		}
 
 		// Actual handler
-		this.handleOnRefreshClick();
+		// this.handleOnRefreshClick();
+		// TODO: Do a getMessage() call in ApiEventTarget
 	}
 }
 

@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import Configuration from "./Configuration";
 import Messaging from "./Messaging";
-import EventLog from "./EventLog";
 
 class App extends Component {
 	constructor(props) {
@@ -30,7 +29,6 @@ class App extends Component {
 					apiDomain={this.state.apiDomain}
 					deviceIdentification={this.state.deviceIdentification}
 				/>
-				<EventLog />
 			</>
 		);
 	}
