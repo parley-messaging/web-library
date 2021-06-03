@@ -36,6 +36,9 @@ export default class ApiEventTarget extends EventTarget {
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onSendMessage", data));
 			})
+			.then(() => {
+				this.getMessages(accountIdentification, deviceIdentification);
+			})
 			.catch((error) => {
 				// TODO: These errors are not 4xx statuses, so what should we do with them?
 				throw new Error(`Error occurred during Fetch(): ${error}`);

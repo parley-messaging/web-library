@@ -109,7 +109,7 @@ class Messaging extends Component {
 		}
 
 		// Actual handler
-		this.handleOnRefreshClick();
+		// ...
 	}
 }
 
