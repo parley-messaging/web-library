@@ -3,6 +3,7 @@
 
 import React, {Component} from "react";
 import {apiEventTargetSingleton} from "./Api";
+import PropTypes from "prop-types";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -10,7 +11,7 @@ class EventLog extends Component {
 		this.state = {events: []};
 
 		// Step 1: Initialize the ApiEventTarget
-		this.ApiEventTarget = apiEventTargetSingleton();
+		this.ApiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
 
 		this.handleOnEvent = this.handleOnEvent.bind(this);
 	}
@@ -64,5 +65,7 @@ class EventLog extends Component {
 		return `[${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`;
 	}
 }
+
+EventLog.propTypes = {apiDomain: PropTypes.string};
 
 export default EventLog;

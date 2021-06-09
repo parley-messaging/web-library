@@ -30,7 +30,9 @@ class App extends Component {
 					apiDomain={this.state.apiDomain}
 					deviceIdentification={this.state.deviceIdentification}
 				/>
-				<EventLog />
+				<EventLog
+					apiDomain={this.state.apiDomain}
+				/>
 			</>
 		);
 	}
