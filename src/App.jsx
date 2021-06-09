@@ -10,7 +10,7 @@ class App extends Component {
 		super(props);
 
 		this.state = {
-			deviceIdentification: "",
+			deviceIdentification: "aaaaaaaaaa",
 			accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
 			pushEnabled: false,
 			pushToken: undefined,

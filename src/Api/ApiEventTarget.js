@@ -4,6 +4,7 @@
 
 import ApiResponseEvent from "./Private/ApiResponseEvent";
 import Api from "./Api";
+import {Events} from "./Constants";
 
 export default class ApiEventTarget extends EventTarget {
 	constructor(apiDomain) {
@@ -34,21 +35,21 @@ export default class ApiEventTarget extends EventTarget {
 			referer,
 		)
 			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onSubscribe", data));
+				this.dispatchEvent(new ApiResponseEvent(Events.onSubscribe, data));
 			});
 	}
 
 	sendMessage(message, accountIdentification, deviceIdentification) {
 		return this.Api.sendMessage(message, accountIdentification, deviceIdentification)
 			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onSendMessage", data));
+				this.dispatchEvent(new ApiResponseEvent(Events.onSendMessage, data));
 			});
 	}
 
 	getMessages(accountIdentification, deviceIdentification) {
 		return this.Api.getMessages(accountIdentification, deviceIdentification)
 			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onGetMessages", data));
+				this.dispatchEvent(new ApiResponseEvent(Events.onGetMessages, data));
 			});
 	}
 }
