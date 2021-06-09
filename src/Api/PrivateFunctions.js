@@ -6,9 +6,8 @@
 import {ApiResponseStatuses, ApiResponseNotificationTypes, ApiFetchFailed, ApiGenericError} from "./Constants";
 
 function getFirstErrorNotification(notifications) {
-	// TODO: Somehow fix this by either changing `arrow-body-style` rule or `function-paren-newline`
-	// eslint-disable-next-line max-len
-	const errorNotifications = notifications.filter(notification => notification.type === ApiResponseNotificationTypes.error);
+	const errorNotifications = notifications
+		.filter(notification => notification.type === ApiResponseNotificationTypes.error);
 	if(errorNotifications && errorNotifications.length > 0) {
 		return errorNotifications[0];
 	}
