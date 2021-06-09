@@ -1,55 +1,7 @@
-// This script is an event based implementation of the Api.js script.
+// This script will dispatch events from Api.js
 // It provides subscribable events which get fired upon response of the API.
 // This way you can listen for responses on multiple locations.
 
-import ApiResponseEvent from "./Private/ApiResponseEvent";
-import Api from "./Api";
-import {Events} from "./Constants";
-
 export default class ApiEventTarget extends EventTarget {
-	constructor(apiDomain) {
-		super();
-		this.Api = new Api(apiDomain);
-	}
-
-	subscribeDevice(
-		accountIdentification,
-		deviceIdentification,
-		pushToken,
-		pushType,
-		pushEnabled,
-		userAdditionalInformation,
-		type,
-		version,
-		referer,
-	) {
-		return this.Api.subscribeDevice(
-			accountIdentification,
-			deviceIdentification,
-			pushToken,
-			pushType,
-			pushEnabled,
-			userAdditionalInformation,
-			type,
-			version,
-			referer,
-		)
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent(Events.onSubscribe, data));
-			});
-	}
-
-	sendMessage(message, accountIdentification, deviceIdentification) {
-		return this.Api.sendMessage(message, accountIdentification, deviceIdentification)
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent(Events.onSendMessage, data));
-			});
-	}
-
-	getMessages(accountIdentification, deviceIdentification) {
-		return this.Api.getMessages(accountIdentification, deviceIdentification)
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent(Events.onGetMessages, data));
-			});
-	}
+	//
 }

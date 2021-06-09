@@ -1,6 +1,6 @@
 // This script contains wrapper functions for making API calls
 // You can use this script on it's own or you can make use of the
-// event based implementation in ApiEventTarget.js
+// event based implementation in Api.js
 
 import Config from "./Private/Config";
 import PrivateFunctions from "./Private/PrivateFunctions";
@@ -8,22 +8,29 @@ import ow from "ow";
 import {
 	DeviceTypesAsArray,
 	DeviceVersionMaxLength,
-	DeviceVersionMinLength, DeviceVersionRegex,
+	DeviceVersionMinLength, DeviceVersionRegex, Events,
 	MinUdidLength,
 	PushTypesAsArray,
 } from "./Constants";
+import ApiResponseEvent from "./Private/ApiResponseEvent";
 
 export default class Api {
-	constructor(apiDomain) {
+	constructor(apiDomain, apiEventTarget) {
 		ow(apiDomain, "apiDomain", ow.string.nonEmpty);
+		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		this.setDomain(apiDomain);
+		this.eventTarget = apiEventTarget;
 	}
 
 	setDomain(apiDomain) {
 		ow(apiDomain, "apiDomain", ow.string.nonEmpty);
 
 		this.config = new Config(apiDomain);
+	}
+
+	getEventTarget() {
+		return this.eventTarget;
 	}
 
 	subscribeDevice(
@@ -64,7 +71,10 @@ export default class Api {
 				version,
 				referer,
 			}),
-		});
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onSubscribe, data));
+			});
 	}
 
 	sendMessage(message, accountIdentification, deviceIdentification) {
@@ -77,7 +87,10 @@ export default class Api {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 			body: JSON.stringify({message}),
-		});
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onSendMessage, data));
+			});
 	}
 
 	getMessages(accountIdentification, deviceIdentification) {
@@ -88,6 +101,9 @@ export default class Api {
 		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "GET",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
-		});
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onGetMessages, data));
+			});
 	}
 }

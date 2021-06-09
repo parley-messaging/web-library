@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
 import {Events} from "./Api/Constants";
-import {apiEventTargetSingleton} from "./Api";
+import {apiSingleton} from "./Api";
 
 class Messaging extends Component {
 	constructor(props) {
@@ -13,26 +13,26 @@ class Messaging extends Component {
 			messages: [],
 		};
 
-		this.ApiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
+		this.Api = apiSingleton(this.props.apiDomain);
 	}
 
 	componentDidMount() {
 		// Register event listeners for API events
-		this.ApiEventTarget.addEventListener(Events.onSubscribe, this.handleRegisterEvent);
-		this.ApiEventTarget.addEventListener(Events.onSendMessage, this.handleSendEvent);
-		this.ApiEventTarget.addEventListener(Events.onGetMessages, this.handleRefreshEvent);
+		this.Api.getEventTarget().addEventListener(Events.onSubscribe, this.handleRegisterEvent);
+		this.Api.getEventTarget().addEventListener(Events.onSendMessage, this.handleSendEvent);
+		this.Api.getEventTarget().addEventListener(Events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentWillUnmount() {
 		// Un-register event listeners for API events
-		this.ApiEventTarget.removeEventListener(Events.onSubscribe, this.handleRegisterEvent);
-		this.ApiEventTarget.removeEventListener(Events.onSendMessage, this.handleSendEvent);
-		this.ApiEventTarget.removeEventListener(Events.onGetMessages, this.handleRefreshEvent);
+		this.Api.getEventTarget().removeEventListener(Events.onSubscribe, this.handleRegisterEvent);
+		this.Api.getEventTarget().removeEventListener(Events.onSendMessage, this.handleSendEvent);
+		this.Api.getEventTarget().removeEventListener(Events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentDidUpdate() {
-		// Update ApiEventTarget domain whenever we get a re-render (probably when apiDomain changes)
-		this.ApiEventTarget.Api.setDomain(this.props.apiDomain);
+		// Update Api domain whenever we get a re-render (probably when apiDomain changes)
+		this.Api.setDomain(this.props.apiDomain);
 	}
 
 	render() {
@@ -68,7 +68,7 @@ class Messaging extends Component {
 	}
 
 	handleRegisterClick = () => {
-		this.ApiEventTarget.subscribeDevice(
+		this.Api.subscribeDevice(
 			this.props.accountIdentification,
 			this.props.deviceIdentification,
 			this.props.pushToken,
@@ -86,14 +86,14 @@ class Messaging extends Component {
 	}
 
 	handleRefreshClick = () => {
-		this.ApiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification)
+		this.Api.getMessages(this.props.accountIdentification, this.props.deviceIdentification)
 			.catch((error) => {
 				console.error(`Error from API request: ${error}`);
 			});
 	}
 
 	handleSendClick = () => {
-		this.ApiEventTarget.sendMessage(
+		this.Api.sendMessage(
 			this.state.messageInputValue,
 			this.props.accountIdentification,
 			this.props.deviceIdentification,
