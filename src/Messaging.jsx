@@ -17,16 +17,16 @@ class Messaging extends Component {
 
 	componentDidMount() {
 		// Register event listeners for API events
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSubscribe, this.handleRegisterEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSendMessage, this.handleSendEvent);
+		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentWillUnmount() {
 		// Un-register event listeners for API events
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSubscribe, this.handleOnRegisterEvent);
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSendMessage, this.handleOnSendEvent);
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onGetMessages, this.handleOnRefreshEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSubscribe, this.handleRegisterEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSendMessage, this.handleSendEvent);
+		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentDidUpdate() {
@@ -50,23 +50,23 @@ class Messaging extends Component {
 				<h1>{header}</h1>
 				<label htmlFor={messageInput}>{messageLabel}</label>
 				<input
-					id={messageInput} onChange={this.handleOnMessageChange} type={inputType}
+					id={messageInput} onChange={this.handleMessageChange} type={inputType}
 					value={this.state.messageInputValue}
 				/>
 				<br />
-				<button id={registerButton} onClick={this.handleOnRegisterClick}>{registerButtonText}</button>
-				<button id={sendButton} onClick={this.handleOnSendClick}>{sendButtonText}</button>
-				<button id={refreshButton} onClick={this.handleOnRefreshClick}>{refreshButtonText}</button>
+				<button id={registerButton} onClick={this.handleRegisterClick}>{registerButtonText}</button>
+				<button id={sendButton} onClick={this.handleSendClick}>{sendButtonText}</button>
+				<button id={refreshButton} onClick={this.handleRefreshClick}>{refreshButtonText}</button>
 				<MessageList messages={this.state.messages} />
 			</>
 		);
 	}
 
-	handleOnMessageChange = (event) => {
+	handleMessageChange = (event) => {
 		this.setState({messageInputValue: event.target.value});
 	}
 
-	handleOnRegisterClick = () => {
+	handleRegisterClick = () => {
 		this.apiEventTarget.subscribeDevice(
 			this.props.accountIdentification,
 			this.props.deviceIdentification,
@@ -84,14 +84,14 @@ class Messaging extends Component {
 			});
 	}
 
-	handleOnRefreshClick = () => {
+	handleRefreshClick = () => {
 		this.apiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification)
 			.catch((error) => {
 				console.error(`Error from API request: ${error}`);
 			});
 	}
 
-	handleOnSendClick = () => {
+	handleSendClick = () => {
 		this.apiEventTarget.sendMessage(
 			this.state.messageInputValue,
 			this.props.accountIdentification,
@@ -102,17 +102,17 @@ class Messaging extends Component {
 			});
 	}
 
-	handleOnRegisterEvent = (event) => {
+	handleRegisterEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			throw new Error(`onRegister event error: ${event.detail}`);
 		}
 
 		// Actual handler
-		this.handleOnRefreshClick();
+		this.handleRefreshClick();
 	}
 
-	handleOnRefreshEvent = (event) => {
+	handleRefreshEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			throw new Error(`onRefresh event error: ${event.detail}`);
@@ -122,14 +122,14 @@ class Messaging extends Component {
 		this.setState({messages: event.detail.data});
 	}
 
-	handleOnSendEvent = (event) => {
+	handleSendEvent = (event) => {
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			throw new Error(`onSendMessage event error: ${event.detail}`);
 		}
 
 		// Actual handler
-		this.handleOnRefreshClick();
+		this.handleRefreshClick();
 	}
 }
 

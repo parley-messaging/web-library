@@ -13,21 +13,21 @@ class EventLog extends Component {
 		// Step 1: Initialize the ApiEventTarget
 		this.ApiEventTarget = apiEventTargetSingleton(this.props.apiDomain);
 
-		this.handleOnEvent = this.handleOnEvent.bind(this);
+		this.handleEvent = this.handleEvent.bind(this);
 	}
 
 	componentDidMount() {
 		// Step 2: Register event listeners for API events
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
+		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSubscribe, this.handleEvent);
+		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSendMessage, this.handleEvent);
+		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onGetMessages, this.handleEvent);
 	}
 
 	componentWillUnmount() {
 		// Step 3: Un-register event listeners for API events
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
+		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSubscribe, this.handleEvent);
+		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSendMessage, this.handleEvent);
+		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onGetMessages, this.handleEvent);
 	}
 
 	render() {
@@ -44,7 +44,7 @@ class EventLog extends Component {
 		);
 	}
 
-	handleOnEvent(event) {
+	handleEvent(event) {
 		// Step 4: Do something when an event is triggered, in this case save it to the list
 		this.setState(prevState => ({
 			events: [
