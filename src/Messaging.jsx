@@ -93,8 +93,6 @@ class Messaging extends Component {
 	}
 
 	handleOnRegisterEvent = (event) => {
-		console.log(event);
-
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			throw new Error(`onRegister event error: ${event.detail}`);
