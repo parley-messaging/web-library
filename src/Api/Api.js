@@ -3,6 +3,7 @@
 // event based implementation in ApiEventTarget.js
 
 import Config from "./Config";
+import PrivateFunctions from "./PrivateFunctions";
 
 export default class Api {
 	constructor(apiDomain) {
@@ -14,14 +15,14 @@ export default class Api {
 	}
 
 	subscribeDevice(accountIdentification, deviceIdentification) {
-		return fetch(`${this.config.apiUrl}/devices`, {
+		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 		});
 	}
 
 	sendMessage(message, accountIdentification, deviceIdentification) {
-		return fetch(`${this.config.apiUrl}/messages`, {
+		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 			body: JSON.stringify({message}),
@@ -29,7 +30,7 @@ export default class Api {
 	}
 
 	getMessages(accountIdentification, deviceIdentification) {
-		return fetch(`${this.config.apiUrl}/messages`, {
+		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "GET",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 		});

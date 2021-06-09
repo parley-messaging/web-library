@@ -16,41 +16,24 @@ export default class ApiEventTarget extends EventTarget {
 		};
 	}
 
-	// TODO: Use localStorage for identifications
-
 	subscribeDevice(accountIdentification, deviceIdentification) {
-		this.Api.subscribeDevice(accountIdentification, deviceIdentification)
-			.then(response => response.json())
+		return this.Api.subscribeDevice(accountIdentification, deviceIdentification)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onSubscribe", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 
 	sendMessage(message, accountIdentification, deviceIdentification) {
-		this.Api.sendMessage(message, accountIdentification, deviceIdentification)
-			.then(response => response.json())
+		return this.Api.sendMessage(message, accountIdentification, deviceIdentification)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onSendMessage", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 
 	getMessages(accountIdentification, deviceIdentification) {
-		this.Api.getMessages(accountIdentification, deviceIdentification)
-			.then(response => response.json())
+		return this.Api.getMessages(accountIdentification, deviceIdentification)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onGetMessages", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
 			});
 	}
 }

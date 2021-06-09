@@ -67,11 +67,18 @@ class Messaging extends Component {
 	}
 
 	handleOnRegisterClick = () => {
-		this.apiEventTarget.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification);
+		this.apiEventTarget.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification)
+			.catch((error) => {
+				// Example of how you can catch api errors
+				console.error(`Error from API request: ${error}`);
+			});
 	}
 
 	handleOnRefreshClick = () => {
-		this.apiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification);
+		this.apiEventTarget.getMessages(this.props.accountIdentification, this.props.deviceIdentification)
+			.catch((error) => {
+				console.error(`Error from API request: ${error}`);
+			});
 	}
 
 	handleOnSendClick = () => {
@@ -79,10 +86,15 @@ class Messaging extends Component {
 			this.state.messageInputValue,
 			this.props.accountIdentification,
 			this.props.deviceIdentification,
-		);
+		)
+			.catch((error) => {
+				console.error(`Error from API request: ${error}`);
+			});
 	}
 
 	handleOnRegisterEvent = (event) => {
+		console.log(event);
+
 		// Debug logging
 		if(event.detail.status === "ERROR") {
 			throw new Error(`onRegister event error: ${event.detail}`);
