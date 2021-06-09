@@ -2,6 +2,8 @@
 // It provides subscribable events which get fired upon response of the API.
 // This way you can listen for responses on multiple locations.
 
-export default class ApiEventTarget extends EventTarget {
+class ApiEventTarget extends EventTarget {
 	//
 }
+
+export default new ApiEventTarget();
