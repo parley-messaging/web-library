@@ -23,10 +23,41 @@ const ApiGenericError = "The API request failed but the API did not return an er
 // Minimum length of the unique device identifier allowed in the Api
 const MinUdidLength = 10;
 
+// Different push types a Device can have
+const PushTypes = {
+	FCMAndroid: 1,
+	APNS: 2,
+	FCMWeb: 3,
+	CustomWebhook: 4,
+	CustomWebhookOAuth: 5,
+	FCMUniversal: 6,
+};
+const PushTypesAsArray = Object.values(PushTypes);
+
+// Different types a Device can have
+const DeviceTypes = {
+	Android: 1,
+	iOS: 2,
+	Web: 3,
+	Generic: 4,
+};
+const DeviceTypesAsArray = Object.values(DeviceTypes);
+
+const DeviceVersionMinLength = 5;
+const DeviceVersionMaxLength = 8;
+const DeviceVersionRegex = /[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
+
 export {
 	ApiResponseStatuses,
 	ApiResponseNotificationTypes,
 	ApiFetchFailed,
 	ApiGenericError,
 	MinUdidLength,
+	PushTypes,
+	PushTypesAsArray,
+	DeviceTypes,
+	DeviceTypesAsArray,
+	DeviceVersionMinLength,
+	DeviceVersionMaxLength,
+	DeviceVersionRegex,
 };

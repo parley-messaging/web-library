@@ -67,7 +67,17 @@ class Messaging extends Component {
 	}
 
 	handleOnRegisterClick = () => {
-		this.apiEventTarget.subscribeDevice(this.props.accountIdentification, this.props.deviceIdentification)
+		this.apiEventTarget.subscribeDevice(
+			this.props.accountIdentification,
+			this.props.deviceIdentification,
+			this.props.pushToken,
+			this.props.pushType,
+			this.props.pushEnabled,
+			this.props.userAdditionalInformation,
+			this.props.type,
+			this.props.version,
+			this.props.referer,
+		)
 			.catch((error) => {
 				// Example of how you can catch api errors
 				console.error(`Error from API request: ${error}`);
@@ -127,6 +137,14 @@ Messaging.propTypes = {
 	accountIdentification: PropTypes.string,
 	apiDomain: PropTypes.string,
 	deviceIdentification: PropTypes.string,
+	onChange: PropTypes.func,
+	pushEnabled: PropTypes.bool,
+	pushToken: PropTypes.string,
+	pushType: PropTypes.number,
+	referer: PropTypes.string,
+	type: PropTypes.number,
+	userAdditionalInformation: PropTypes.object,
+	version: PropTypes.string,
 };
 
 export default Messaging;

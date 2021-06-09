@@ -3,7 +3,7 @@
 // You can call these "private" functions as they are not becoming
 // public when you import the Api.js class
 
-import {ApiResponseStatuses, ApiResponseNotificationTypes, ApiFetchFailed, ApiGenericError} from "./Constants";
+import {ApiResponseStatuses, ApiResponseNotificationTypes, ApiFetchFailed, ApiGenericError} from "../Constants";
 
 function getFirstErrorNotification(notifications) {
 	const errorNotifications = notifications

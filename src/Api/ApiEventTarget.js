@@ -4,13 +4,9 @@
 
 import ApiResponseEvent from "./Private/ApiResponseEvent";
 import Api from "./Api";
-import ow from "ow";
-import {MinUdidLength} from "./Private/Constants";
 
 export default class ApiEventTarget extends EventTarget {
 	constructor(apiDomain) {
-		ow(apiDomain, "apiDomain", ow.string.nonEmpty);
-
 		super();
 		this.Api = new Api(apiDomain);
 		this.events = {
@@ -20,23 +16,34 @@ export default class ApiEventTarget extends EventTarget {
 		};
 	}
 
-	subscribeDevice(accountIdentification, deviceIdentification) {
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
-
-		return this.Api.subscribeDevice(accountIdentification, deviceIdentification)
+	subscribeDevice(
+		accountIdentification,
+		deviceIdentification,
+		pushToken,
+		pushType,
+		pushEnabled,
+		userAdditionalInformation,
+		type,
+		version,
+		referer,
+	) {
+		return this.Api.subscribeDevice(
+			accountIdentification,
+			deviceIdentification,
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version,
+			referer,
+		)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onSubscribe", data));
 			});
 	}
 
 	sendMessage(message, accountIdentification, deviceIdentification) {
-		ow(message, "message", ow.string.nonEmpty);
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
-
 		return this.Api.sendMessage(message, accountIdentification, deviceIdentification)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onSendMessage", data));
@@ -44,10 +51,6 @@ export default class ApiEventTarget extends EventTarget {
 	}
 
 	getMessages(accountIdentification, deviceIdentification) {
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
-
 		return this.Api.getMessages(accountIdentification, deviceIdentification)
 			.then((data) => {
 				this.dispatchEvent(new ApiResponseEvent("onGetMessages", data));
