@@ -4,6 +4,7 @@
 import React, {Component} from "react";
 import {apiEventTargetSingleton} from "./Api";
 import PropTypes from "prop-types";
+import {Events} from "./Api/Constants";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -18,16 +19,16 @@ class EventLog extends Component {
 
 	componentDidMount() {
 		// Step 2: Register event listeners for API events
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSubscribe, this.handleEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSendMessage, this.handleEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onGetMessages, this.handleEvent);
+		this.ApiEventTarget.addEventListener(Events.onSubscribe, this.handleEvent);
+		this.ApiEventTarget.addEventListener(Events.onSendMessage, this.handleEvent);
+		this.ApiEventTarget.addEventListener(Events.onGetMessages, this.handleEvent);
 	}
 
 	componentWillUnmount() {
 		// Step 3: Un-register event listeners for API events
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSubscribe, this.handleEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSendMessage, this.handleEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onGetMessages, this.handleEvent);
+		this.ApiEventTarget.removeEventListener(Events.onSubscribe, this.handleEvent);
+		this.ApiEventTarget.removeEventListener(Events.onSendMessage, this.handleEvent);
+		this.ApiEventTarget.removeEventListener(Events.onGetMessages, this.handleEvent);
 	}
 
 	render() {

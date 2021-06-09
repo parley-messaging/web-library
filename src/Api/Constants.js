@@ -43,9 +43,17 @@ const DeviceTypes = {
 };
 const DeviceTypesAsArray = Object.values(DeviceTypes);
 
+// Device `version` param validation constants
 const DeviceVersionMinLength = 5;
 const DeviceVersionMaxLength = 8;
 const DeviceVersionRegex = /[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
+
+// Api events on which you can create event listeners
+const Events = {
+	onSubscribe: "onSubscribe",
+	onSendMessage: "onSendMessage",
+	onGetMessages: "onGetMessages",
+};
 
 export {
 	ApiResponseStatuses,
@@ -60,4 +68,5 @@ export {
 	DeviceVersionMinLength,
 	DeviceVersionMaxLength,
 	DeviceVersionRegex,
+	Events,
 };

@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {apiEventTargetSingleton} from "./Api";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
+import {Events} from "./Api/Constants";
 
 class Messaging extends Component {
 	constructor(props) {
@@ -17,16 +18,16 @@ class Messaging extends Component {
 
 	componentDidMount() {
 		// Register event listeners for API events
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSubscribe, this.handleRegisterEvent);
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onSendMessage, this.handleSendEvent);
-		this.apiEventTarget.addEventListener(this.apiEventTarget.events.onGetMessages, this.handleRefreshEvent);
+		this.apiEventTarget.addEventListener(Events.onSubscribe, this.handleRegisterEvent);
+		this.apiEventTarget.addEventListener(Events.onSendMessage, this.handleSendEvent);
+		this.apiEventTarget.addEventListener(Events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentWillUnmount() {
 		// Un-register event listeners for API events
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSubscribe, this.handleRegisterEvent);
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onSendMessage, this.handleSendEvent);
-		this.apiEventTarget.removeEventListener(this.apiEventTarget.events.onGetMessages, this.handleRefreshEvent);
+		this.apiEventTarget.removeEventListener(Events.onSubscribe, this.handleRegisterEvent);
+		this.apiEventTarget.removeEventListener(Events.onSendMessage, this.handleSendEvent);
+		this.apiEventTarget.removeEventListener(Events.onGetMessages, this.handleRefreshEvent);
 	}
 
 	componentDidUpdate() {

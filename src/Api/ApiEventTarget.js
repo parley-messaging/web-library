@@ -9,11 +9,6 @@ export default class ApiEventTarget extends EventTarget {
 	constructor(apiDomain) {
 		super();
 		this.Api = new Api(apiDomain);
-		this.events = {
-			onSubscribe: "onSubscribe",
-			onSendMessage: "onSendMessage",
-			onGetMessages: "onGetMessages",
-		};
 	}
 
 	subscribeDevice(
