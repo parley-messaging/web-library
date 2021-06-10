@@ -15,7 +15,7 @@ class App extends Component {
 			pushEnabled: false,
 			pushToken: undefined,
 			pushType: PushTypes.FCMUniversal,
-			referer: document.URL,
+			referer: window.location.href,
 			type: DeviceTypes.Web,
 			userAdditionalInformation: {testKey: "testValue"},
 			version: appVersion,
