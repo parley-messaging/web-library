@@ -17,7 +17,7 @@ export default class Api {
 		return fetch(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
-			body: JSON.stringify({referer: location.href}),
+			body: JSON.stringify({referer: window.location.href}),
 		});
 	}
 
@@ -26,7 +26,7 @@ export default class Api {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 			body: JSON.stringify({
-				referer: location.href,
+				referer: window.location.href,
 				message,
 			}),
 		});
