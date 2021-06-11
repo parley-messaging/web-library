@@ -27,7 +27,7 @@ class Conversation extends Component {
 	}
 
 	getStickyMessage = () => {
-		const message = "Sorry we are closed right know. We will be open next day from 09:00 - 17:55";
+		const message = "Sorry we are closed right now. We will be open next day from 09:00 - 17:55";
 
 		// eslint-disable-next-line no-invalid-this
 		this.setState(() => ({stickyMessage: message}));
@@ -38,7 +38,7 @@ class Conversation extends Component {
 			{
 				id: 159296,
 				time: 1620309874,
-				message: ":apple:",
+				message: "www.google.nl",
 				image: null,
 				typeId: 2,
 				agent: {

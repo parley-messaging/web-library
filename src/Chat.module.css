@@ -26,14 +26,15 @@
 	grid-template-rows: 45px minmax(0,1fr) auto;
 }
 .chat.mobile {
-	width: 100vw;
-	width: -webkit-fill-available;
-	height: 100vh;
-	height: -webkit-fill-available;
+	width: 100%;
+	height: 100%;
 	max-height: unset;
 	border-radius: 0;
-	top: 0;
 	bottom: 0;
 	left: 0;
 	right: 0;
+}
+.chat.mobile.ios {
+	width: calc(var(--mobile-width, 1vw) * 100);
+	height: calc(var(--mobile-height, 1vh) * 100);
 }

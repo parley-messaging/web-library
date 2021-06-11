@@ -36,8 +36,10 @@ class ReplyActions extends Component {
 		return (
 			<div className={styles.footer}>
 				<ReplyText
+					fitToIDeviceScreen={this.props.fitToIDeviceScreen}
 					handleOnChange={this.changeReply}
 					handleOnSubmit={this.sendReply}
+					isMobile={this.props.isMobile}
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
@@ -52,6 +54,7 @@ class ReplyActions extends Component {
 ReplyActions.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
+	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
 };
 
