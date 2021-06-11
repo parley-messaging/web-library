@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Message.module.css";
 import ReactMarkdown from "react-markdown";
+import gfm from "remark-gfm";
 
 // components
 import Image from "./Image";
@@ -31,9 +32,9 @@ class Message extends Component {
 				<div className={styles.message}>
 					{this.props.message.media ?
 						<Image media={this.props.message.media} /> :
-						this.props.message.typeId === typeIdUser ?
-							this.props.message.message :
-							<ReactMarkdown children={this.props.message.message} skipHtml={true} />}
+						<ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
+							{this.props.message.message}
+						</ReactMarkdown>}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
 					</span>

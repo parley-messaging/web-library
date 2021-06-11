@@ -7,7 +7,9 @@ class Announcement extends Component {
 	render() {
 		return (
 			<span className={styles.center}>
-				<ReactMarkdown children={this.props.message} skipHtml={true} />
+				<ReactMarkdown skipHtml={true}>
+					{this.props.message}
+				</ReactMarkdown>
 			</span>
 		);
 	}
