@@ -1,10 +1,10 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Launcher.module.css";
+import {BUTTONLAUNCHER} from "./interfaceTexts";
 
 class Launcher extends Component {
 	render() {
-		const areaLabel = "messenger launcher";
 		const display = "block";
 		const fill = "#FFFFFF";
 		const name = "parleychat-icon-svg";
@@ -23,9 +23,8 @@ class Launcher extends Component {
 
 		return (
 			<div className={styles.launcher}>
-				<button onClick={this.props.handleOnClick}>
+				<button aria-label={BUTTONLAUNCHER} onClick={this.props.handleOnClick}>
 					<svg
-						aria-label={areaLabel}
 						display={display}
 						fill={fill}
 						name={name}

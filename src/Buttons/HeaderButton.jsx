@@ -13,26 +13,26 @@ class HeaderButton extends Component {
 	render() {
 		let icon;
 		let className;
-		let altText;
+		let ariaLabel;
 		const typeButton = "button";
 		if(this.props.icon === "menu") {
 			icon = faBars;
 			className = styles.menu;
-			altText = BUTTONMENU;
+			ariaLabel = BUTTONMENU;
 		}
 		if(this.props.icon === "minimize") {
 			icon = faWindowMinimize;
 			className = styles.minimize;
-			altText = BUTTONMINIMIZE;
+			ariaLabel = BUTTONMINIMIZE;
 		}
 		if(this.props.icon === "close") {
 			icon = faTimes;
 			className = styles.close;
-			altText = BUTTONCLOSE;
+			ariaLabel = BUTTONCLOSE;
 		}
 
 		return (
-			<button aria-label={altText} className={className} onClick={this.props.handleOnClick} type={typeButton}>
+			<button aria-label={ariaLabel} className={className} onClick={this.props.handleOnClick} type={typeButton}>
 				<FontAwesomeIcon icon={icon} />
 			</button>
 		);
