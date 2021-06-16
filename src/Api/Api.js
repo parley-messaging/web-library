@@ -9,14 +9,16 @@ import ow from "ow";
 import {
 	ApiFetchFailed,
 	ApiGenericError,
-	ApiResponseNotificationTypes, ApiResponseStatuses,
-	DeviceTypesAsArray,
 	DeviceVersionMaxLength,
-	DeviceVersionMinLength, DeviceVersionRegex, Events,
+	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
-	PushTypesAsArray,
-} from "./Constants";
+} from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
+import {onGetMessages, onSendMessage, onSubscribe} from "./Constants/Events";
+import {AllPushTypes} from "./Constants/PushTypes";
+import {AllDeviceTypes} from "./Constants/DeviceTypes";
+import {error as ApiResponseNotificationTypeError} from "./Constants/ApiResponseNotificationTypes";
+import {error as ApiResponseStatusTypeError} from "./Constants/ApiResponseStatuses";
 
 
 export default class Api {
@@ -51,10 +53,10 @@ export default class Api {
 
 		// Validate optional params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
-		ow(pushType, "pushType", ow.optional.number.oneOf(PushTypesAsArray));
+		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(AllPushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
-		ow(type, "type", ow.optional.number.oneOf(DeviceTypesAsArray));
+		ow(type, "type", ow.optional.number.oneOf(Object.values(AllDeviceTypes)));
 		ow(version, "version", ow.optional.string.minLength(DeviceVersionMinLength));
 		ow(version, "version", ow.optional.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.optional.string.matches(DeviceVersionRegex));
@@ -74,7 +76,7 @@ export default class Api {
 			}),
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onSubscribe, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(onSubscribe, data));
 			});
 	}
 
@@ -90,7 +92,7 @@ export default class Api {
 			body: JSON.stringify({message}),
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onSendMessage, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(onSendMessage, data));
 			});
 	}
 
@@ -104,14 +106,14 @@ export default class Api {
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onGetMessages, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(onGetMessages, data));
 			});
 	}
 }
 
 function getFirstErrorNotification(notifications) {
 	const errorNotifications = notifications
-		.filter(notification => notification.type === ApiResponseNotificationTypes.error);
+		.filter(notification => notification.type === ApiResponseNotificationTypeError);
 	if(errorNotifications && errorNotifications.length > 0) {
 		return errorNotifications[0];
 	}
@@ -125,7 +127,7 @@ function fetchWrapper(url, options) {
 			.then(response => response.json())
 			.then((json) => {
 				// Check if we have an API error and throw it
-				if(json.status === ApiResponseStatuses.error) {
+				if(json.status === ApiResponseStatusTypeError) {
 					reject(getFirstErrorNotification(json.notifications).message);
 				} else {
 					resolve(json);

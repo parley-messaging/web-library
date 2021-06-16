@@ -2,8 +2,9 @@ import React, {Component} from "react";
 import Configuration from "./Configuration";
 import Messaging from "./Messaging";
 import EventLog from "./EventLog";
-import {DeviceTypes, PushTypes} from "./Api/Constants";
 import {version as appVersion} from "../package.json";
+import {FCMUniversal} from "./Api/Constants/PushTypes";
+import {Web} from "./Api/Constants/DeviceTypes";
 
 class App extends Component {
 	constructor(props) {
@@ -14,9 +15,9 @@ class App extends Component {
 			accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
 			pushEnabled: false,
 			pushToken: undefined,
-			pushType: PushTypes.FCMUniversal,
+			pushType: FCMUniversal,
 			referer: window.location.href,
-			type: DeviceTypes.Web,
+			type: Web,
 			userAdditionalInformation: {testKey: "testValue"},
 			version: appVersion,
 			apiDomain: "https://api.parley.nu",
