@@ -68,6 +68,10 @@ export default class Api {
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(AllPushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
+		if(pushEnabled === true) {
+			// Somehow `message()` doesn't work with `nonEmpty`
+			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
+		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
 		ow(type, "type", ow.optional.number.oneOf(Object.values(AllDeviceTypes)));
 		ow(version, "version", ow.optional.string.minLength(DeviceVersionMinLength));
