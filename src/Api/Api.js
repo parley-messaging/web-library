@@ -17,10 +17,10 @@ import {messages, messageSend, subscribe} from "./Constants/Events";
 import {AllPushTypes} from "./Constants/PushTypes";
 import {AllDeviceTypes} from "./Constants/DeviceTypes";
 import {
-	error as ApiResponseNotificationTypeError,
-	warning as ApiResponseNotificationTypeWarning,
+	error as ErrorResponse,
+	warning as WarningResponse,
 } from "./Constants/ApiResponseNotificationTypes";
-import {error as ApiResponseStatusTypeError} from "./Constants/ApiResponseStatuses";
+import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 
 
 export default class Api {
@@ -126,11 +126,11 @@ function fetchWrapper(url, options) {
 			.then(response => response.json())
 			.then((json) => {
 				// Check if we have an API error and throw it
-				if(json.status === ApiResponseStatusTypeError) {
+				if(json.status === ErrorStatus) {
 					const errorNotifications = json.notifications
-						.filter(notification => notification.type === ApiResponseNotificationTypeError);
+						.filter(notification => notification.type === ErrorResponse);
 					const warningNotifications = json.notifications
-						.filter(notification => notification.type === ApiResponseNotificationTypeWarning);
+						.filter(notification => notification.type === WarningResponse);
 					reject(errorNotifications, warningNotifications);
 				} else {
 					resolve(json);
