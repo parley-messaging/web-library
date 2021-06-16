@@ -14,7 +14,7 @@ import {
 	MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {onGetMessages, onSendMessage, onSubscribe} from "./Constants/Events";
+import {messages, messageSend, subscribe} from "./Constants/Events";
 import {AllPushTypes} from "./Constants/PushTypes";
 import {AllDeviceTypes} from "./Constants/DeviceTypes";
 import {
@@ -89,7 +89,7 @@ export default class Api {
 			}),
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(onSubscribe, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 			});
 	}
 
@@ -102,7 +102,7 @@ export default class Api {
 			body: JSON.stringify({message}),
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(onSendMessage, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSend, data));
 			});
 	}
 
@@ -112,7 +112,7 @@ export default class Api {
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(onGetMessages, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
 			});
 	}
 }

@@ -4,7 +4,7 @@
 import React, {Component} from "react";
 import Api from "./Api/Api";
 import ApiEventTarget from "./Api/ApiEventTarget";
-import {onGetMessages, onSendMessage, onSubscribe} from "./Api/Constants/Events";
+import {messages, messageSend, subscribe} from "./Api/Constants/Events";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -25,16 +25,16 @@ class EventLog extends Component {
 
 	componentDidMount() {
 		// Step 2: Register event listeners for API events
-		ApiEventTarget.addEventListener(onSubscribe, this.handleEvent);
-		ApiEventTarget.addEventListener(onSendMessage, this.handleEvent);
-		ApiEventTarget.addEventListener(onGetMessages, this.handleEvent);
+		ApiEventTarget.addEventListener(subscribe, this.handleEvent);
+		ApiEventTarget.addEventListener(messageSend, this.handleEvent);
+		ApiEventTarget.addEventListener(messages, this.handleEvent);
 	}
 
 	componentWillUnmount() {
 		// Step 3: Un-register event listeners for API events
-		ApiEventTarget.removeEventListener(onSubscribe, this.handleEvent);
-		ApiEventTarget.removeEventListener(onSendMessage, this.handleEvent);
-		ApiEventTarget.removeEventListener(onGetMessages, this.handleEvent);
+		ApiEventTarget.removeEventListener(subscribe, this.handleEvent);
+		ApiEventTarget.removeEventListener(messageSend, this.handleEvent);
+		ApiEventTarget.removeEventListener(messages, this.handleEvent);
 	}
 
 	render() {

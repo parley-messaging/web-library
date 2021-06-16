@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
-import {onGetMessages, onSendMessage, onSubscribe} from "./Api/Constants/Events";
+import {messages, messageSend, subscribe} from "./Api/Constants/Events";
 import Api from "./Api/Api";
 import ApiEventTarget from "./Api/ApiEventTarget";
 
@@ -24,16 +24,16 @@ class Messaging extends Component {
 
 	componentDidMount() {
 		// Register event listeners for API events
-		ApiEventTarget.addEventListener(onSubscribe, this.handleRegisterEvent);
-		ApiEventTarget.addEventListener(onSendMessage, this.handleSendEvent);
-		ApiEventTarget.addEventListener(onGetMessages, this.handleRefreshEvent);
+		ApiEventTarget.addEventListener(subscribe, this.handleRegisterEvent);
+		ApiEventTarget.addEventListener(messageSend, this.handleSendEvent);
+		ApiEventTarget.addEventListener(messages, this.handleRefreshEvent);
 	}
 
 	componentWillUnmount() {
 		// Un-register event listeners for API events
-		ApiEventTarget.removeEventListener(onSubscribe, this.handleRegisterEvent);
-		ApiEventTarget.removeEventListener(onSendMessage, this.handleSendEvent);
-		ApiEventTarget.removeEventListener(onGetMessages, this.handleRefreshEvent);
+		ApiEventTarget.removeEventListener(subscribe, this.handleRegisterEvent);
+		ApiEventTarget.removeEventListener(messageSend, this.handleSendEvent);
+		ApiEventTarget.removeEventListener(messages, this.handleRefreshEvent);
 	}
 
 	render() {
