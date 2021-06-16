@@ -1,7 +1,7 @@
 // This script contains wrapper functions for making API calls
 // You can use this script in a couple ways:
-// - `const api = new Api(x)`, this way you can make API calls and handle the returned Promises yourself
-// - `const api = new Api(x, ApiEventTarget)`, this will trigger events upon completion of some of the Promises
+// - `const api = new Api(...)`, this way you can make API calls and handle the returned Promises yourself
+// - `const api = new Api(..., ApiEventTarget)`, this will trigger events upon completion of some of the Promises
 //    You can use `ApiEventTarget.addEventListener()` to listen for events.
 
 import Config from "./Private/Config";
@@ -22,11 +22,14 @@ import {error as ApiResponseStatusTypeError} from "./Constants/ApiResponseStatus
 
 
 export default class Api {
-	constructor(apiDomain, apiEventTarget) {
-		ow(apiDomain, "apiDomain", ow.string.nonEmpty);
+	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget) {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
+		// Rest of the validation is done in the setX() functions
+
 		this.setDomain(apiDomain);
+		this.setAccountIdentification(accountIdentification);
+		this.setDeviceIdentification(deviceIdentification);
 		this.eventTarget = apiEventTarget;
 	}
 
@@ -36,9 +39,20 @@ export default class Api {
 		this.config = new Config(apiDomain);
 	}
 
+	setAccountIdentification(accountIdentification) {
+		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
+
+		this.accountIdentification = accountIdentification;
+	}
+
+	setDeviceIdentification(deviceIdentification) {
+		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
+		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
+
+		this.deviceIdentification = deviceIdentification;
+	}
+
 	subscribeDevice(
-		accountIdentification,
-		deviceIdentification,
 		pushToken,
 		pushType,
 		pushEnabled,
@@ -47,10 +61,6 @@ export default class Api {
 		version,
 		referer,
 	) {
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
-
 		// Validate optional params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(AllPushTypes)));
@@ -64,7 +74,7 @@ export default class Api {
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
-			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
+			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
 				pushToken,
 				pushType,
@@ -80,15 +90,12 @@ export default class Api {
 			});
 	}
 
-	sendMessage(message, accountIdentification, deviceIdentification) {
+	sendMessage(message) {
 		ow(message, "message", ow.string.nonEmpty);
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
-			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
+			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({message}),
 		})
 			.then((data) => {
@@ -96,14 +103,10 @@ export default class Api {
 			});
 	}
 
-	getMessages(accountIdentification, deviceIdentification) {
-		ow(accountIdentification, "accountIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
-		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
-
+	getMessages() {
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "GET",
-			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
+			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(onGetMessages, data));

@@ -14,7 +14,12 @@ class Messaging extends Component {
 			messages: [],
 		};
 
-		this.Api = new Api(this.props.apiDomain, ApiEventTarget);
+		this.Api = new Api(
+			this.props.apiDomain,
+			this.props.accountIdentification,
+			this.props.deviceIdentification,
+			ApiEventTarget,
+		);
 	}
 
 	componentDidMount() {
@@ -32,8 +37,10 @@ class Messaging extends Component {
 	}
 
 	componentDidUpdate() {
-		// Update Api domain whenever we get a re-render (probably when apiDomain changes)
+		// Update Api domain whenever we get a re-render (probably when these props change)
 		this.Api.setDomain(this.props.apiDomain);
+		this.Api.setAccountIdentification(this.props.accountIdentification);
+		this.Api.setDeviceIdentification(this.props.deviceIdentification);
 	}
 
 	render() {
@@ -70,8 +77,6 @@ class Messaging extends Component {
 
 	handleRegisterClick = () => {
 		this.Api.subscribeDevice(
-			this.props.accountIdentification,
-			this.props.deviceIdentification,
 			this.props.pushToken,
 			this.props.pushType,
 			this.props.pushEnabled,
@@ -87,18 +92,14 @@ class Messaging extends Component {
 	}
 
 	handleRefreshClick = () => {
-		this.Api.getMessages(this.props.accountIdentification, this.props.deviceIdentification)
+		this.Api.getMessages()
 			.catch((error) => {
 				console.error(`Error from API request: ${error}`);
 			});
 	}
 
 	handleSendClick = () => {
-		this.Api.sendMessage(
-			this.state.messageInputValue,
-			this.props.accountIdentification,
-			this.props.deviceIdentification,
-		)
+		this.Api.sendMessage(this.state.messageInputValue)
 			.catch((error) => {
 				console.error(`Error from API request: ${error}`);
 			});
