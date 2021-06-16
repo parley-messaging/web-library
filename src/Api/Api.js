@@ -64,7 +64,7 @@ export default class Api {
 		version,
 		referer,
 	) {
-		// Validate optional params
+		// Validate params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(AllPushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
@@ -74,9 +74,9 @@ export default class Api {
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
 		ow(type, "type", ow.optional.number.oneOf(Object.values(AllDeviceTypes)));
-		ow(version, "version", ow.optional.string.minLength(DeviceVersionMinLength));
-		ow(version, "version", ow.optional.string.maxLength(DeviceVersionMaxLength));
-		ow(version, "version", ow.optional.string.matches(DeviceVersionRegex));
+		ow(version, "version", ow.string.minLength(DeviceVersionMinLength));
+		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
+		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
