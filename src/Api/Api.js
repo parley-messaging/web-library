@@ -17,7 +17,10 @@ import ApiResponseEvent from "./Private/ApiResponseEvent";
 import {onGetMessages, onSendMessage, onSubscribe} from "./Constants/Events";
 import {AllPushTypes} from "./Constants/PushTypes";
 import {AllDeviceTypes} from "./Constants/DeviceTypes";
-import {error as ApiResponseNotificationTypeError} from "./Constants/ApiResponseNotificationTypes";
+import {
+	error as ApiResponseNotificationTypeError,
+	warning as ApiResponseNotificationTypeWarning,
+} from "./Constants/ApiResponseNotificationTypes";
 import {error as ApiResponseStatusTypeError} from "./Constants/ApiResponseStatuses";
 
 
@@ -114,16 +117,6 @@ export default class Api {
 	}
 }
 
-function getFirstErrorNotification(notifications) {
-	const errorNotifications = notifications
-		.filter(notification => notification.type === ApiResponseNotificationTypeError);
-	if(errorNotifications && errorNotifications.length > 0) {
-		return errorNotifications[0];
-	}
-
-	return ApiGenericError;
-}
-
 function fetchWrapper(url, options) {
 	return new Promise((resolve, reject) => {
 		fetch(url, options)
@@ -131,13 +124,18 @@ function fetchWrapper(url, options) {
 			.then((json) => {
 				// Check if we have an API error and throw it
 				if(json.status === ApiResponseStatusTypeError) {
-					reject(getFirstErrorNotification(json.notifications).message);
+					const errorNotifications = json.notifications
+						.filter(notification => notification.type === ApiResponseNotificationTypeError);
+					const warningNotifications = json.notifications
+						.filter(notification => notification.type === ApiResponseNotificationTypeWarning);
+					reject(errorNotifications, warningNotifications);
 				} else {
 					resolve(json);
 				}
 			})
 			.catch(() => {
-				reject(ApiFetchFailed);
+				// eslint-disable-next-line prefer-promise-reject-errors
+				reject([ApiFetchFailed], []);
 			}); // Reject with generic error message
 	});
 }

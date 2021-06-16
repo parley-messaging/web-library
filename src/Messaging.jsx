@@ -36,13 +36,6 @@ class Messaging extends Component {
 		ApiEventTarget.removeEventListener(onGetMessages, this.handleRefreshEvent);
 	}
 
-	componentDidUpdate() {
-		// Update Api domain whenever we get a re-render (probably when these props change)
-		this.Api.setDomain(this.props.apiDomain);
-		this.Api.setAccountIdentification(this.props.accountIdentification);
-		this.Api.setDeviceIdentification(this.props.deviceIdentification);
-	}
-
 	render() {
 		const header = "Messaging";
 		const inputType = "text";
@@ -76,6 +69,9 @@ class Messaging extends Component {
 	}
 
 	handleRegisterClick = () => {
+		// Makes sure that we always use the up-to-date props
+		this.updateApiParams();
+
 		this.Api.subscribeDevice(
 			this.props.pushToken,
 			this.props.pushType,
@@ -85,23 +81,26 @@ class Messaging extends Component {
 			this.props.version,
 			this.props.referer,
 		)
-			.catch((error) => {
+			.catch((errors, warnings) => {
 				// Example of how you can catch api errors
-				console.error(`Error from API request: ${error}`);
+				console.error(`Errors from API request`, errors);
+				console.error(`Warnings from API request:`, warnings);
 			});
 	}
 
 	handleRefreshClick = () => {
 		this.Api.getMessages()
-			.catch((error) => {
-				console.error(`Error from API request: ${error}`);
+			.catch((errors, warnings) => {
+				console.error(`Errors from API request`, errors);
+				console.error(`Warnings from API request:`, warnings);
 			});
 	}
 
 	handleSendClick = () => {
 		this.Api.sendMessage(this.state.messageInputValue)
-			.catch((error) => {
-				console.error(`Error from API request: ${error}`);
+			.catch((errors, warnings) => {
+				console.error(`Errors from API request`, errors);
+				console.error(`Warnings from API request:`, warnings);
 			});
 	}
 
@@ -133,6 +132,12 @@ class Messaging extends Component {
 
 		// Actual handler
 		this.handleRefreshClick();
+	}
+
+	updateApiParams = () => {
+		this.Api.setDomain(this.props.apiDomain);
+		this.Api.setAccountIdentification(this.props.accountIdentification);
+		this.Api.setDeviceIdentification(this.props.deviceIdentification);
 	}
 }
 
