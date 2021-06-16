@@ -2,8 +2,9 @@
 // It shows how to initialize it and how you can listen for events
 
 import React, {Component} from "react";
-import {apiSingleton} from "./Api";
+import Api from "./Api/Api";
 import {Events} from "./Api/Constants";
+import ApiEventTarget from "./Api/ApiEventTarget";
 
 class EventLog extends Component {
 	constructor(props) {
@@ -11,23 +12,23 @@ class EventLog extends Component {
 		this.state = {events: []};
 
 		// Step 1: Initialize the Api
-		this.Api = apiSingleton();
+		this.Api = new Api("https://api.parley.nu", ApiEventTarget);
 
 		this.handleEvent = this.handleEvent.bind(this);
 	}
 
 	componentDidMount() {
 		// Step 2: Register event listeners for API events
-		this.Api.getEventTarget().addEventListener(Events.onSubscribe, this.handleEvent);
-		this.Api.getEventTarget().addEventListener(Events.onSendMessage, this.handleEvent);
-		this.Api.getEventTarget().addEventListener(Events.onGetMessages, this.handleEvent);
+		ApiEventTarget.addEventListener(Events.onSubscribe, this.handleEvent);
+		ApiEventTarget.addEventListener(Events.onSendMessage, this.handleEvent);
+		ApiEventTarget.addEventListener(Events.onGetMessages, this.handleEvent);
 	}
 
 	componentWillUnmount() {
 		// Step 3: Un-register event listeners for API events
-		this.Api.getEventTarget().removeEventListener(Events.onSubscribe, this.handleEvent);
-		this.Api.getEventTarget().removeEventListener(Events.onSendMessage, this.handleEvent);
-		this.Api.getEventTarget().removeEventListener(Events.onGetMessages, this.handleEvent);
+		ApiEventTarget.removeEventListener(Events.onSubscribe, this.handleEvent);
+		ApiEventTarget.removeEventListener(Events.onSendMessage, this.handleEvent);
+		ApiEventTarget.removeEventListener(Events.onGetMessages, this.handleEvent);
 	}
 
 	render() {
