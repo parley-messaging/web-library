@@ -3,9 +3,11 @@
 // event based implementation in Api.js
 
 import Config from "./Private/Config";
-import PrivateFunctions from "./Private/PrivateFunctions";
 import ow from "ow";
 import {
+	ApiFetchFailed,
+	ApiGenericError,
+	ApiResponseNotificationTypes, ApiResponseStatuses,
 	DeviceTypesAsArray,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex, Events,
@@ -13,6 +15,7 @@ import {
 	PushTypesAsArray,
 } from "./Constants";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
+
 
 export default class Api {
 	constructor(apiDomain, apiEventTarget) {
@@ -59,7 +62,7 @@ export default class Api {
 		ow(version, "version", ow.optional.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
-		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/devices`, {
+		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 			body: JSON.stringify({
@@ -83,7 +86,7 @@ export default class Api {
 		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
 		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
 
-		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/messages`, {
+		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 			body: JSON.stringify({message}),
@@ -98,7 +101,7 @@ export default class Api {
 		ow(deviceIdentification, "deviceIdentification", ow.string.nonEmpty);
 		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
 
-		return PrivateFunctions.fetchWrapper(`${this.config.apiUrl}/messages`, {
+		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "GET",
 			headers: {"x-iris-identification": `${accountIdentification}:${deviceIdentification}`},
 		})
@@ -106,4 +109,32 @@ export default class Api {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(Events.onGetMessages, data));
 			});
 	}
+}
+
+function getFirstErrorNotification(notifications) {
+	const errorNotifications = notifications
+		.filter(notification => notification.type === ApiResponseNotificationTypes.error);
+	if(errorNotifications && errorNotifications.length > 0) {
+		return errorNotifications[0];
+	}
+
+	return ApiGenericError;
+}
+
+function fetchWrapper(url, options) {
+	return new Promise((resolve, reject) => {
+		fetch(url, options)
+			.then(response => response.json())
+			.then((json) => {
+				// Check if we have an API error and throw it
+				if(json.status === ApiResponseStatuses.error) {
+					reject(getFirstErrorNotification(json.notifications).message);
+				} else {
+					resolve(json);
+				}
+			})
+			.catch(() => {
+				reject(ApiFetchFailed);
+			}); // Reject with generic error message
+	});
 }

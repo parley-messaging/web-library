@@ -110,7 +110,7 @@
 		"yoda": "error",
 		"no-shadow": "error",
 		"no-undef-init": "error",
-		"no-use-before-define": "error",
+		"no-use-before-define": ["error", {"functions": false}],
 		//Stylistic Issues
 		"array-bracket-newline": [
 			"error", {
