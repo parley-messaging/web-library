@@ -34,10 +34,6 @@ export default class Api {
 		this.config = new Config(apiDomain);
 	}
 
-	getEventTarget() {
-		return this.eventTarget;
-	}
-
 	subscribeDevice(
 		accountIdentification,
 		deviceIdentification,
