@@ -1,6 +1,8 @@
 // This script contains wrapper functions for making API calls
-// You can use this script on it's own or you can make use of the
-// event based implementation in Api.js
+// You can use this script in a couple ways:
+// - `const api = new Api(x)`, this way you can make API calls and handle the returned Promises yourself
+// - `const api = new Api(x, ApiEventTarget)`, this will trigger events upon completion of some of the Promises
+//    You can use `ApiEventTarget.addEventListener()` to listen for events.
 
 import Config from "./Private/Config";
 import ow from "ow";
