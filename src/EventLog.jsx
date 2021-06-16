@@ -19,8 +19,6 @@ class EventLog extends Component {
 			"someDeviceIdentification",
 			ApiEventTarget,
 		);
-
-		this.handleEvent = this.handleEvent.bind(this);
 	}
 
 	componentDidMount() {
@@ -51,7 +49,7 @@ class EventLog extends Component {
 		);
 	}
 
-	handleEvent(event) {
+	handleEvent = (event) => {
 		// Step 4: Do something when an event is triggered, in this case save it to the list
 		this.setState(prevState => ({
 			events: [
