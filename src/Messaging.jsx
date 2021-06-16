@@ -83,7 +83,9 @@ class Messaging extends Component {
 		)
 			.catch((errors, warnings) => {
 				// Example of how you can catch api errors
+				// eslint-disable-next-line no-console
 				console.error(`Errors from API request`, errors);
+				// eslint-disable-next-line no-console
 				console.error(`Warnings from API request:`, warnings);
 			});
 	}
@@ -91,7 +93,9 @@ class Messaging extends Component {
 	handleRefreshClick = () => {
 		this.Api.getMessages()
 			.catch((errors, warnings) => {
+				// eslint-disable-next-line no-console
 				console.error(`Errors from API request`, errors);
+				// eslint-disable-next-line no-console
 				console.error(`Warnings from API request:`, warnings);
 			});
 	}
@@ -99,7 +103,9 @@ class Messaging extends Component {
 	handleSendClick = () => {
 		this.Api.sendMessage(this.state.messageInputValue)
 			.catch((errors, warnings) => {
+				// eslint-disable-next-line no-console
 				console.error(`Errors from API request`, errors);
+				// eslint-disable-next-line no-console
 				console.error(`Warnings from API request:`, warnings);
 			});
 	}

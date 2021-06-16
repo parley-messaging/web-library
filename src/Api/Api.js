@@ -8,7 +8,6 @@ import Config from "./Private/Config";
 import ow from "ow";
 import {
 	ApiFetchFailed,
-	ApiGenericError,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
