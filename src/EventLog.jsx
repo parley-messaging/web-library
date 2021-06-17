@@ -67,7 +67,16 @@ class EventLog extends Component {
 
 	convertTimestampToDate(timestamp) {
 		const date = new Date(timestamp);
-		return `[${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`;
+		const format = new Intl.DateTimeFormat("nl", {
+			year: "numeric",
+			month: "numeric",
+			day: "numeric",
+			hour: "numeric",
+			minute: "numeric",
+			second: "numeric",
+		}).format(date);
+
+		return `[${format}]`;
 	}
 }
 
