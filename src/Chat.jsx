@@ -13,8 +13,8 @@ class Chat extends Component {
 
 		this.allowEmoji = false;
 		this.allowFileUpload = false;
-		this.isMobile = true;
-		this.isIosDevice = true; // If true; will correct width/height according to window inner width/height
+		this.isMobile = false;
+		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
 		this.idName = "chat";
 	}
 
