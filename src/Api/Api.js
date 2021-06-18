@@ -93,6 +93,7 @@ export default class Api {
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
+				return data;
 			});
 	}
 
@@ -106,6 +107,7 @@ export default class Api {
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSend, data));
+				return data;
 			});
 	}
 
@@ -116,6 +118,7 @@ export default class Api {
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
+				return data;
 			});
 	}
 }
