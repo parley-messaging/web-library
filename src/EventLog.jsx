@@ -2,7 +2,6 @@
 // It shows how to initialize it and how you can listen for events
 
 import React, {Component} from "react";
-import Api from "./Api/Api";
 import ApiEventTarget from "./Api/ApiEventTarget";
 import {messages, messageSend, subscribe} from "./Api/Constants/Events";
 
