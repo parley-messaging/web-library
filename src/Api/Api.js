@@ -14,8 +14,8 @@ import {
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
 import {messages, messageSend, subscribe} from "./Constants/Events";
-import {AllPushTypes} from "./Constants/PushTypes";
-import {AllDeviceTypes} from "./Constants/DeviceTypes";
+import PushTypes from "./Constants/PushTypes";
+import DeviceTypes from "./Constants/DeviceTypes";
 import {
 	error as ErrorResponse,
 	warning as WarningResponse,
@@ -65,14 +65,14 @@ export default class Api {
 	) {
 		// Validate params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
-		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(AllPushTypes)));
+		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(PushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		if(pushEnabled === true) {
 			// Somehow `message()` doesn't work with `nonEmpty`
 			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
-		ow(type, "type", ow.optional.number.oneOf(Object.values(AllDeviceTypes)));
+		ow(type, "type", ow.optional.number.oneOf(Object.values(DeviceTypes)));
 		ow(version, "version", ow.string.minLength(DeviceVersionMinLength));
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
