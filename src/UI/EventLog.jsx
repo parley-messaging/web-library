@@ -2,8 +2,8 @@
 // It shows how to initialize it and how you can listen for events
 
 import React, {Component} from "react";
-import ApiEventTarget from "./Api/ApiEventTarget";
-import {messages, messageSend, subscribe} from "./Api/Constants/Events";
+import ApiEventTarget from "../Api/ApiEventTarget";
+import {messages, messageSend, subscribe} from "../Api/Constants/Events";
 
 class EventLog extends Component {
 	constructor(props) {

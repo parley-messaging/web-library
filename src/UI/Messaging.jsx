@@ -1,9 +1,9 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import MessageList from "./MessageList";
-import {messages, messageSend, subscribe} from "./Api/Constants/Events";
-import Api from "./Api/Api";
-import ApiEventTarget from "./Api/ApiEventTarget";
+import {messages, messageSend, subscribe} from "../Api/Constants/Events";
+import Api from "../Api/Api";
+import ApiEventTarget from "../Api/ApiEventTarget";
 
 class Messaging extends Component {
 	constructor(props) {
@@ -112,9 +112,9 @@ class Messaging extends Component {
 
 	handleRegisterEvent = (event) => {
 		// Debug logging
-		if(event.detail.status === "ERROR") {
+		if(event.detail.status === "ERROR")
 			throw new Error(`onRegister event error: ${event.detail}`);
-		}
+
 
 		// Actual handler
 		this.handleRefreshClick();
@@ -122,9 +122,9 @@ class Messaging extends Component {
 
 	handleRefreshEvent = (event) => {
 		// Debug logging
-		if(event.detail.status === "ERROR") {
+		if(event.detail.status === "ERROR")
 			throw new Error(`onRefresh event error: ${event.detail}`);
-		}
+
 
 		// Actual handler
 		this.setState({messages: event.detail.data});
@@ -132,9 +132,9 @@ class Messaging extends Component {
 
 	handleSendEvent = (event) => {
 		// Debug logging
-		if(event.detail.status === "ERROR") {
+		if(event.detail.status === "ERROR")
 			throw new Error(`onSendMessage event error: ${event.detail}`);
-		}
+
 
 		// Actual handler
 		this.handleRefreshClick();
