@@ -25,10 +25,8 @@ class ReplyActions extends Component {
 
 	sendReply = () => {
 		// TODO: Send message, for now console log state
-		// eslint-disable-next-line no-invalid-this
 		console.log(this.state.reply);
 
-		// eslint-disable-next-line no-invalid-this
 		this.setState(() => ({reply: ""}));
 	}
 

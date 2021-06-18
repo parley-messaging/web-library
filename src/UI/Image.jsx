@@ -18,7 +18,7 @@ class Image extends Component {
 	}
 
 	render() {
-		// TODO: Not using in first version
+		// Not using in first version
 		// return (
 		// 	<>
 		// 		<span onClick={this.handleToggleImageViewer}>
@@ -38,8 +38,8 @@ class Image extends Component {
 
 Image.propTypes = {
 	media: PropTypes.shape({
-		id: PropTypes.string.isRequired,
 		description: PropTypes.string,
+		id: PropTypes.string.isRequired,
 	}),
 };
 

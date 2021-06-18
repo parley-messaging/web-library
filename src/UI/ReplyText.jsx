@@ -14,7 +14,7 @@ class ReplyText extends Component {
 		this.textArea.current.focus();
 	}
 
-	onKey = (e) => {
+	handleOnKeyDown = (e) => {
 		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
 			return;
@@ -27,14 +27,14 @@ class ReplyText extends Component {
 		}
 	}
 
-	handleOnFocus = (event) => {
+	handleOnFocus = () => {
 		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
 			// eslint-disable-next-line no-invalid-this
 			this.props.fitToIDeviceScreen();
 	};
 
-	handleOnBlur = (event) => {
+	handleOnBlur = () => {
 		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
 			// eslint-disable-next-line no-invalid-this
@@ -52,7 +52,7 @@ class ReplyText extends Component {
 					onBlur={this.handleOnBlur}
 					onChange={this.props.handleOnChange}
 					onFocus={this.handleOnFocus}
-					onKeyDown={this.onKey}
+					onKeyDown={this.handleOnKeyDown}
 					placeholder={placeholder}
 					ref={this.textArea}
 					value={this.props.value}

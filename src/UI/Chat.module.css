@@ -14,7 +14,7 @@
 	bottom: 90px;
 	right: 20px;
 	border-radius: 5px;
-	box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
+	box-shadow: var(--shadow);
 	position: fixed;
 	z-index: 2002;
 	background: var(--background-color, #FFFFFF);

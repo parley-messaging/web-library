@@ -7,9 +7,9 @@ import HeaderButton from "./Buttons/HeaderButton";
 
 class Header extends Component {
 	render() {
-		const iconMenu = "menu";
+		// const iconClose = "close";
+		// const iconMenu = "menu";
 		const iconMinimize = "minimize";
-		const iconClose = "close";
 
 		return (
 			<div className={styles.header}>

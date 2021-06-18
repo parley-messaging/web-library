@@ -101,11 +101,10 @@ class Configuration extends React.Component {
 	}
 
 	handleOnChange(event) {
-		if(event.target.type === "checkbox") {
+		if(event.target.type === "checkbox")
 			this.props.onChange(event.target.id, event.target.checked);
-		} else {
+		 else
 			this.props.onChange(event.target.id, event.target.value);
-		}
 	}
 }
 

@@ -12,8 +12,8 @@ class ImageViewer extends Component {
 
 ImageViewer.propTypes = {
 	media: PropTypes.shape({
-		id: PropTypes.string.isRequired,
 		description: PropTypes.string,
+		id: PropTypes.string.isRequired,
 	}),
 	onClose: PropTypes.func,
 };

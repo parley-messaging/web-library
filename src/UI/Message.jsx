@@ -21,7 +21,7 @@ class Message extends Component {
 		const typeIdUser = 1; // 1 user, 2 agent
 		const classNames = `${styles.container} ${this.props.message.typeId === typeIdUser ? styles.user : styles.agent}`;
 
-		// TODO: Markdown opties, alleen link ondersteunen [nog geen oplossing gevonden]
+		// TODO: Markdown opties, alleen link ondersteunen
 
 		return (
 			<div className={classNames}>
@@ -46,20 +46,20 @@ class Message extends Component {
 
 Message.propTypes = {
 	message: PropTypes.shape({
-		id: PropTypes.number.isRequired,
-		message: PropTypes.string,
-		time: PropTypes.number.isRequired,
-		typeId: PropTypes.number.isRequired,
 		agent: PropTypes.shape({
 			avatar: PropTypes.string.isRequired,
 			id: PropTypes.number.isRequired,
 			name: PropTypes.string.isRequired,
 		}),
-		quickReplies: PropTypes.arrayOf(PropTypes.string),
+		id: PropTypes.number.isRequired,
 		media: PropTypes.shape({
-			id: PropTypes.string.isRequired,
 			description: PropTypes.string,
+			id: PropTypes.string.isRequired,
 		}),
+		message: PropTypes.string,
+		quickReplies: PropTypes.arrayOf(PropTypes.string),
+		time: PropTypes.number.isRequired,
+		typeId: PropTypes.number.isRequired,
 
 		// status: PropTypes.number.isRequired, // TODO: What is status?
 	}),
