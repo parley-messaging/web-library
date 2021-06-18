@@ -29,7 +29,6 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 		1. From the `Node.js interpreter` dropdown, choose the one that is inside the `.nvm` fodler
 		1. Click `OK` -> `OK` -> `Apply`
 	1. Validate that the `Package manager` has also been updated to the `.nvm` path
-1. Copy/Paste `.npmrc.example` to `.npmrc` and rename `${FONTAWESOME_NPM_AUTH_TOKEN}` with the npm auth token from 1password
 1. Install dependencies
 	```shell
 	npm install

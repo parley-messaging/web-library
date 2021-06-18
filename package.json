@@ -44,9 +44,9 @@
 	},
 	"homepage": "https://github.com/parley-messaging/web-library#readme",
 	"dependencies": {
-		"@fortawesome/fontawesome-pro": "^5.15.3",
-		"@fortawesome/pro-regular-svg-icons": "^5.15.3",
-		"@fortawesome/pro-solid-svg-icons": "^5.15.3",
+		"@fortawesome/fontawesome-free": "^5.15.3",
+		"@fortawesome/free-regular-svg-icons": "^5.15.3",
+		"@fortawesome/free-solid-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
 		"ow": "^0.24.1",
 		"prop-types": "^15.7.2",
