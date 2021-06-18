@@ -10,3 +10,7 @@ node_modules
 ssl
 /.parcel-cache/
 /.npmrc
+
+# Testing & Code Coverage
+/.nyc_output/
+/coverage/

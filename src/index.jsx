@@ -4,8 +4,7 @@ import App from "./App";
 
 const axeInspectionTimoutMs = 1000;
 const mountNode = document.getElementById("app");
-const name = "John Doe";
-const app = <App name={name} />;
+const app = <App />;
 
 // eslint-disable-next-line no-undef
 if(process.env.NODE_ENV === "production") {
