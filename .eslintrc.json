@@ -11,9 +11,6 @@
 		"plugin:compat/recommended",
 		"plugin:cypress/recommended"
 	],
-	"ignorePatterns": [
-		"bin/**/*"
-	],
 	"parserOptions": {
 		"ecmaFeatures": {
 			"jsx": true
