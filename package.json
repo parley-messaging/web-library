@@ -44,11 +44,11 @@
 	},
 	"homepage": "https://github.com/parley-messaging/web-library#readme",
 	"dependencies": {
-		"ow": "^0.24.1",
 		"@fortawesome/fontawesome-pro": "^5.15.3",
 		"@fortawesome/pro-regular-svg-icons": "^5.15.3",
 		"@fortawesome/pro-solid-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
+		"ow": "^0.24.1",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
