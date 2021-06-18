@@ -13,6 +13,7 @@ const config = {
 	pushType: FCMWeb,
 	userAdditionalInformation: {name: "weblib-v2_cypress-test"},
 	type: Web,
+	version: "010000",
 };
 const staticDevicesResponse = {
 	data: {},
@@ -256,15 +257,70 @@ describe("Api class", () => {
 		});
 
 		it("should throw an error when using invalid version", () => {
-			// TODO: Min length
-			// TODO: Max length
-			// TODO: Regex
+			// Min length
+			const shortVersion = "1";
+			expect(() => config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				shortVersion,
+			))
+				.to.throw(`Expected string \`version\` to have a minimum length of \`5\`, got \`${shortVersion}\``);
+
+			// Max length
+			const longVersion = "100000000";
+			expect(() => config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				longVersion,
+			))
+				.to.throw(`Expected string \`version\` to have a maximum length of \`8\`, got \`${longVersion}\``);
+
+			// Regex
+			const wrongFormat = "v1.0.0";
+			expect(() => config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				wrongFormat,
+			))
+				.to.throw(`Expected string \`version\` to match \`/$[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u\`, got \`${wrongFormat}\``);
 		});
 
-		// TODO: Test referer
+		it("should throw an error when using something other than a String as referer", () => {
+			filterPrimitives([
+				"string",
+				"undefined",
+			]).forEach((set) => {
+				expect(() => config.api.subscribeDevice(
+					config.pushToken,
+					config.pushType,
+					true,
+					config.userAdditionalInformation,
+					config.type,
+					config.version,
+					set.value,
+				))
+					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
 
 		it("should fetch and return response using direct way", () => {
-			return config.api.subscribeDevice(undefined, undefined, undefined, undefined, undefined, "1.0.0", undefined)
+			return config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				config.version,
+			)
 				.then((data) => {
 					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(staticDevicesResponse));
 				});
@@ -274,7 +330,14 @@ describe("Api class", () => {
 			ApiEventTarget.addEventListener(subscribe, (data) => {
 				expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(staticDevicesResponse));
 			});
-			config.api.subscribeDevice(undefined, undefined, undefined, undefined, undefined, "1.0.0", undefined);
+			config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				config.version,
+			);
 		});
 	});
 });

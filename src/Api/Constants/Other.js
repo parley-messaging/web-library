@@ -13,4 +13,4 @@ export const MinUdidLength = 10;
 // Device `version` param validation constants
 export const DeviceVersionMinLength = 5;
 export const DeviceVersionMaxLength = 8;
-export const DeviceVersionRegex = /[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
+export const DeviceVersionRegex = /$[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
