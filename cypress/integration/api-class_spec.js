@@ -66,7 +66,7 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 }
 
 describe("Api class", () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		config.api = new Api(
 			config.apiDomain,
 			config.accountIdentification,
@@ -76,7 +76,7 @@ describe("Api class", () => {
 
 		// Intercept api calls and respond with a static response
 		// This way we don't fill up the API with test data
-		cy.intercept(`${config.apiDomain}/**/devices`, staticDevicesResponse);
+		await cy.intercept("POST", `${config.apiDomain}/**/devices`, staticDevicesResponse);
 	});
 
 	describe("constructor", () => {
