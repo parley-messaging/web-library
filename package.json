@@ -7,7 +7,9 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
-		"build": "npx parcel build index.html"
+		"build": "npx parcel build index.html",
+		"test:open": "./bin/start_cypress.sh",
+		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
 	},
 	"repository": {
 		"type": "git",
@@ -37,6 +39,7 @@
 	},
 	"homepage": "https://github.com/parley-messaging/web-library#readme",
 	"dependencies": {
+		"ow": "^0.24.1",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2"
@@ -46,15 +49,22 @@
 		"@babel/cli": "^7.13.16",
 		"@babel/core": "^7.13.16",
 		"@babel/eslint-parser": "^7.13.14",
+		"@babel/eslint-plugin": "^7.13.16",
 		"@babel/preset-env": "^7.13.15",
 		"@babel/preset-react": "^7.13.13",
+		"@cypress/code-coverage": "^3.9.6",
+		"babel-plugin-istanbul": "^6.0.0",
+		"cypress": "^7.4.0",
 		"eslint": "^7.24.0",
 		"eslint-plugin-compat": "^3.9.0",
+		"eslint-plugin-cypress": "^2.11.3",
 		"eslint-plugin-jsx-a11y": "^6.4.1",
 		"eslint-plugin-react": "^7.23.2",
-		"parcel": "^2.0.0-beta.2"
+		"parcel": "^2.0.0-nightly.651"
 	},
 	"browserslist": [
-		"defaults"
+		"defaults",
+		"not ie 11",
+		"not op_mini all"
 	]
 }

@@ -1,21 +1,70 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, {Component} from "react";
+import Configuration from "./Configuration";
+import Messaging from "./Messaging";
+import EventLog from "./EventLog";
+import {version as appVersion} from "../package.json";
+import {FCMUniversal} from "./Api/Constants/PushTypes";
+import {Web} from "./Api/Constants/DeviceTypes";
 
-export default class App extends React.Component {
+class App extends Component {
 	constructor(props) {
 		super(props);
-		this.hello = "Hello";
+
+		this.state = {
+			deviceIdentification: "aaaaaaaaaa",
+			accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
+			pushEnabled: false,
+			pushToken: undefined,
+			pushType: FCMUniversal,
+			referer: window.location.href,
+			type: Web,
+			userAdditionalInformation: {testKey: "testValue"},
+			version: appVersion,
+			apiDomain: "https://api.parley.nu",
+		};
+
+		this.handleOnConfigurationChange = this.handleOnConfigurationChange.bind(this);
 	}
 
 	render() {
 		return (
-			<div>
-				{this.hello}
-				{" "}
-				{this.props.name}
-			</div>
+			<>
+				<Configuration
+					accountIdentification={this.state.accountIdentification}
+					apiDomain={this.state.apiDomain}
+					deviceIdentification={this.state.deviceIdentification}
+					onChange={this.handleOnConfigurationChange}
+					pushEnabled={this.state.pushEnabled}
+					pushToken={this.state.pushToken}
+					pushType={this.state.pushType}
+					referer={this.state.referer}
+					type={this.state.type}
+					userAdditionalInformation={this.state.userAdditionalInformation}
+					version={this.state.version}
+				/>
+				<Messaging
+					accountIdentification={this.state.accountIdentification}
+					apiDomain={this.state.apiDomain}
+					deviceIdentification={this.state.deviceIdentification}
+					onChange={this.handleOnConfigurationChange}
+					pushEnabled={this.state.pushEnabled}
+					pushToken={this.state.pushToken}
+					pushType={this.state.pushType}
+					referer={this.state.referer}
+					type={this.state.type}
+					userAdditionalInformation={this.state.userAdditionalInformation}
+					version={this.state.version}
+				/>
+				<EventLog
+					apiDomain={this.state.apiDomain}
+				/>
+			</>
 		);
+	}
+
+	handleOnConfigurationChange(domID, domValue) {
+		this.setState({[domID]: domValue});
 	}
 }
 
-App.propTypes = {name: PropTypes.string};
+export default App;
