@@ -12,13 +12,7 @@ class EventLog extends Component {
 		this.state = {events: []};
 
 		// Step 1: Initialize the Api
-		// We are not making any api calls so we dont need any valid identifications
-		this.Api = new Api(
-			"https://api.parley.nu",
-			"someAccountIdentification",
-			"someDeviceIdentification",
-			ApiEventTarget,
-		);
+		// We already have the Api initialized in Messaging.jsx,
 	}
 
 	componentDidMount() {
