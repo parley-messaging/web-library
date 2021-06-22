@@ -17,13 +17,11 @@ class HeaderButton extends Component {
 			icon = faBars;
 			className = styles.menu;
 			ariaLabel = BUTTONMENU;
-		}
-		if(this.props.icon === "minimize") {
+		} else if(this.props.icon === "minimize") {
 			icon = faWindowMinimize;
 			className = styles.minimize;
 			ariaLabel = BUTTONMINIMIZE;
-		}
-		if(this.props.icon === "close") {
+		} else if(this.props.icon === "close") {
 			icon = faTimes;
 			className = styles.close;
 			ariaLabel = BUTTONCLOSE;
