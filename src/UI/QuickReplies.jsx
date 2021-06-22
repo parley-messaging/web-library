@@ -1,12 +1,8 @@
-import React, {Component} from "react";
+import {Component} from "react";
 
 class QuickReplies extends Component {
 	render() {
-		return (
-			<div>
-
-			</div>
-		);
+		return null;
 	}
 }
 
