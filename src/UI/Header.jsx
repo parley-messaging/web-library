@@ -2,32 +2,29 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Header.module.css";
 
-// components
-import HeaderButton from "./Buttons/HeaderButton";
+// TODO: supress until https://github.com/parley-messaging/web-library/pull/3#discussion_r656174570 is resolved
+// eslint-disable-next-line no-unused-vars
+import HeaderButton, {menuType, minimizeType, closeType} from "./Buttons/HeaderButton";
 
 class Header extends Component {
 	render() {
-		// const iconClose = "close";
-		// const iconMenu = "menu";
-		const iconMinimize = "minimize";
-
 		return (
 			<div className={styles.header}>
 				<div className={styles.left}>
 					{/* <HeaderButton*/}
 					{/*	handleOnClick={this.props.menuAction}*/}
-					{/*	icon={iconMenu}*/}
+					{/*	type={menuType}*/}
 					{/* />*/}
 				</div>
 				<span className={styles.title}>{this.props.title}</span>
 				<div className={styles.right}>
 					<HeaderButton
 						handleOnClick={this.props.minimizeAction}
-						icon={iconMinimize}
+						type={minimizeType}
 					/>
 					{/* <HeaderButton*/}
 					{/*	handleOnClick={this.props.closeAction}*/}
-					{/*	icon={iconClose}*/}
+					{/*	type={closeType}*/}
 					{/* />*/}
 				</div>
 			</div>

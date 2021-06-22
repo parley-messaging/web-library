@@ -7,21 +7,25 @@ import {faBars} from "@fortawesome/free-solid-svg-icons/faBars";
 import {faWindowMinimize} from "@fortawesome/free-regular-svg-icons/faWindowMinimize";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
+export const menuType = "menu";
+export const minimizeType = "minimize";
+export const closeType = "close";
+
 class HeaderButton extends Component {
 	render() {
 		let icon;
 		let className;
 		let ariaLabel;
 		const typeButton = "button";
-		if(this.props.icon === "menu") {
+		if(this.props.type === menuType) {
 			icon = faBars;
 			className = styles.menu;
 			ariaLabel = BUTTONMENU;
-		} else if(this.props.icon === "minimize") {
+		} else if(this.props.type === minimizeType) {
 			icon = faWindowMinimize;
 			className = styles.minimize;
 			ariaLabel = BUTTONMINIMIZE;
-		} else if(this.props.icon === "close") {
+		} else if(this.props.type === closeType) {
 			icon = faTimes;
 			className = styles.close;
 			ariaLabel = BUTTONCLOSE;
@@ -37,10 +41,10 @@ class HeaderButton extends Component {
 
 HeaderButton.propTypes = {
 	handleOnClick: PropTypes.func.isRequired,
-	icon: PropTypes.oneOf([
-		"menu",
-		"minimize",
-		"close",
+	type: PropTypes.oneOf([
+		menuType,
+		minimizeType,
+		closeType,
 	]).isRequired,
 };
 
