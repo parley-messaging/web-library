@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./Message.module.css";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 // components
 import Image from "./Image";
@@ -18,8 +19,7 @@ class Message extends Component {
 	}
 
 	render() {
-		const typeIdUser = 1; // 1 user, 2 agent
-		const classNames = `${styles.container} ${this.props.message.typeId === typeIdUser ? styles.user : styles.agent}`;
+		const classNames = `${styles.container} ${this.props.message.typeId === MessageTypes.User ? styles.user : styles.agent}`;
 
 		// TODO: Markdown opties, alleen link ondersteunen
 
