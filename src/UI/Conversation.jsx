@@ -146,8 +146,8 @@ class Conversation extends Component {
 	}
 
 	getDateFromTimestamp = (timestamp) => {
-		const toSecondsMultiplier = 1000;
-		return new Date(timestamp * toSecondsMultiplier).toLocaleDateString();
+		const toMillisecondsMultiplier = 1000;
+		return new Date(timestamp * toMillisecondsMultiplier).toLocaleDateString();
 	}
 
 	render() {
