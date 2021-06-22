@@ -47,7 +47,7 @@ class Chat extends Component {
 		let innerCorrectionStarted = false;
 
 		this.correctionIntervalID = setInterval(() => {
-			const oneThousandth = 0.01;
+			const oneHundredth = 0.01;
 			const innerValue = getCurrentInner();
 
 			if(!innerCorrectionStarted) {
@@ -60,7 +60,7 @@ class Chat extends Component {
 			}
 
 			inner = getCurrentInner();
-			chatNode.style.setProperty(`--mobile-${correction}`, `${inner * oneThousandth}px`);
+			chatNode.style.setProperty(`--mobile-${correction}`, `${inner * oneHundredth}px`);
 		}, intervalTime);
 	}
 
