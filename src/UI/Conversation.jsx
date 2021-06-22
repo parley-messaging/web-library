@@ -35,6 +35,24 @@ class Conversation extends Component {
 	getMessages = () => {
 		const messageArray = [
 			{
+				id: 159297,
+				time: 1623060000,
+				message: "some_system_message",
+				image: null,
+				typeId: 3,
+				agent: {
+					id: 1,
+					name: "Tracebuzz",
+					avatar: "https://beta.tracebuzz.com/V002/img/avatar.php?i=TB&c=f4931d",
+				},
+				carousel: null,
+				quickReplies: null,
+				custom: null,
+				title: null,
+				media: null,
+				buttons: null,
+			},
+			{
 				id: 159296,
 				time: 1623060000,
 				message: "www.google.nl",

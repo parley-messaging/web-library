@@ -19,7 +19,14 @@ class Message extends Component {
 	}
 
 	render() {
-		const classNames = `${styles.container} ${this.props.message.typeId === MessageTypes.User ? styles.user : styles.agent}`;
+		let classNames = styles.container;
+		if(this.props.message.typeId === MessageTypes.User)
+			classNames += ` ${styles.user}`;
+		else if(this.props.message.typeId === MessageTypes.Agent)
+			classNames += ` ${styles.agent}`;
+		else
+			return null;
+
 
 		// TODO: Markdown opties, alleen link ondersteunen
 
