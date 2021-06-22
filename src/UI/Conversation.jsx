@@ -36,7 +36,7 @@ class Conversation extends Component {
 		const messageArray = [
 			{
 				id: 159296,
-				time: 1620309874,
+				time: 1623060000,
 				message: "www.google.nl",
 				image: null,
 				typeId: 2,
@@ -54,7 +54,7 @@ class Conversation extends Component {
 			},
 			{
 				id: 159293,
-				time: 1620309867,
+				time: 1622800800,
 				message: "😷🤧",
 				image: null,
 				typeId: 1,
@@ -68,7 +68,7 @@ class Conversation extends Component {
 			},
 			{
 				id: 159290,
-				time: 1620309858,
+				time: 1622797200,
 				message: "Test message #4, this one has an emoji 🤧",
 				image: null,
 				typeId: 2,
@@ -86,7 +86,7 @@ class Conversation extends Component {
 			},
 			{
 				id: 159287,
-				time: 1620309834,
+				time: 1622631600,
 				message: "Test message #3",
 				image: null,
 				typeId: 1,
@@ -100,7 +100,7 @@ class Conversation extends Component {
 			},
 			{
 				id: 159284,
-				time: 1620309772,
+				time: 1622628000,
 				message: "Test message #2, this one has a markdown [link](https://google.com)",
 				image: null,
 				typeId: 2,
@@ -118,7 +118,7 @@ class Conversation extends Component {
 			},
 			{
 				id: 159281,
-				time: 1620309744,
+				time: 1622545200,
 				message: "Test message #1",
 				image: null,
 				typeId: 1,
@@ -132,7 +132,6 @@ class Conversation extends Component {
 			},
 		];
 
-		this.renderedDates = [];
 		this.setState(() => ({messages: messageArray.reverse()}));
 	}
 
@@ -152,6 +151,7 @@ class Conversation extends Component {
 
 	render() {
 		const messageTypeAgent = 2;
+		this.renderedDates = []; // Reset the rendered dates
 
 		return (
 			<div className={styles.wrapper}>
