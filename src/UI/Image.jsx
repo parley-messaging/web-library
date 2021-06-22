@@ -13,7 +13,6 @@ class Image extends Component {
 	}
 
 	handleToggleImageViewer = () => {
-		// eslint-disable-next-line no-invalid-this
 		this.setState(state => ({showImageViewer: !state.showImageViewer}));
 	}
 

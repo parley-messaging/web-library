@@ -29,7 +29,6 @@ class Conversation extends Component {
 	getStickyMessage = () => {
 		const message = "Sorry we are closed right now. We will be open next day from 09:00 - 17:55";
 
-		// eslint-disable-next-line no-invalid-this
 		this.setState(() => ({stickyMessage: message}));
 	};
 
@@ -133,18 +132,14 @@ class Conversation extends Component {
 			},
 		];
 
-		// eslint-disable-next-line no-invalid-this
 		this.renderedDates = [];
-		// eslint-disable-next-line no-invalid-this
 		this.setState(() => ({messages: messageArray.reverse()}));
 	}
 
 	setRenderedDate = (date) => {
-		// eslint-disable-next-line no-invalid-this
 		if(this.renderedDates.includes(date))
 			return false;
 
-		// eslint-disable-next-line no-invalid-this
 		this.renderedDates.push(date);
 
 		return true;

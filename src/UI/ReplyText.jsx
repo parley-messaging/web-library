@@ -15,29 +15,23 @@ class ReplyText extends Component {
 	}
 
 	handleOnKeyDown = (e) => {
-		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
 			return;
 
 		const enterKey = 13;
 		if(e.keyCode === enterKey && e.shiftKey === false) {
 			e.preventDefault();
-			// eslint-disable-next-line no-invalid-this
 			this.props.handleOnSubmit();
 		}
 	}
 
 	handleOnFocus = () => {
-		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
-			// eslint-disable-next-line no-invalid-this
 			this.props.fitToIDeviceScreen();
 	};
 
 	handleOnBlur = () => {
-		// eslint-disable-next-line no-invalid-this
 		if(this.props.isMobile)
-			// eslint-disable-next-line no-invalid-this
 			this.props.fitToIDeviceScreen();
 	};
 

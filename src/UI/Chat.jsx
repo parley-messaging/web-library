@@ -64,7 +64,6 @@ class Chat extends Component {
 	}
 
 	fitToIDeviceScreen = () => {
-		// eslint-disable-next-line no-invalid-this
 		if(!this.isIosDevice)
 			return;
 
@@ -73,11 +72,9 @@ class Chat extends Component {
 		// On focus/blur
 		if(messenger) {
 			// Height
-			// eslint-disable-next-line no-invalid-this
 			this.startCorrection("height");
 
 			// Width
-			// eslint-disable-next-line no-invalid-this
 			this.startCorrection("width");
 		}
 	};

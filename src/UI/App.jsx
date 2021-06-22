@@ -17,12 +17,10 @@ export default class App extends React.Component {
 	}
 
 	toggleChat = () => {
-		// eslint-disable-next-line no-invalid-this
 		this.setState(state => ({showChat: !state.showChat}));
 	}
 
 	toggleMenu = () => {
-		// eslint-disable-next-line no-invalid-this
 		this.setState(state => ({
 			showChat: !state.showChat,
 			showMenu: !state.showMenu,

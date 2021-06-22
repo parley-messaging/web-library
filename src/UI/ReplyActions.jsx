@@ -19,7 +19,6 @@ class ReplyActions extends Component {
 	}
 
 	changeReply = (event) => {
-		// eslint-disable-next-line no-invalid-this
 		this.setState(() => ({reply: event.target.value}));
 	}
 
