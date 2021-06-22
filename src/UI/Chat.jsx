@@ -16,16 +16,19 @@ class Chat extends Component {
 		this.isMobile = false;
 		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
 		this.idName = "chat";
+		this.correctionIntervalID = null;
+		this.correctionTimeoutID = null;
 	}
 
 	startCorrection(correction) {
 		const intervalTime = 3000;
-		const correctionIntervalID = this.startCorrectionInterval(setTimeout(() => {
-			clearInterval(correctionIntervalID);
-		}, intervalTime), correction);
+		setTimeout(() => {
+			clearInterval(this.correctionIntervalID);
+		}, intervalTime);
+		this.startCorrectionInterval(correction);
 	}
 
-	startCorrectionInterval(correctionTimeoutID, correction) {
+	startCorrectionInterval(correction) {
 		let inner;
 		let getCurrentInner;
 		if(correction === "height") {
@@ -43,7 +46,7 @@ class Chat extends Component {
 		const innerAtStart = getCurrentInner();
 		let innerCorrectionStarted = false;
 
-		const correctionIntervalID = setInterval(() => {
+		this.correctionIntervalID = setInterval(() => {
 			const oneThousandth = 0.01;
 			const innerValue = getCurrentInner();
 
@@ -52,15 +55,13 @@ class Chat extends Component {
 					innerCorrectionStarted = true;
 			} else if(inner === innerValue && inner !== innerAtStart) {
 				innerCorrectionStarted = false;
-				clearInterval(correctionIntervalID);
-				clearTimeout(correctionTimeoutID);
+				clearInterval(this.correctionIntervalID);
+				clearTimeout(this.correctionTimeoutID);
 			}
 
 			inner = getCurrentInner();
 			messenger.style.setProperty(`--mobile-${correction}`, `${inner * oneThousandth}px`);
 		}, intervalTime);
-
-		return correctionIntervalID;
 	}
 
 	fitToIDeviceScreen = () => {
@@ -78,6 +79,11 @@ class Chat extends Component {
 			this.startCorrection("width");
 		}
 	};
+
+	componentWillUnmount() {
+		clearInterval(this.correctionIntervalID);
+		clearTimeout(this.correctionTimeoutID);
+	}
 
 	render() {
 		const classNames = `
