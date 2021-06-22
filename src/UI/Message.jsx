@@ -57,11 +57,11 @@ class Message extends Component {
 Message.propTypes = {
 	message: PropTypes.shape({
 		agent: PropTypes.shape({
-			avatar: PropTypes.string.isRequired,
-			id: PropTypes.number.isRequired,
+			avatar: PropTypes.string,
+			id: PropTypes.number,
 			name: PropTypes.string.isRequired,
 		}),
-		id: PropTypes.number.isRequired,
+		id: PropTypes.number,
 		media: PropTypes.shape({
 			description: PropTypes.string,
 			id: PropTypes.string.isRequired,
