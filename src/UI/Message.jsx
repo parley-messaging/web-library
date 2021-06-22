@@ -32,10 +32,13 @@ class Message extends Component {
 
 		return (
 			<div className={classNames}>
-				{this.props.message.agent &&
-					<div className={styles.name}>
-						{this.props.message.agent.name}
-					</div>}
+				{
+					this.props.message.agent &&
+					this.props.message.agent.name.length > 0 &&
+						<div className={styles.name}>
+							{this.props.message.agent.name}
+						</div>
+				}
 				<div className={styles.message}>
 					{this.props.message.media ?
 						<Image media={this.props.message.media} /> :
