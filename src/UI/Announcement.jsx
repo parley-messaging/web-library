@@ -6,11 +6,9 @@ import ReactMarkdown from "react-markdown";
 class Announcement extends Component {
 	render() {
 		return (
-			<span className={styles.center}>
-				<ReactMarkdown skipHtml={true}>
-					{this.props.message}
-				</ReactMarkdown>
-			</span>
+			<ReactMarkdown className={styles.center} skipHtml={true}>
+				{this.props.message}
+			</ReactMarkdown>
 		);
 	}
 }
