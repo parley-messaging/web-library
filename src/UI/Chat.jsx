@@ -18,17 +18,18 @@ class Chat extends Component {
 		this.idName = "chat";
 		this.correctionIntervalID = null;
 		this.correctionTimeoutID = null;
+		this.chatRef = React.createRef();
 	}
 
-	startCorrection(correction) {
+	startCorrection(correction, chatNode) {
 		const intervalTime = 3000;
 		setTimeout(() => {
 			clearInterval(this.correctionIntervalID);
 		}, intervalTime);
-		this.startCorrectionInterval(correction);
+		this.startCorrectionInterval(correction, chatNode);
 	}
 
-	startCorrectionInterval(correction) {
+	startCorrectionInterval(correction, chatNode) {
 		let inner;
 		let getCurrentInner;
 		if(correction === "height") {
@@ -41,7 +42,6 @@ class Chat extends Component {
 			throw new Error("Correction param should be 'width' or 'height'");
 		}
 
-		const messenger = document.querySelector("#chat");
 		const intervalTime = 25;
 		const innerAtStart = getCurrentInner();
 		let innerCorrectionStarted = false;
@@ -60,23 +60,35 @@ class Chat extends Component {
 			}
 
 			inner = getCurrentInner();
-			messenger.style.setProperty(`--mobile-${correction}`, `${inner * oneThousandth}px`);
+			chatNode.style.setProperty(`--mobile-${correction}`, `${inner * oneThousandth}px`);
 		}, intervalTime);
 	}
 
-	fitToIDeviceScreen = () => {
+	fitToIDeviceScreen = async () => {
 		if(!this.isIosDevice)
 			return;
 
-		const messenger = document.querySelector("#chat");
+		// TODO: Somehow fix this so that we don't have to wait for chatRef to be != null
+		// It seems that once this is called, chatRef.current = null
+		// React docs https://reactjs.org/docs/refs-and-the-dom.html#adding-a-ref-to-a-dom-element
+		// say that the ref is set when the component mounts, but that doesn't seem to happen
+		const chatNode = await new Promise((resolve) => {
+			const intervalID = setInterval(() => {
+				console.log("Waiting for chatRef.current...");
+				if(this.chatRef.current !== null) {
+					clearInterval(intervalID);
+					resolve(this.chatRef.current);
+				}
+			});
+		});
 
 		// On focus/blur
-		if(messenger) {
+		if(chatNode) {
 			// Height
-			this.startCorrection("height");
+			this.startCorrection("height", chatNode);
 
 			// Width
-			this.startCorrection("width");
+			this.startCorrection("width", chatNode);
 		}
 	};
 
@@ -93,7 +105,7 @@ class Chat extends Component {
 		`;
 
 		return (
-			<div className={classNames} id={this.idName}>
+			<div className={classNames} id={this.idName} ref={this.chatRef}>
 				<Header
 					closeAction={this.props.closeAction}
 					menuAction={this.props.menuAction}
