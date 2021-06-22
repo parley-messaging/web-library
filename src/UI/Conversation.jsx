@@ -165,9 +165,12 @@ class Conversation extends Component {
 							{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
 								<DateGroup timestamp={message.time} />}
 							<Message message={message} />
-							{message.typeId === messageTypeAgent &&
-							message.quickReplies && message.quickReplies.length &&
-								<QuickReplies />}
+							{
+								message.typeId === messageTypeAgent &&
+								message.quickReplies &&
+								message.quickReplies.length > 0 &&
+									<QuickReplies />
+							}
 						</React.Fragment>
 					))}
 					{this.state.stickyMessage &&
