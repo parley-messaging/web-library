@@ -12,7 +12,7 @@ class Header extends Component {
 			<div className={styles.header}>
 				<div className={styles.left}>
 					{/* <HeaderButton*/}
-					{/*	handleOnClick={this.props.menuAction}*/}
+					{/*	onClick={this.props.menuAction}*/}
 					{/*	type={menuType}*/}
 					{/* />*/}
 				</div>
@@ -23,7 +23,7 @@ class Header extends Component {
 						type={minimizeType}
 					/>
 					{/* <HeaderButton*/}
-					{/*	handleOnClick={this.props.closeAction}*/}
+					{/*	onClick={this.props.closeAction}*/}
 					{/*	type={closeType}*/}
 					{/* />*/}
 				</div>

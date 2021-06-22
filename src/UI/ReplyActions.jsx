@@ -16,11 +16,11 @@ class ReplyActions extends Component {
 		this.state = {reply: ""};
 	}
 
-	changeReply = (event) => {
+	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
 
-	sendReply = () => {
+	handleSubmit = () => {
 		// TODO: Send message, for now console log state
 		console.log(this.state.reply);
 
@@ -32,14 +32,14 @@ class ReplyActions extends Component {
 			<div className={styles.footer}>
 				<ReplyText
 					fitToIDeviceScreen={this.props.fitToIDeviceScreen}
-					handleOnChange={this.changeReply}
-					handleOnSubmit={this.sendReply}
 					isMobile={this.props.isMobile}
+					onChange={this.handleChange}
+					onSubmit={this.handleSubmit}
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
 					{this.props.isMobile && this.state.reply !== "" &&
-						<MobileSubmit handleOnClick={this.sendReply} />}
+						<MobileSubmit onClick={this.handleSubmit} />}
 				</div>
 			</div>
 		);

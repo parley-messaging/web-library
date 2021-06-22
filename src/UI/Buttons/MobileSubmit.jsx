@@ -15,7 +15,7 @@ class MobileSubmit extends Component {
 			<button
 				aria-label={ariaLabel}
 				className={styles.mobile}
-				onClick={this.props.handleOnClick}
+				onClick={this.props.onClick}
 				type={typeButton}
 			>
 				<FontAwesomeIcon icon={faArrowCircleRight} />
@@ -24,6 +24,6 @@ class MobileSubmit extends Component {
 	}
 }
 
-MobileSubmit.propTypes = {handleOnClick: PropTypes.func.isRequired};
+MobileSubmit.propTypes = {onClick: PropTypes.func.isRequired};
 
 export default MobileSubmit;

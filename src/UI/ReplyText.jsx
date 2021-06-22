@@ -21,7 +21,7 @@ class ReplyText extends Component {
 		const enterKey = 13;
 		if(e.keyCode === enterKey && e.shiftKey === false) {
 			e.preventDefault();
-			this.props.handleOnSubmit();
+			this.props.onSubmit();
 		}
 	}
 
@@ -44,7 +44,7 @@ class ReplyText extends Component {
 				<TextareaAutosize
 					maxRows={maxRows}
 					onBlur={this.handleOnBlur}
-					onChange={this.props.handleOnChange}
+					onChange={this.props.onChange}
 					onFocus={this.handleOnFocus}
 					onKeyDown={this.handleOnKeyDown}
 					placeholder={placeholder}
@@ -58,9 +58,9 @@ class ReplyText extends Component {
 
 ReplyText.propTypes = {
 	fitToIDeviceScreen: PropTypes.func,
-	handleOnChange: PropTypes.func.isRequired,
-	handleOnSubmit: PropTypes.func.isRequired,
 	isMobile: PropTypes.bool,
+	onChange: PropTypes.func.isRequired,
+	onSubmit: PropTypes.func.isRequired,
 	value: PropTypes.string,
 };
 
