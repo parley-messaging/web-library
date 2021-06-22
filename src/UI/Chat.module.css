@@ -20,7 +20,7 @@
 	height: 500px; /* TODO: We hebben een min en max height en defineren height wat is het effect dan nog van max/min..? */
 	min-height: 300px;
 	max-height: 80%;
-	background: var(--background-color, #FFF);
+	background-color: var(--background-color, #FFF);
 	border-radius: 5px;
 	box-shadow: var(--shadow);
 	grid-template-columns: 1fr;
