@@ -9,8 +9,8 @@ import {faArrowCircleRight} from "@fortawesome/free-solid-svg-icons/faArrowCircl
 class MobileSubmit extends Component {
 	render() {
 		return (
-			<button className={styles.mobile}>
-				<FontAwesomeIcon icon={faArrowCircleRight} onClick={this.props.handleOnClick} />
+			<button className={styles.mobile} onClick={this.props.handleOnClick}>
+				<FontAwesomeIcon icon={faArrowCircleRight} />
 			</button>
 		);
 	}
