@@ -1,9 +1,6 @@
 .wrapper {
-	display: -ms-grid;
 	display: grid;
 	max-width: inherit;
-	-ms-grid-columns: auto;
-	-ms-grid-rows: minmax(50%, 100%) auto;
 	grid-template-columns: auto;
 	grid-template-rows: minmax(50%, 100%) auto;
 }

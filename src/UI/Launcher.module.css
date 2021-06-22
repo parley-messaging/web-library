@@ -18,5 +18,5 @@
 	box-shadow: var(--shadow);
 	cursor: pointer;
 	text-align: center;
-	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
 }

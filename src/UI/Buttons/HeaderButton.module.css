@@ -7,9 +7,7 @@
 	cursor: pointer;
 	float: left;
 	font-size: 24px;
-	-ms-grid-column: 1;
 	grid-column: 1;
-	-ms-grid-row: 1;
 	grid-row: 1;
 }
 
@@ -22,9 +20,7 @@
 	cursor: pointer;
 	float: right;
 	font-size: 22px;
-	-ms-grid-column: 1;
 	grid-column: 1;
-	-ms-grid-row: 1;
 	grid-row: 1;
 }
 
@@ -35,8 +31,6 @@
 	cursor: pointer;
 	float: right;
 	font-size: 24px;
-	-ms-grid-column: 2;
 	grid-column: 2;
-	-ms-grid-row: 1;
 	grid-row: 1;
 }
