@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./ReplyActions.module.css";
-
-// components
 import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
 
