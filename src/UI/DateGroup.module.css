@@ -5,7 +5,7 @@
 
 .date {
 	display: inline-block;
-	height: 14px;
+	height: 15px;
 	padding: 0 5px;
 	border-bottom: 1px solid var(--date-color, #404040);
 	color: var(--date-color, #404040);
