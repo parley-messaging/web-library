@@ -11,8 +11,6 @@ class Chat extends Component {
 	constructor(props) {
 		super(props);
 
-		this.allowEmoji = false;
-		this.allowFileUpload = false;
 		this.isMobile = false;
 		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
 		this.idName = "chat";
