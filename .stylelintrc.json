@@ -1,0 +1,16 @@
+{
+	"extends": [
+		"stylelint-config-standard",
+		"stylelint-config-idiomatic-order"
+	],
+	"rules": {
+		"comment-word-disallowed-list": ["TODO"],
+		"indentation": "tab",
+		"color-hex-case": "upper",
+		"comment-whitespace-inside": null,
+		"comment-empty-line-before": null
+	},
+	"ignoreFiles": [
+		"index.html"
+	]
+}

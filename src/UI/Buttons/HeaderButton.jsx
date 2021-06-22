@@ -5,9 +5,9 @@ import {BUTTONMENU, BUTTONMINIMIZE, BUTTONCLOSE} from "../interfaceTexts.js";
 
 // Requirements
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBars} from "@fortawesome/pro-regular-svg-icons/faBars";
-import {faWindowMinimize} from "@fortawesome/pro-regular-svg-icons/faWindowMinimize";
-import {faTimes} from "@fortawesome/pro-regular-svg-icons/faTimes";
+import {faBars} from "@fortawesome/free-solid-svg-icons/faBars";
+import {faWindowMinimize} from "@fortawesome/free-regular-svg-icons/faWindowMinimize";
+import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 class HeaderButton extends Component {
 	render() {

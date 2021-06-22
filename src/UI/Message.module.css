@@ -1,79 +1,93 @@
 /* region Container */
 .container {
 	display: block;
-	margin-bottom: 10px;
 	padding: 0 30px;
+	margin-bottom: 10px;
 }
-.container:before,.container:after {
-	content: "";
+
+.container::before,
+.container::after {
 	display: table;
+	content: "";
 }
-.container:after {
+
+.container::after {
 	clear: both;
 }
+
 .container.agent {
 	display: -ms-grid;
 	display: grid;
 	-ms-grid-columns: max-content;
-	grid-template-columns: max-content;
 	-ms-grid-rows: auto auto;
+	grid-template-columns: max-content;
 	grid-template-rows: auto auto;
 }
+
 /* endregion */
+
 /* region Message */
 .message {
-	padding: 8px 10px;
-	border-radius: 5px;
+	position: relative;
 	display: -ms-grid;
 	display: grid;
+	max-width: 190px;
+	padding: 8px 10px;
+	border-radius: 5px;
 	-ms-grid-columns: auto;
-	grid-template-columns: auto;
 	-ms-grid-rows: auto auto;
+	grid-template-columns: auto;
 	grid-template-rows: auto auto;
-	position: relative;
-	overflow-wrap: break-word;
-	word-wrap: break-word;
-	word-break: break-word;
-	-ms-word-break: break-all;
 	-ms-hyphens: auto;
 	-webkit-hyphens: auto;
 	hyphens: auto;
-	max-width: 190px;
+	overflow-wrap: break-word;
 	white-space: pre-wrap;
+	-ms-word-break: break-all;
+	word-break: break-word;
+	word-wrap: break-word;
 }
-.message P {
+
+.message p {
 	margin: 0;
 }
-.message A {
-	color: var(--link-color, #4891f5);
-	text-decoration: none;
+
+.message a {
 	background-color: transparent;
+	color: var(--link-color, #4891F5);
+	text-decoration: none;
 	-webkit-text-decoration-skip: objects;
 }
+
 .user .message {
-	border-radius: 10px 10px 0;
 	background-color: var(--user-background-color, #4A5E83);
-	color: var(--user-text-color, #FFFFFF);
+	border-radius: 10px 10px 0;
+	color: var(--user-text-color, #FFF);
 	float: right;
 }
+
 .agent .message {
+	background: var(--account-background-color, #E7E3E0);
 	border-radius: 0 10px 10px;
-	background: var(--account-background-color, #e7e3e0);
 	color: var(--account-text-color, #535353);
 	float: left;
 }
+
 .name {
 	padding: 0 0 5px;
-	color: var(--agent-name-color, rgba(0,0,0,.68));
+	color: var(--agent-name-color, rgba(0, 0, 0, 0.68));
 	font-size: 13px;
 }
+
 /* endregion */
+
 /* region Time */
 .time {
-	font-size: 10px;
 	display: block;
-	clear: both;
 	padding-top: 5px;
+	clear: both;
+	font-size: 10px;
 	text-align: right;
 }
+
 /* endregion */

@@ -1,0 +1,11 @@
+{
+	"modules": true,
+	"plugins": {
+		"stylelint": {},
+		"postcss-reporter": {
+			"plugins": [
+				"stylelint"
+			]
+		}
+	}
+}

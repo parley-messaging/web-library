@@ -14,10 +14,10 @@ class Header extends Component {
 		return (
 			<div className={styles.header}>
 				<div className={styles.left}>
-					{/* <HeaderButton
-						handleOnClick={this.props.menuAction}
-						icon={iconMenu}
-					/>*/}
+					{/* <HeaderButton*/}
+					{/*	handleOnClick={this.props.menuAction}*/}
+					{/*	icon={iconMenu}*/}
+					{/* />*/}
 				</div>
 				<span className={styles.title}>{this.props.title}</span>
 				<div className={styles.right}>
@@ -25,10 +25,10 @@ class Header extends Component {
 						handleOnClick={this.props.minimizeAction}
 						icon={iconMinimize}
 					/>
-					{/* <HeaderButton
-						handleOnClick={this.props.closeAction}
-						icon={iconClose}
-					/>*/}
+					{/* <HeaderButton*/}
+					{/*	handleOnClick={this.props.closeAction}*/}
+					{/*	icon={iconClose}*/}
+					{/* />*/}
 				</div>
 			</div>
 		);

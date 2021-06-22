@@ -1,23 +1,29 @@
 .wrapper {
 	display: -ms-grid;
 	display: grid;
-	-ms-grid-columns: auto;
-	grid-template-columns: auto;
-	-ms-grid-rows: minmax(50%,100%) auto;
-	grid-template-rows: minmax(50%,100%) auto;
 	max-width: inherit;
+	-ms-grid-columns: auto;
+	-ms-grid-rows: minmax(50%, 100%) auto;
+	grid-template-columns: auto;
+	grid-template-rows: minmax(50%, 100%) auto;
 }
+
 .body {
 	overflow-y: auto;
 }
+
 .welcome {
 	padding: 10px 0;
-	margin: 0 40px;
 	border: none;
+	margin: 0 40px;
 }
+
 .sticky {
 	padding: 10px 0;
-	margin: 0 40px;
 	border: none;
+	margin: 0 40px;
 }
-.error {}
+
+.error {
+	/* ... */
+}
