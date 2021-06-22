@@ -9,18 +9,6 @@
 	overflow-y: auto;
 }
 
-.welcome {
-	padding: 10px 0;
-	border: none;
-	margin: 0 40px;
-}
-
-.sticky {
-	padding: 10px 0;
-	border: none;
-	margin: 0 40px;
-}
-
 .error {
 	/* ... */
 }

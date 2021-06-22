@@ -1,12 +1,12 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Conversation.module.css";
+import Announcement, {stickyType, welcomeType} from "./Announcement";
 
 // components
 import DateGroup from "./DateGroup";
 import Message from "./Message";
 import QuickReplies from "./QuickReplies";
-import Announcement from "./Announcement";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -156,10 +156,10 @@ class Conversation extends Component {
 		return (
 			<div className={styles.wrapper}>
 				<div className={styles.body}>
-					{this.props.welcomeMessage &&
-						<div className={styles.welcome}>
-							<Announcement message={this.props.welcomeMessage} />
-						</div>}
+					{
+						this.props.welcomeMessage &&
+							<Announcement message={this.props.welcomeMessage} type={welcomeType} />
+					}
 					{this.state.messages.map(message => (
 						<React.Fragment key={message.id}>
 							{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
@@ -173,10 +173,10 @@ class Conversation extends Component {
 							}
 						</React.Fragment>
 					))}
-					{this.state.stickyMessage &&
-						<div className={styles.sticky}>
-							<Announcement message={this.state.stickyMessage} />
-						</div>}
+					{
+						this.state.stickyMessage &&
+							<Announcement message={this.state.stickyMessage} type={stickyType} />
+					}
 				</div>
 				<div className={styles.error}>
 
