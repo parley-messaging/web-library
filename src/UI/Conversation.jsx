@@ -178,9 +178,8 @@ class Conversation extends Component {
 							<Announcement message={this.state.stickyMessage} type={stickyType} />
 					}
 				</div>
-				<div className={styles.error}>
-
-				</div>
+				{/* <div className={styles.error}>*/}
+				{/* </div>*/}
 			</div>
 		);
 	}
