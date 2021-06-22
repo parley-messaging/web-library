@@ -8,7 +8,7 @@ class DateGroup extends Component {
 		const toMillisecondsMultiplier = 1000;
 
 		return (
-			<div className={styles.container}>
+			<div className={styles.messageBubble}>
 				<span className={styles.date}>
 					{new Date(this.props.timestamp * toMillisecondsMultiplier).toLocaleDateString()}
 				</span>

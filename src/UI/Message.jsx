@@ -19,7 +19,7 @@ class Message extends Component {
 	}
 
 	render() {
-		let classNames = styles.container;
+		let classNames = styles.messageBubble;
 		if(this.props.message.typeId === MessageTypes.User)
 			classNames += ` ${styles.user}`;
 		else if(this.props.message.typeId === MessageTypes.Agent)

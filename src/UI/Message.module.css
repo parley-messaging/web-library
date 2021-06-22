@@ -1,21 +1,21 @@
 /* region Container */
-.container {
+.messageBubble {
 	display: block;
 	padding: 0 30px;
 	margin-bottom: 10px;
 }
 
-.container::before,
-.container::after {
+.messageBubble::before,
+.messageBubble::after {
 	display: table;
 	content: "";
 }
 
-.container::after {
+.messageBubble::after {
 	clear: both;
 }
 
-.container.agent {
+.messageBubble.agent {
 	display: grid;
 	grid-template-columns: max-content;
 	grid-template-rows: auto auto;
