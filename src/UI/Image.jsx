@@ -28,10 +28,7 @@ class Image extends Component {
 		// 	</>
 		// );
 
-		return (
-			<>
-			</>
-		);
+		return null;
 	}
 }
 
