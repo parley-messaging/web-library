@@ -5,12 +5,12 @@ import styles from "./DateGroup.module.css";
 
 class DateGroup extends Component {
 	render() {
-		const toSecondsMultiplier = 1000;
+		const toMillisecondsMultiplier = 1000;
 
 		return (
 			<div className={styles.container}>
 				<span className={styles.date}>
-					{new Date(this.props.timestamp * toSecondsMultiplier).toLocaleDateString()}
+					{new Date(this.props.timestamp * toMillisecondsMultiplier).toLocaleDateString()}
 				</span>
 			</div>
 		);
