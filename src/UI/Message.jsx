@@ -70,8 +70,6 @@ Message.propTypes = {
 		quickReplies: PropTypes.arrayOf(PropTypes.string),
 		time: PropTypes.number.isRequired,
 		typeId: PropTypes.number.isRequired,
-
-		// status: PropTypes.number.isRequired, // TODO: What is status?
 	}),
 };
 
