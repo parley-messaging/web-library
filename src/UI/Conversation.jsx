@@ -175,25 +175,25 @@ class Conversation extends Component {
 			<div className={styles.wrapper}>
 				<div className={styles.body}>
 					{
-						this.props.welcomeMessage &&
-							<Announcement message={this.props.welcomeMessage} type={welcomeType} />
+						this.props.welcomeMessage
+							&& <Announcement message={this.props.welcomeMessage} type={welcomeType} />
 					}
 					{this.state.messages.map(message => (
 						<React.Fragment key={message.id}>
-							{this.setRenderedDate(this.getDateFromTimestamp(message.time)) &&
-								<DateGroup timestamp={message.time} />}
+							{this.setRenderedDate(this.getDateFromTimestamp(message.time))
+								&& <DateGroup timestamp={message.time} />}
 							<Message message={message} />
 							{
-								message.typeId === messageTypeAgent &&
-								message.quickReplies &&
-								message.quickReplies.length > 0 &&
-									<QuickReplies />
+								message.typeId === messageTypeAgent
+								&& message.quickReplies
+								&& message.quickReplies.length > 0
+								&& <QuickReplies />
 							}
 						</React.Fragment>
 					))}
 					{
-						this.state.stickyMessage &&
-							<Announcement message={this.state.stickyMessage} type={stickyType} />
+						this.state.stickyMessage
+							&& <Announcement message={this.state.stickyMessage} type={stickyType} />
 					}
 				</div>
 				{/* <div className={styles.error}>*/}

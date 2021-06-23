@@ -33,11 +33,11 @@ class Message extends Component {
 		return (
 			<div className={classNames}>
 				{
-					this.props.message.agent &&
-					this.props.message.agent.name.length > 0 &&
-						<div className={styles.name}>
+					this.props.message.agent
+					&& this.props.message.agent.name.length > 0
+						&& <div className={styles.name}>
 							{this.props.message.agent.name}
-						</div>
+						   </div>
 				}
 				<div className={styles.message}>
 					{this.props.message.media ?

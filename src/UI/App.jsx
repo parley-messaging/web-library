@@ -34,8 +34,8 @@ export default class App extends React.Component {
 		return (
 			<>
 				<Launcher handleOnClick={this.toggleChat} />
-				{this.state.showChat &&
-					<Chat
+				{this.state.showChat
+					&& <Chat
 						allowEmoji={true}
 						allowFileUpload={true}
 						closeAction={this.toggleMenu}
@@ -43,7 +43,7 @@ export default class App extends React.Component {
 						minimizeAction={this.toggleMenu}
 						title={title}
 						welcomeMessage={welcomeMessage}
-					/>}
+					   />}
 			</>
 		);
 	}
