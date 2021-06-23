@@ -10,10 +10,6 @@ class ReplyText extends Component {
 		this.textArea = React.createRef();
 	}
 
-	componentDidMount() {
-		this.textArea.current.focus();
-	}
-
 	handleKeyDown = (e) => {
 		if(this.props.isMobile)
 			return;

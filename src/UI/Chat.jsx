@@ -11,12 +11,13 @@ class Chat extends Component {
 	constructor(props) {
 		super(props);
 
-		this.isMobile = false;
-		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
+		this.isMobile = true;
+		this.isIosDevice = true; // If true; will correct width/height according to window inner width/height
 		this.idName = "chat";
 		this.correctionIntervalID = null;
 		this.correctionTimeoutID = null;
 		this.chatRef = React.createRef();
+		this.replyTextRef = React.createRef();
 	}
 
 	startCorrection(correction, chatNode) {
@@ -66,19 +67,7 @@ class Chat extends Component {
 		if(!this.isIosDevice)
 			return;
 
-		// TODO: Somehow fix this so that we don't have to wait for chatRef to be != null
-		// It seems that once this is called, chatRef.current = null
-		// React docs https://reactjs.org/docs/refs-and-the-dom.html#adding-a-ref-to-a-dom-element
-		// say that the ref is set when the component mounts, but that doesn't seem to happen
-		const chatNode = await new Promise((resolve) => {
-			const intervalID = setInterval(() => {
-				console.log("Waiting for chatRef.current...");
-				if(this.chatRef.current !== null) {
-					clearInterval(intervalID);
-					resolve(this.chatRef.current);
-				}
-			});
-		});
+		const chatNode = this.chatRef.current;
 
 		// On focus/blur
 		if(chatNode) {
@@ -89,6 +78,10 @@ class Chat extends Component {
 			this.startCorrection("width", chatNode);
 		}
 	};
+
+	componentDidMount() {
+		this.replyTextRef.current.textArea.current.focus();
+	}
 
 	componentWillUnmount() {
 		clearInterval(this.correctionIntervalID);
@@ -116,6 +109,7 @@ class Chat extends Component {
 					allowFileUpload={this.allowFileUpload}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
+					replyTextRef={this.replyTextRef}
 				/>
 			</div>
 		);

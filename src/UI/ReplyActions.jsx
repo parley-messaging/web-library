@@ -12,7 +12,6 @@ class ReplyActions extends Component {
 	constructor(props) {
 		super(props);
 
-		// state
 		this.state = {reply: ""};
 	}
 
@@ -35,6 +34,7 @@ class ReplyActions extends Component {
 					isMobile={this.props.isMobile}
 					onChange={this.handleChange}
 					onSubmit={this.handleSubmit}
+					ref={this.props.replyTextRef}
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
@@ -51,6 +51,7 @@ ReplyActions.propTypes = {
 	allowFileUpload: PropTypes.bool,
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
+	replyTextRef: PropTypes.object,
 };
 
-export default ReplyActions;
+export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);
