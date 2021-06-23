@@ -20,9 +20,6 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
-		// TODO: Send message, for now console log state
-		console.log(this.state.reply);
-
 		this.setState(() => ({reply: ""}));
 	}
 

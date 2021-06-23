@@ -2,9 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Header.module.css";
 
-// TODO: supress until https://github.com/parley-messaging/web-library/pull/3#discussion_r656174570 is resolved
-// eslint-disable-next-line no-unused-vars
-import HeaderButton, {menuType, minimizeType, closeType} from "./Buttons/HeaderButton";
+import HeaderButton, {minimizeType} from "./Buttons/HeaderButton";
 
 class Header extends Component {
 	render() {

@@ -27,9 +27,6 @@ class Message extends Component {
 		else
 			return null;
 
-
-		// TODO: Markdown opties, alleen link ondersteunen
-
 		return (
 			<div className={classNames}>
 				{
