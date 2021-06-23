@@ -23,7 +23,7 @@ export default class App extends React.Component {
 
 		return (
 			<>
-				<Launcher handleOnClick={this.toggleChat} />
+				<Launcher handleClick={this.toggleChat} />
 				{this.state.showChat
 				&& <Chat
 					allowEmoji={true}

@@ -19,7 +19,7 @@ class Header extends Component {
 				<span className={styles.title}>{this.props.title}</span>
 				<div className={styles.right}>
 					<HeaderButton
-						handleOnClick={this.props.minimizeAction}
+						handleClick={this.props.minimizeAction}
 						type={minimizeType}
 					/>
 					{/* <HeaderButton*/}

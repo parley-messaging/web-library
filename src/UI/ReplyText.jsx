@@ -14,7 +14,7 @@ class ReplyText extends Component {
 		this.textArea.current.focus();
 	}
 
-	handleOnKeyDown = (e) => {
+	handleKeyDown = (e) => {
 		if(this.props.isMobile)
 			return;
 
@@ -25,12 +25,12 @@ class ReplyText extends Component {
 		}
 	}
 
-	handleOnFocus = () => {
+	handleFocus = () => {
 		if(this.props.isMobile)
 			this.props.fitToIDeviceScreen();
 	};
 
-	handleOnBlur = () => {
+	handleBlur = () => {
 		if(this.props.isMobile)
 			this.props.fitToIDeviceScreen();
 	};
@@ -43,10 +43,10 @@ class ReplyText extends Component {
 			<div className={styles.text}>
 				<TextareaAutosize
 					maxRows={maxRows}
-					onBlur={this.handleOnBlur}
+					onBlur={this.handleBlur}
 					onChange={this.props.onChange}
-					onFocus={this.handleOnFocus}
-					onKeyDown={this.handleOnKeyDown}
+					onFocus={this.handleFocus}
+					onKeyDown={this.handleKeyDown}
 					placeholder={placeholder}
 					ref={this.textArea}
 					value={this.props.value}

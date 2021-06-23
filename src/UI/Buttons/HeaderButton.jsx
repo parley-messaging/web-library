@@ -32,7 +32,7 @@ class HeaderButton extends Component {
 		}
 
 		return (
-			<button aria-label={ariaLabel} className={className} onClick={this.props.handleOnClick} type={typeButton}>
+			<button aria-label={ariaLabel} className={className} onClick={this.props.handleClick} type={typeButton}>
 				<FontAwesomeIcon icon={icon} />
 			</button>
 		);
@@ -40,7 +40,7 @@ class HeaderButton extends Component {
 }
 
 HeaderButton.propTypes = {
-	handleOnClick: PropTypes.func.isRequired,
+	handleClick: PropTypes.func.isRequired,
 	type: PropTypes.oneOf([
 		menuType,
 		minimizeType,

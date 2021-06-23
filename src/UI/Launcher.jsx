@@ -10,7 +10,7 @@ class Launcher extends Component {
 
 		return (
 			<div className={styles.launcher}>
-				<button aria-label={BUTTONLAUNCHER} onClick={this.props.handleOnClick} type={buttonType}>
+				<button aria-label={BUTTONLAUNCHER} onClick={this.props.handleClick} type={buttonType}>
 					<LauncherSVG />
 				</button>
 			</div>
@@ -18,6 +18,6 @@ class Launcher extends Component {
 	}
 }
 
-Launcher.propTypes = {handleOnClick: PropTypes.func};
+Launcher.propTypes = {handleClick: PropTypes.func};
 
 export default Launcher;
