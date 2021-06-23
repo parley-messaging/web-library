@@ -1,11 +1,9 @@
 {
 	"modules": true,
 	"plugins": {
-		"stylelint": {},
 		"autoprefixer": {},
 		"postcss-reporter": {
 			"plugins": [
-				"stylelint",
 				"autoprefixer"
 			]
 		}
