@@ -10,21 +10,11 @@ export default class App extends React.Component {
 		super(props);
 
 		// State
-		this.state = {
-			showChat: false,
-			showMenu: false,
-		};
+		this.state = {showChat: false};
 	}
 
 	toggleChat = () => {
 		this.setState(state => ({showChat: !state.showChat}));
-	}
-
-	toggleMenu = () => {
-		this.setState(state => ({
-			showChat: !state.showChat,
-			showMenu: !state.showMenu,
-		}));
 	}
 
 	render() {
@@ -35,15 +25,13 @@ export default class App extends React.Component {
 			<>
 				<Launcher handleOnClick={this.toggleChat} />
 				{this.state.showChat
-					&& <Chat
-						allowEmoji={true}
-						allowFileUpload={true}
-						closeAction={this.toggleMenu}
-						menuAction={this.toggleMenu}
-						minimizeAction={this.toggleMenu}
-						title={title}
-						welcomeMessage={welcomeMessage}
-					   />}
+				&& <Chat
+					allowEmoji={true}
+					allowFileUpload={true}
+					minimizeAction={this.toggleChat}
+					title={title}
+					welcomeMessage={welcomeMessage}
+				   />}
 			</>
 		);
 	}
