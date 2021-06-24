@@ -98,9 +98,9 @@ class Chat extends Component {
 		return (
 			<div className={classNames} id={this.idName} ref={this.chatRef}>
 				<Header
-					closeAction={this.props.closeAction}
-					menuAction={this.props.menuAction}
-					minimizeAction={this.props.minimizeAction}
+					handleCloseClick={this.props.closeAction}
+					handleMenuClick={this.props.menuAction}
+					handleMinimizeClick={this.props.minimizeAction}
 					title={this.props.title}
 				/>
 				<Conversation welcomeMessage={this.props.welcomeMessage} />

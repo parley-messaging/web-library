@@ -10,18 +10,18 @@ class Header extends Component {
 			<div className={styles.header}>
 				<div className={styles.left}>
 					{/* <HeaderButton*/}
-					{/*	onClick={this.props.menuAction}*/}
+					{/*	onClick={this.props.handleMenuClick}*/}
 					{/*	type={menuType}*/}
 					{/* />*/}
 				</div>
 				<span className={styles.title}>{this.props.title}</span>
 				<div className={styles.right}>
 					<HeaderButton
-						handleClick={this.props.minimizeAction}
+						onClick={this.props.handleMinimizeClick}
 						type={minimizeType}
 					/>
 					{/* <HeaderButton*/}
-					{/*	onClick={this.props.closeAction}*/}
+					{/*	onClick={this.props.handleCloseClick}*/}
 					{/*	type={closeType}*/}
 					{/* />*/}
 				</div>
@@ -31,9 +31,9 @@ class Header extends Component {
 }
 
 Header.propTypes = {
-	closeAction: PropTypes.func,
-	menuAction: PropTypes.func,
-	minimizeAction: PropTypes.func,
+	handleCloseClick: PropTypes.func,
+	handleMenuClick: PropTypes.func,
+	handleMinimizeClick: PropTypes.func,
 	title: PropTypes.string,
 };
 

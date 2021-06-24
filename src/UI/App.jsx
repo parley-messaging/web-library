@@ -13,6 +13,10 @@ export default class App extends React.Component {
 		this.state = {showChat: false};
 	}
 
+	handleClick = () => {
+		this.toggleChat();
+	}
+
 	toggleChat = () => {
 		this.setState(state => ({showChat: !state.showChat}));
 	}
@@ -23,7 +27,7 @@ export default class App extends React.Component {
 
 		return (
 			<>
-				<Launcher handleClick={this.toggleChat} />
+				<Launcher onClick={this.handleClick} />
 				{this.state.showChat
 				&& <Chat
 					allowEmoji={true}
