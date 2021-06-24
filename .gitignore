@@ -9,3 +9,7 @@ node_modules
 .cache
 ssl
 /.parcel-cache/
+
+# Testing & Code Coverage
+/.nyc_output/
+/coverage/

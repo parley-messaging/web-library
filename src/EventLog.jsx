@@ -1,30 +1,31 @@
+// This component shows a basic way of implementing the Api
+// It shows how to initialize it and how you can listen for events
+
 import React, {Component} from "react";
-import PropTypes from "prop-types";
 import ApiEventTarget from "./Api/ApiEventTarget";
+import {messages, messageSend, subscribe} from "./Api/Constants/Events";
 
 class EventLog extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {events: []};
 
-		// Step 1: Initialize the ApiEventTarget
-		this.ApiEventTarget = this.props.api;
-
-		this.handleOnEvent = this.handleOnEvent.bind(this);
+		// Step 1: Initialize the Api
+		// We already have the Api initialized in Messaging.jsx,
 	}
 
 	componentDidMount() {
 		// Step 2: Register event listeners for API events
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
-		this.ApiEventTarget.addEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
+		ApiEventTarget.addEventListener(subscribe, this.handleEvent);
+		ApiEventTarget.addEventListener(messageSend, this.handleEvent);
+		ApiEventTarget.addEventListener(messages, this.handleEvent);
 	}
 
 	componentWillUnmount() {
 		// Step 3: Un-register event listeners for API events
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSubscribe, this.handleOnEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onSendMessage, this.handleOnEvent);
-		this.ApiEventTarget.removeEventListener(this.ApiEventTarget.events.onGetMessages, this.handleOnEvent);
+		ApiEventTarget.removeEventListener(subscribe, this.handleEvent);
+		ApiEventTarget.removeEventListener(messageSend, this.handleEvent);
+		ApiEventTarget.removeEventListener(messages, this.handleEvent);
 	}
 
 	render() {
@@ -41,7 +42,7 @@ class EventLog extends Component {
 		);
 	}
 
-	handleOnEvent(event) {
+	handleEvent = (event) => {
 		// Step 4: Do something when an event is triggered, in this case save it to the list
 		this.setState(prevState => ({
 			events: [
@@ -59,10 +60,17 @@ class EventLog extends Component {
 
 	convertTimestampToDate(timestamp) {
 		const date = new Date(timestamp);
-		return `[${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`;
+		const format = new Intl.DateTimeFormat("nl", {
+			year: "numeric",
+			month: "numeric",
+			day: "numeric",
+			hour: "numeric",
+			minute: "numeric",
+			second: "numeric",
+		}).format(date);
+
+		return `[${format}]`;
 	}
 }
-
-EventLog.propTypes = {api: PropTypes.instanceOf(ApiEventTarget)};
 
 export default EventLog;

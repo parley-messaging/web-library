@@ -19,7 +19,16 @@ class MessageList extends Component {
 	convertTimestampToDate(timestamp) {
 		const unixTimestampMultiplier = 1000; // Converts unix timestamp from seconds to milliseconds
 		const date = new Date(timestamp * unixTimestampMultiplier);
-		return `[${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]`;
+		const format = new Intl.DateTimeFormat("nl", {
+			year: "numeric",
+			month: "numeric",
+			day: "numeric",
+			hour: "numeric",
+			minute: "numeric",
+			second: "numeric",
+		}).format(date);
+
+		return `[${format}]`;
 	}
 }
 

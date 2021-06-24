@@ -1,77 +1,9 @@
-// This script is an event based implementation of the Api.js script.
+// This script will dispatch events from Api.js
 // It provides subscribable events which get fired upon response of the API.
 // This way you can listen for responses on multiple locations.
 
-import ApiResponseEvent from "./ApiResponseEvent";
-import Api from "./Api";
-import PollingService from "./Polling";
-
-export default class ApiEventTarget extends EventTarget {
-	constructor(apiDomain) {
-		super();
-
-		this.Api = new Api(apiDomain);
-		this.PollingService = null;
-
-		this.events = {
-			onSubscribe: "onSubscribe",
-			onSendMessage: "onSendMessage",
-			onGetMessages: "onGetMessages",
-		};
-	}
-
-	// TODO: Use localStorage for identifications
-
-	subscribeDevice(accountIdentification, deviceIdentification) {
-		this.Api.subscribeDevice(accountIdentification, deviceIdentification)
-			.then(response => response.json())
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onSubscribe", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
-			});
-	}
-
-	sendMessage(message, accountIdentification, deviceIdentification) {
-		this.Api.sendMessage(message, accountIdentification, deviceIdentification)
-			.then(response => response.json())
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onSendMessage", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
-			});
-	}
-
-	getMessages(accountIdentification, deviceIdentification) {
-		this.Api.getMessages(accountIdentification, deviceIdentification)
-			.then(response => response.json())
-			.then((data) => {
-				this.dispatchEvent(new ApiResponseEvent("onGetMessages", data));
-			})
-			.catch((error) => {
-				// TODO: These errors are not 4xx statuses, so what should we do with them?
-				throw new Error(`Error occurred during Fetch(): ${error}`);
-			});
-	}
-
-	/**
-	 * Creates the PollingService in which you can start polling
-	 * example: `ApiEventTarget.PollingService.startPolling()`
-	 *
-	 * @param accountIdentification
-	 * @param deviceIdentification
-	 * @param customIntervals example `["2s", "5s", "30s", "1m"]`
-	 */
-	initializePollingService(accountIdentification, deviceIdentification, customIntervals) {
-		this.PollingService = new PollingService(
-			this,
-			accountIdentification,
-			deviceIdentification,
-			customIntervals,
-		);
-	}
+class ApiEventTarget extends EventTarget {
+	//
 }
+
+export default new ApiEventTarget();
