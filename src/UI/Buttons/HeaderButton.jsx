@@ -14,25 +14,25 @@ export const closeType = "close";
 class HeaderButton extends Component {
 	render() {
 		let icon;
-		let className;
+		let classNames = `${styles.button}`;
 		let ariaLabel;
 		const typeButton = "button";
 		if(this.props.type === menuType) {
 			icon = faBars;
-			className = styles.menu;
+			classNames += ` ${styles.menu}`;
 			ariaLabel = BUTTONMENU;
 		} else if(this.props.type === minimizeType) {
 			icon = faWindowMinimize;
-			className = styles.minimize;
+			classNames += ` ${styles.minimize}`;
 			ariaLabel = BUTTONMINIMIZE;
 		} else if(this.props.type === closeType) {
 			icon = faTimes;
-			className = styles.close;
+			classNames += ` ${styles.close}`;
 			ariaLabel = BUTTONCLOSE;
 		}
 
 		return (
-			<button aria-label={ariaLabel} className={className} onClick={this.props.handleClick} type={typeButton}>
+			<button aria-label={ariaLabel} className={classNames} onClick={this.props.handleClick} type={typeButton}>
 				<FontAwesomeIcon icon={icon} />
 			</button>
 		);
