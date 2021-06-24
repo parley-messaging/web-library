@@ -8,7 +8,8 @@
 		"eslint:recommended",
 		"plugin:react/recommended",
 		"plugin:jsx-a11y/recommended",
-		"plugin:compat/recommended"
+		"plugin:compat/recommended",
+		"plugin:cypress/recommended"
 	],
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -20,7 +21,8 @@
 	"plugins": [
 		"react",
 		"jsx-a11y",
-		"@babel"
+		"@babel",
+		"cypress"
 	],
 	"rules": {
 		//Possible errors
@@ -70,7 +72,9 @@
 		"no-labels": "error",
 		"no-lone-blocks": "error",
 		"no-loop-func": "error",
-		"no-magic-numbers": "error",
+		"no-magic-numbers": ["error", {
+			"ignore": [-1, 0, 1]
+		}],
 		"no-multi-spaces": "error",
 		"no-multi-str": "error",
 		"no-new": "error",
@@ -108,7 +112,7 @@
 		"yoda": "error",
 		"no-shadow": "error",
 		"no-undef-init": "error",
-		"no-use-before-define": "error",
+		"no-use-before-define": ["error", {"functions": false}],
 		//Stylistic Issues
 		"array-bracket-newline": [
 			"error", {
