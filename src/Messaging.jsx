@@ -4,6 +4,7 @@ import MessageList from "./MessageList";
 import {messages, messageSend, subscribe} from "./Api/Constants/Events";
 import Api from "./Api/Api";
 import ApiEventTarget from "./Api/ApiEventTarget";
+import PollingService from "./Api/Polling";
 
 class Messaging extends Component {
 	constructor(props) {
@@ -21,6 +22,11 @@ class Messaging extends Component {
 			this.props.deviceIdentification,
 			ApiEventTarget,
 		);
+		this.PollingService = new PollingService(
+			this.Api,
+			this.props.accountIdentification,
+			this.props.deviceIdentification,
+		);
 	}
 
 	componentDidMount() {
@@ -30,7 +36,7 @@ class Messaging extends Component {
 		ApiEventTarget.addEventListener(messages, this.handleRefreshEvent);
 
 		if(this.state.registered) {
-			this.apiEventTarget.PollingService.startPolling();
+			this.PollingService.startPolling();
 		}
 	}
 
@@ -40,7 +46,7 @@ class Messaging extends Component {
 		ApiEventTarget.removeEventListener(messageSend, this.handleSendEvent);
 		ApiEventTarget.removeEventListener(messages, this.handleRefreshEvent);
 
-		this.apiEventTarget.PollingService.stopPolling();
+		this.PollingService.stopPolling();
 	}
 
 	render() {
@@ -126,8 +132,7 @@ class Messaging extends Component {
 		// Actual handler
 		this.setState({registered: true});
 		this.handleRefreshClick();
-		this.apiEventTarget.initializePollingService(this.props.accountIdentification, this.props.deviceIdentification);
-		this.apiEventTarget.PollingService.startPolling();
+		this.PollingService.startPolling();
 	}
 
 	handleRefreshEvent = (event) => {
