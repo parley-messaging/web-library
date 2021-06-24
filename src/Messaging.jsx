@@ -101,7 +101,7 @@ class Messaging extends Component {
 	}
 
 	handleSendClick = () => {
-		this.Api.sendMessage(this.state.messageInputValue)
+		this.Api.sendMessage(this.state.messageInputValue, this.props.referer)
 			.catch((errors, warnings) => {
 				// eslint-disable-next-line no-console
 				console.error(`Errors from API request`, errors);

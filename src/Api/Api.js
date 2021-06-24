@@ -97,13 +97,17 @@ export default class Api {
 			});
 	}
 
-	sendMessage(message) {
+	sendMessage(message, referer) {
 		ow(message, "message", ow.string.nonEmpty);
+		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
-			body: JSON.stringify({message}),
+			body: JSON.stringify({
+				message,
+				referer,
+			}),
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSend, data));
