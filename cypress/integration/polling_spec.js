@@ -9,8 +9,8 @@ const config = {
 	maxIntervalAmount: PollingService.getMaxIntervalAmount(),
 };
 
-describe("PollingService Test", () => {
-	it("polls with increasing intervals", () => {
+describe("Polling Service", () => {
+	it("should poll with increasing intervals when using startPolling()", () => {
 		let lastPollDate = new Date();
 		const pollTimings = [];
 		const maxPollTimingsLength = config.customIntervals.length * config.maxIntervalAmount;
@@ -20,7 +20,7 @@ describe("PollingService Test", () => {
 		// ex; Current timing = 1010ms, Expected timing = 1000ms, Test result = success
 		const deviationAmount = 300;
 
-		const collectPollTimings = new Promise((resolve) => {
+		const collectPollTimings = new Cypress.Promise((resolve) => {
 			// This mock pretends to be the API so we can track when we get a getMessages call
 			const apiMock = {
 				getMessages: () => {
@@ -53,7 +53,7 @@ describe("PollingService Test", () => {
 			pollingService.startPolling();
 		});
 
-		cy.wrap(collectPollTimings, {timeout: 100000})
+		cy.wrap(collectPollTimings, {timeout: 20000})
 			.then((collectedPollTimings) => {
 				expect(collectedPollTimings.length)
 					.equal(maxPollTimingsLength);
@@ -78,12 +78,12 @@ describe("PollingService Test", () => {
 			});
 	});
 
-	it("stops polling when told", () => {
+	it("should stop polling when using stopPolling()", () => {
 		let calls = 0;
 		const customIntervals = ["10ms"];
 		const maxPollTimingsLength = customIntervals.length * config.maxIntervalAmount;
 
-		const promise = new Promise((resolve) => {
+		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
 				getMessages: () => {
 					calls += 1;
@@ -104,16 +104,11 @@ describe("PollingService Test", () => {
 			);
 
 			// Start the polling mechanism
-			pollingService.startPolling(
-				apiMock,
-				config.accountIdentification,
-				config.deviceIdentification,
-				customIntervals,
-			);
+			pollingService.startPolling();
 		});
 
 		cy.wrap(promise)
-			.then(async () => {
+			.then(() => {
 				// Wait for some more intervals
 				// These intervals should NOT be ran if stopPolling() works as expected
 				const waitTime = PollingService.intervalToValue(customIntervals[0]) * 2;
@@ -125,5 +120,54 @@ describe("PollingService Test", () => {
 			});
 	});
 
-	// TODO: Test restartPolling
+	it("should restart polling using restartPolling()", () => {
+		const customIntervals = ["10ms"];
+		let pollingService;
+
+		let calls = 0;
+		let iterations = 0;
+		const maxCallsUntilIteration = 5;
+		const maxIterations = 2;
+
+		const promise = new Cypress.Promise((resolve) => {
+			const apiMock = {
+				getMessages: () => {
+					calls += 1;
+
+					if(calls === maxCallsUntilIteration) {
+						pollingService.stopPolling();
+
+						iterations += 1;
+
+						if(iterations === maxIterations) {
+							resolve();
+						}
+
+						calls = 0;
+						pollingService.restartPolling();
+					}
+				},
+			};
+
+			pollingService = new PollingService(
+				apiMock,
+				config.accountIdentification,
+				config.deviceIdentification,
+				config.customIntervals,
+			);
+
+			// Start the polling mechanism
+			pollingService.startPolling();
+		});
+
+		cy.wrap(promise, {timeout: 20000})
+			.then(() => {
+				const waitTime = PollingService.intervalToValue(customIntervals[0]) * 2;
+				cy.wait(waitTime)
+					.then(() => {
+						// Confirm that there are more than 1 iterations
+						expect(iterations).to.equal(maxIterations);
+					});
+			});
+	});
 });

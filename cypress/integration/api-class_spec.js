@@ -4,6 +4,7 @@ import Config from "../../src/Api/Private/Config";
 import {subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
+import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -291,7 +292,7 @@ describe("Api class", () => {
 				config.type,
 				wrongFormat,
 			))
-				.to.throw(`Expected string \`version\` to match \`/$[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u\`, got \`${wrongFormat}\``);
+				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
 		it("should throw an error when using something other than a String as referer", () => {
