@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Conversation.module.css";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 // components
 import DateGroup from "./DateGroup";
@@ -168,7 +169,6 @@ class Conversation extends Component {
 	}
 
 	render() {
-		const messageTypeAgent = 2;
 		this.renderedDates = []; // Reset the rendered dates
 
 		return (
@@ -178,19 +178,23 @@ class Conversation extends Component {
 						this.props.welcomeMessage
 							&& <Announcement message={this.props.welcomeMessage} />
 					}
-					{this.state.messages.map(message => (
-						<React.Fragment key={message.id}>
-							{this.setRenderedDate(this.getDateFromTimestamp(message.time))
-								&& <DateGroup timestamp={message.time} />}
-							<Message message={message} />
-							{
-								message.typeId === messageTypeAgent
-								&& message.quickReplies
-								&& message.quickReplies.length > 0
-								&& <QuickReplies />
-							}
-						</React.Fragment>
-					))}
+					{
+						this.state.messages.map(message => (
+							<React.Fragment key={message.id}>
+								{
+									this.setRenderedDate(this.getDateFromTimestamp(message.time))
+										&& <DateGroup timestamp={message.time} />
+								}
+								<Message message={message} />
+								{
+									message.typeId === MessageTypes.Agent
+									&& message.quickReplies
+									&& message.quickReplies.length > 0
+										&& <QuickReplies />
+								}
+							</React.Fragment>
+						))
+					}
 					{
 						this.state.stickyMessage
 							&& <Announcement message={this.state.stickyMessage} />
