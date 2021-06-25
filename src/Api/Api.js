@@ -78,6 +78,11 @@ export default class Api {
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
+		let refererCopy = referer;
+		if(!refererCopy) {
+			refererCopy = window.location.href;
+		}
+
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
@@ -88,7 +93,7 @@ export default class Api {
 				userAdditionalInformation,
 				type,
 				version,
-				referer,
+				referer: refererCopy,
 			}),
 		})
 			.then((data) => {
@@ -101,12 +106,17 @@ export default class Api {
 		ow(message, "message", ow.string.nonEmpty);
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
+		let refererCopy = referer;
+		if(!refererCopy) {
+			refererCopy = window.location.href;
+		}
+
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
 				message,
-				referer,
+				referer: refererCopy,
 			}),
 		})
 			.then((data) => {

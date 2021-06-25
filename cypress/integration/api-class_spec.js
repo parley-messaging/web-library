@@ -65,10 +65,10 @@ describe("Api class", () => {
 		cy.fixture("postDevicesResponse.json").as("postDevicesResponse");
 		cy.fixture("postMessagesResponse.json").as("postMessagesResponse");
 		cy.get("@postDevicesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/devices`, json);
+			cy.intercept("POST", `${config.apiDomain}/**/devices`, json).as("postDevices");
 		});
 		cy.get("@postMessagesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/messages`, json);
+			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
 		});
 	});
 
@@ -305,6 +305,22 @@ describe("Api class", () => {
 			});
 		});
 
+		it("should default referer to window.location.href", () => {
+			config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				config.version,
+			);
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(JSON.parse(interception.request.body).referer)
+					.to.be.equal(window.location.href);
+			});
+		});
+
 		it("should fetch and return response using direct way", () => {
 			cy.get("@postDevicesResponse")
 				.then(async (fixture) => {
@@ -362,6 +378,15 @@ describe("Api class", () => {
 					set.value,
 				))
 					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should default referer to window.location.href", () => {
+			config.api.sendMessage(config.message);
+
+			cy.wait("@postMessages").then((interception) => {
+				expect(JSON.parse(interception.request.body).referer)
+					.to.be.equal(window.location.href);
 			});
 		});
 
