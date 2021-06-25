@@ -214,12 +214,7 @@
 		"object-property-newline": "error",
 		"one-var": ["error", "never"],
 		"operator-assignment": "error",
-		"operator-linebreak": ["error", "before", {
-			"overrides": {
-				"?": "after",
-				":": "after"
-			}
-		}],
+		"operator-linebreak": ["error", "before"],
 		"padded-blocks": ["error", "never"],
 		"prefer-exponentiation-operator": "error",
 		"prefer-object-spread": "error",
@@ -291,8 +286,10 @@
 			"ignoreCase": true
 		}],
 		"react/jsx-closing-bracket-location": ["error"],
-		"react/jsx-closing-tag-location": ["error"],
-		"react/jsx-curly-newline": ["error"],
+		"react/jsx-curly-newline": ["error", {
+			"multiline": "require",
+			"singleline": "forbid"
+		}],
 		"react/jsx-curly-brace-presence": ["error"],
 		"react/jsx-child-element-spacing": ["error"],
 		"react/jsx-curly-spacing": [

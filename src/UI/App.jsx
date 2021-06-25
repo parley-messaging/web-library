@@ -28,14 +28,16 @@ export default class App extends React.Component {
 		return (
 			<>
 				<Launcher onClick={this.handleClick} />
-				{this.state.showChat
-				&& <Chat
-					allowEmoji={true}
-					allowFileUpload={true}
-					onMinimizeClick={this.handleClick}
-					title={title}
-					welcomeMessage={welcomeMessage}
-				   />}
+				{
+					this.state.showChat
+					&& <Chat
+						allowEmoji={true}
+						allowFileUpload={true}
+						onMinimizeClick={this.handleClick}
+						title={title}
+						welcomeMessage={welcomeMessage}
+					   />
+				}
 			</>
 		);
 	}

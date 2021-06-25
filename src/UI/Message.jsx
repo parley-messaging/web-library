@@ -37,11 +37,13 @@ class Message extends Component {
 						   </div>
 				}
 				<div className={styles.message}>
-					{this.props.message.media ?
-						<Image media={this.props.message.media} /> :
-						<ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
-							{this.props.message.message}
-						</ReactMarkdown>}
+					{
+						this.props.message.media
+							? <Image media={this.props.message.media} />
+							: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
+								{this.props.message.message}
+							  </ReactMarkdown>
+					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
 					</span>

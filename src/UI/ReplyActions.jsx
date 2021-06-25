@@ -35,8 +35,10 @@ class ReplyActions extends Component {
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
-					{this.props.isMobile && this.state.reply !== ""
-						&& <MobileSubmit onClick={this.handleSubmit} />}
+					{
+						this.props.isMobile && this.state.reply !== ""
+						&& <MobileSubmit onClick={this.handleSubmit} />
+					}
 				</div>
 			</div>
 		);
