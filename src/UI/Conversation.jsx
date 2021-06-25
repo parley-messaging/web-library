@@ -188,18 +188,26 @@ class Conversation extends Component {
 		return new Date(timestamp * toMillisecondsMultiplier).toLocaleDateString();
 	}
 
-	sortMessagesByID = () => this.state.messages.sort((left, right) => {
-		if(left.id < right.id)
-			return -1;
-		else if(left.id > right.id)
-			return 1;
+	static sortMessagesByID(messages) {
+		return messages.sort((left, right) => {
+			if(left.id < right.id)
+				return -1;
+			else if(left.id > right.id)
+				return 1;
 
-		return 0;
-	})
+			return 0;
+		});
+	}
+
+	static getDerivedStateFromProps(props, state) {
+		return {
+			...state,
+			messages: Conversation.sortMessagesByID(state.messages),
+		};
+	}
 
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
-		const [lastMessage] = this.sortMessagesByID().slice(-1);
 
 		return (
 			<div className={styles.wrapper}>
@@ -209,7 +217,7 @@ class Conversation extends Component {
 							&& <Announcement message={this.props.welcomeMessage} />
 					}
 					{
-						this.state.messages.map(message => (
+						this.state.messages.map((message, index, array) => (
 							<React.Fragment key={message.id}>
 								{
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
@@ -222,7 +230,7 @@ class Conversation extends Component {
 								}
 								{
 									message.typeId === MessageTypes.Agent
-									&& message.id === lastMessage.id
+									&& index === array.length - 1
 									&& message.quickReplies
 									&& message.quickReplies.length > 0
 										&& <QuickReplies />
