@@ -1,8 +1,6 @@
 import PollingService from "../../src/Api/Polling";
 
 const config = {
-	accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
-	deviceIdentification: "aaaaaaaaaaaaaaaa",
 	customIntervals: [
 		"500ms", "1s",
 	],
@@ -44,8 +42,6 @@ describe("Polling Service", () => {
 
 			const pollingService = new PollingService(
 				apiMock,
-				config.accountIdentification,
-				config.deviceIdentification,
 				config.customIntervals,
 			);
 
@@ -98,8 +94,6 @@ describe("Polling Service", () => {
 
 			const pollingService = new PollingService(
 				apiMock,
-				config.accountIdentification,
-				config.deviceIdentification,
 				config.customIntervals,
 			);
 
@@ -151,8 +145,6 @@ describe("Polling Service", () => {
 
 			pollingService = new PollingService(
 				apiMock,
-				config.accountIdentification,
-				config.deviceIdentification,
 				config.customIntervals,
 			);
 

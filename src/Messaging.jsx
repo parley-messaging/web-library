@@ -22,11 +22,7 @@ class Messaging extends Component {
 			this.props.deviceIdentification,
 			ApiEventTarget,
 		);
-		this.PollingService = new PollingService(
-			this.Api,
-			this.props.accountIdentification,
-			this.props.deviceIdentification,
-		);
+		this.PollingService = new PollingService(this.Api);
 	}
 
 	componentDidMount() {

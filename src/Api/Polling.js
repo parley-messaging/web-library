@@ -14,13 +14,11 @@ const intervalTimeUnits = {
 };
 
 export default class PollingService {
-	constructor(api, accountIdentification, deviceIdentification, customIntervals) {
+	constructor(api, customIntervals) {
 		this.initializeTrackers();
 		this.currentIntervals = defaultIntervals;
-
 		this.api = api;
-		this.accountIdentification = accountIdentification;
-		this.deviceIdentification = deviceIdentification;
+
 		if(customIntervals !== undefined) {
 			this.currentIntervals = customIntervals;
 		}
@@ -56,7 +54,7 @@ export default class PollingService {
 	startPolling() {
 		this.intervalHandle = window.setInterval(() => {
 			// Get messages
-			this.api.getMessages(this.accountIdentification, this.deviceIdentification);
+			this.api.getMessages();
 
 			// Increase poll counter for this interval
 			this.currentIntervalAmount++;
