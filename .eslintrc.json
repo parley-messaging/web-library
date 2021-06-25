@@ -44,7 +44,7 @@
 		"array-callback-return": "error",
 		"block-scoped-var": "error",
 		"consistent-return": "error",
-		"curly": ["error", "all"],
+		"curly": ["error", "multi-or-nest", "consistent"],
 		"default-case": "error",
 		"default-case-last": "error",
 		"default-param-last": "error",
@@ -125,6 +125,7 @@
 		"block-spacing": "error",
 		"brace-style": "error",
 		"camelcase": "error",
+		//"capitalized-comments": ["error", "always", {"ignorePattern": "noinspection"}],
 		"comma-dangle": ["error", "always-multiline"],
 		"comma-spacing": "error",
 		"comma-style": "error",
@@ -285,8 +286,10 @@
 			"ignoreCase": true
 		}],
 		"react/jsx-closing-bracket-location": ["error"],
-		"react/jsx-closing-tag-location": ["error"],
-		"react/jsx-curly-newline": ["error"],
+		"react/jsx-curly-newline": ["error", {
+			"multiline": "require",
+			"singleline": "forbid"
+		}],
 		"react/jsx-curly-brace-presence": ["error"],
 		"react/jsx-child-element-spacing": ["error"],
 		"react/jsx-curly-spacing": [
