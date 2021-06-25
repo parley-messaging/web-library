@@ -15,7 +15,8 @@ const intervalTimeUnits = {
 
 export default class PollingService {
 	constructor(api, accountIdentification, deviceIdentification, customIntervals) {
-		this.createDefaults();
+		this.initializeTrackers();
+		this.currentIntervals = defaultIntervals;
 
 		this.api = api;
 		this.accountIdentification = accountIdentification;
@@ -26,10 +27,10 @@ export default class PollingService {
 	}
 
 	/**
-	 * Creates default values
+	 * Initializes values which track the current interval
+	 * and the handle of the interval
 	 */
-	createDefaults() {
-		this.currentIntervals = defaultIntervals;
+	initializeTrackers() {
 		this.currentIntervalID = 0;
 		this.currentIntervalAmount = 0;
 		this.intervalHandle = null;
@@ -83,6 +84,7 @@ export default class PollingService {
 	 */
 	stopPolling() {
 		window.clearInterval(this.intervalHandle);
+		this.initializeTrackers();
 	}
 
 	/**
