@@ -62,13 +62,15 @@ export default class PollingService {
 
 			// Stop interval when counter reaches max
 			if(this.currentIntervalAmount === maxIntervalAmount) {
-				// Stop/Remove the interval from the window
-				window.clearInterval(this.intervalHandle);
-
 				// Only update to the next interval if there is one
 				if(this.currentIntervalID < this.currentIntervals.length) {
 					this.currentIntervalID++;
+				} else {
+					return; // Continue using this interval
 				}
+
+				// Stop/Remove the interval from the window
+				window.clearInterval(this.intervalHandle);
 
 				// Re-start polling
 				this.startPolling();
