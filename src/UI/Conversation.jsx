@@ -36,6 +36,26 @@ class Conversation extends Component {
 	getMessages = () => {
 		const messageArray = [
 			{
+				id: 159299,
+				time: 1623060000,
+				message: null,
+				image: null,
+				typeId: 2,
+				agent: {
+					id: 1,
+					name: "Tracebuzz",
+					avatar: "https://beta.tracebuzz.com/V002/img/avatar.php?i=TB&c=f4931d",
+				},
+				carousel: null,
+				quickReplies: [
+					"yes", "no", "maybe",
+				],
+				custom: null,
+				title: null,
+				media: null,
+				buttons: null,
+			},
+			{
 				id: 159297,
 				time: 1623060000,
 				message: "some_system_message",
@@ -168,8 +188,18 @@ class Conversation extends Component {
 		return new Date(timestamp * toMillisecondsMultiplier).toLocaleDateString();
 	}
 
+	sortMessagesByID = () => this.state.messages.sort((left, right) => {
+		if(left.id < right.id)
+			return -1;
+		else if(left.id > right.id)
+			return 1;
+
+		return 0;
+	})
+
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
+		const [lastMessage] = this.sortMessagesByID().slice(-1);
 
 		return (
 			<div className={styles.wrapper}>
@@ -185,9 +215,14 @@ class Conversation extends Component {
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
 										&& <DateGroup timestamp={message.time} />
 								}
-								<Message message={message} />
+								{
+									message.message !== null
+									&& message.message.length > 0
+										&& <Message message={message} />
+								}
 								{
 									message.typeId === MessageTypes.Agent
+									&& message.id === lastMessage.id
 									&& message.quickReplies
 									&& message.quickReplies.length > 0
 										&& <QuickReplies />
