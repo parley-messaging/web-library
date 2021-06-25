@@ -32,7 +32,7 @@ export default class App extends React.Component {
 				&& <Chat
 					allowEmoji={true}
 					allowFileUpload={true}
-					minimizeAction={this.toggleChat}
+					onMinimizeClick={this.handleClick}
 					title={title}
 					welcomeMessage={welcomeMessage}
 				   />}

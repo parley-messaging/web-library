@@ -11,8 +11,8 @@ class Chat extends Component {
 	constructor(props) {
 		super(props);
 
-		this.isMobile = true;
-		this.isIosDevice = true; // If true; will correct width/height according to window inner width/height
+		this.isMobile = false;
+		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
 		this.idName = "chat";
 		this.correctionIntervalID = null;
 		this.correctionTimeoutID = null;
@@ -98,9 +98,9 @@ class Chat extends Component {
 		return (
 			<div className={classNames} id={this.idName} ref={this.chatRef}>
 				<Header
-					handleCloseClick={this.props.closeAction}
-					handleMenuClick={this.props.menuAction}
-					handleMinimizeClick={this.props.minimizeAction}
+					onCloseClick={this.props.onCloseClick}
+					onMenuClick={this.props.onMenuClick}
+					onMinimizeClick={this.props.onMinimizeClick}
 					title={this.props.title}
 				/>
 				<Conversation welcomeMessage={this.props.welcomeMessage} />
@@ -119,9 +119,9 @@ class Chat extends Component {
 Chat.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
-	closeAction: PropTypes.func,
-	menuAction: PropTypes.func,
-	minimizeAction: PropTypes.func,
+	onCloseClick: PropTypes.func,
+	onMenuClick: PropTypes.func,
+	onMinimizeClick: PropTypes.func,
 	title: PropTypes.string,
 	welcomeMessage: PropTypes.string,
 };
