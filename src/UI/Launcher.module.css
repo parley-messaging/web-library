@@ -1,0 +1,22 @@
+.launcher {
+	position: fixed;
+	z-index: 2000;
+	right: 20px;
+	bottom: 20px;
+	width: 50px;
+	height: 50px;
+}
+
+.launcher button {
+	position: absolute;
+	bottom: 0;
+	width: 55px;
+	height: 55px;
+	border: none;
+	background: var(--messenger-icon-background-color, #4A5E83);
+	border-radius: 50%;
+	box-shadow: var(--shadow);
+	cursor: pointer;
+	text-align: center;
+	transform: translateZ(0);
+}

@@ -4,6 +4,7 @@
     <option name="OTHER_INDENT_OPTIONS">
       <value>
         <option name="USE_TAB_CHARACTER" value="true" />
+        <option name="SMART_TABS" value="true" />
       </value>
     </option>
     <option name="LINE_SEPARATOR" value="&#10;" />
@@ -47,6 +48,7 @@
     <codeStyleSettings language="HTML">
       <indentOptions>
         <option name="USE_TAB_CHARACTER" value="true" />
+        <option name="SMART_TABS" value="true" />
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="Haml">
