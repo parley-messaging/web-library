@@ -1,0 +1,16 @@
+.center {
+	color: var(--info-text-color, #535353);
+	font-size: 14px;
+	font-weight: 200;
+	text-align: center;
+}
+
+.center p {
+	margin: 0;
+}
+
+.announcement {
+	padding: 10px 0;
+	border: none;
+	margin: 0 40px;
+}

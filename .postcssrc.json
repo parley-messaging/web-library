@@ -1,0 +1,11 @@
+{
+	"modules": true,
+	"plugins": {
+		"autoprefixer": {},
+		"postcss-reporter": {
+			"plugins": [
+				"autoprefixer"
+			]
+		}
+	}
+}
