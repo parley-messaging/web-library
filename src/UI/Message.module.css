@@ -1,0 +1,84 @@
+/* region Container */
+.messageBubble {
+	display: block;
+	padding: 0 30px;
+	margin-bottom: 10px;
+}
+
+.messageBubble::before,
+.messageBubble::after {
+	display: table;
+	content: "";
+}
+
+.messageBubble::after {
+	clear: both;
+}
+
+.messageBubble.agent {
+	display: grid;
+	grid-template-columns: max-content;
+	grid-template-rows: auto auto;
+}
+
+/* endregion */
+
+/* region Message */
+.message {
+	position: relative;
+	display: grid;
+	max-width: 190px;
+	padding: 8px 10px;
+	border-radius: 5px;
+	grid-template-columns: auto;
+	grid-template-rows: auto auto;
+	hyphens: auto;
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
+	word-break: break-word;
+	word-wrap: break-word;
+}
+
+.message p {
+	margin: 0;
+}
+
+.message a {
+	background-color: transparent;
+	color: var(--link-color, #4891F5);
+	text-decoration: none;
+	text-decoration-skip: objects;
+}
+
+.user .message {
+	background-color: var(--user-background-color, #4A5E83);
+	border-radius: 10px 10px 0;
+	color: var(--user-text-color, #FFF);
+	float: right;
+}
+
+.agent .message {
+	background: var(--account-background-color, #E7E3E0);
+	border-radius: 0 10px 10px;
+	color: var(--account-text-color, #535353);
+	float: left;
+}
+
+.name {
+	padding: 0 0 5px;
+	color: var(--agent-name-color, rgba(0, 0, 0, 0.68));
+	font-size: 13px;
+}
+
+/* endregion */
+
+/* region Time */
+.time {
+	display: block;
+	padding-top: 5px;
+	clear: both;
+	font-size: 10px;
+	text-align: right;
+}
+
+/* endregion */
