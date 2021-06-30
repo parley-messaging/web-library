@@ -61,7 +61,12 @@ describe("Polling Service", () => {
 
 					// Convert interval "1s" to value "1000" (ms)
 					// eslint-disable-next-line max-len
-					const expectedPollTiming = PollingService.intervalToValue(config.customIntervals[customIntervalIndex]);
+					let expectedPollTiming = PollingService.intervalToValue(customIntervals[customIntervalIndex]);
+
+					// When starting polling, the first call is made immediately
+					// so it's timing should be instant
+					if(index === 0)
+						expectedPollTiming = 0;
 
 					// Check if the timing is ~= the expected timing
 					// (checking timing exact is impossible to reliably test..)
