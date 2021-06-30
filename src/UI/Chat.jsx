@@ -1,11 +1,10 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Chat.module.css";
-
-// components
 import Header from "./Header";
 import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
+import Api from "../Api/Api";
 
 class Chat extends Component {
 	constructor(props) {
@@ -107,6 +106,7 @@ class Chat extends Component {
 				<ReplyActions
 					allowEmoji={this.allowEmoji}
 					allowFileUpload={this.allowFileUpload}
+					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
 					replyTextRef={this.replyTextRef}
@@ -119,6 +119,7 @@ class Chat extends Component {
 Chat.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
+	api: PropTypes.instanceOf(Api),
 	onCloseClick: PropTypes.func,
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,

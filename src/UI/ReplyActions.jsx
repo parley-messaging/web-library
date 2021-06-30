@@ -3,10 +3,7 @@ import PropTypes from "prop-types";
 import styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
-
-// import ReplyAttachment from "./ReplyAttachment";
-// import EmojiLauncher from "./EmojiLauncher";
-// import EmojiPicker from "./EmojiPicker";
+import Api from "../Api/Api";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -20,6 +17,14 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
+		// TODO: Handle promise error
+		// Send reply to Parley
+		this.props.api.sendMessage(this.state.reply);
+
+		// TODO: Only clear state after succesful message sent?
+		// TODO: Disable input field while sending as "loading"?
+
+		// Reset state
 		this.setState(() => ({reply: ""}));
 	}
 
@@ -48,6 +53,7 @@ class ReplyActions extends Component {
 ReplyActions.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
+	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
 	replyTextRef: PropTypes.object,
