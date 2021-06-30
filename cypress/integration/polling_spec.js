@@ -1,22 +1,21 @@
 import PollingService from "../../src/Api/Polling";
 
-const config = {
-	customIntervals: [
-		"500ms", "1s",
-	],
-	maxIntervalAmount: PollingService.getMaxIntervalAmount(),
-};
-
 describe("Polling Service", () => {
 	it("should poll with increasing intervals when using startPolling()", () => {
+		const customIntervals = [
+			"20ms", "200ms",
+		];
+		const maxIntervalAmount = PollingService.getMaxIntervalAmount();
+
 		let lastPollDate = new Date();
 		const pollTimings = [];
-		const maxPollTimingsLength = config.customIntervals.length * config.maxIntervalAmount;
+		const maxPollTimingsLength = customIntervals.length * maxIntervalAmount;
 
 		// Checking timing performance is impossible to do exactly on the millisecond
 		// so that's why we need some room in which the timing can deviate
 		// ex; Current timing = 1010ms, Expected timing = 1000ms, Test result = success
-		const deviationAmount = 300;
+		// Important; a low value (compared to the interval) can result in flaky tests
+		const deviationAmount = 10;
 
 		const collectPollTimings = new Cypress.Promise((resolve) => {
 			// This mock pretends to be the API so we can track when we get a getMessages call
@@ -42,7 +41,7 @@ describe("Polling Service", () => {
 
 			const pollingService = new PollingService(
 				apiMock,
-				config.customIntervals,
+				customIntervals,
 			);
 
 			// Start the polling mechanism
@@ -58,7 +57,7 @@ describe("Polling Service", () => {
 					// Because the interval array is "[interval0, interval4]" (each interval is done 5 times)
 					// and the poll timing array is  "[timing0, timing1, timing2, ...]
 					// we need to calculate the index so it matches up with the interval array
-					const customIntervalIndex = Math.floor(index / config.maxIntervalAmount);
+					const customIntervalIndex = Math.floor(index / maxIntervalAmount);
 
 					// Convert interval "1s" to value "1000" (ms)
 					// eslint-disable-next-line max-len
@@ -75,9 +74,11 @@ describe("Polling Service", () => {
 	});
 
 	it("should stop polling when using stopPolling()", () => {
-		let calls = 0;
 		const customIntervals = ["10ms"];
-		const maxPollTimingsLength = customIntervals.length * config.maxIntervalAmount;
+		const maxIntervalAmount = PollingService.getMaxIntervalAmount();
+
+		let calls = 0;
+		const maxPollTimingsLength = customIntervals.length * maxIntervalAmount;
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
@@ -94,7 +95,7 @@ describe("Polling Service", () => {
 
 			const pollingService = new PollingService(
 				apiMock,
-				config.customIntervals,
+				customIntervals,
 			);
 
 			// Start the polling mechanism
@@ -145,7 +146,7 @@ describe("Polling Service", () => {
 
 			pollingService = new PollingService(
 				apiMock,
-				config.customIntervals,
+				customIntervals,
 			);
 
 			// Start the polling mechanism
