@@ -13,7 +13,7 @@ import {
 	MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {messages, messageSend, subscribe} from "./Constants/Events";
+import {messages, messageSent, subscribe} from "./Constants/Events";
 import PushTypes from "./Constants/PushTypes";
 import DeviceTypes from "./Constants/DeviceTypes";
 import {
@@ -106,7 +106,7 @@ export default class Api {
 			body: JSON.stringify({message}),
 		})
 			.then((data) => {
-				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSend, data));
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, data));
 				return data;
 			});
 	}
