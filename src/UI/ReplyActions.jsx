@@ -17,15 +17,18 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
-		// TODO: Handle promise error
+		// This is a simple way of telling the client that the
+		// message is being sent. We will implement a loading
+		// animation in #209
+		this.props.replyTextRef.current.textArea.current.disabled = true;
+
 		// Send reply to Parley
-		this.props.api.sendMessage(this.state.reply);
-
-		// TODO: Only clear state after succesful message sent?
-		// TODO: Disable input field while sending as "loading"?
-
-		// Reset state
-		this.setState(() => ({reply: ""}));
+		this.props.api.sendMessage(this.state.reply)
+			.then(() => {
+				// Reset state
+				this.setState(() => ({reply: ""}));
+				this.props.replyTextRef.current.textArea.current.disabled = false;
+			});
 	}
 
 	render() {
