@@ -120,7 +120,7 @@ describe("Polling Service", () => {
 
 		let calls = 0;
 		let iterations = 0;
-		const maxCallsUntilIteration = 5;
+		const maxCallsUntilIteration = PollingService.getMaxIntervalAmount();
 		const maxIterations = 2;
 
 		const promise = new Cypress.Promise((resolve) => {
@@ -130,11 +130,11 @@ describe("Polling Service", () => {
 
 					if(calls === maxCallsUntilIteration) {
 						pollingService.stopPolling();
-
 						iterations += 1;
 
 						if(iterations === maxIterations) {
 							resolve();
+							return;
 						}
 
 						calls = 0;

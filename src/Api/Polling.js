@@ -15,23 +15,22 @@ const intervalTimeUnits = {
 
 export default class PollingService {
 	constructor(api, customIntervals) {
-		this.initializeTrackers();
+		this.resetIntervalTrackers();
 		this.currentIntervals = defaultIntervals;
 		this.api = api;
 
-		if(customIntervals !== undefined) {
+		if(customIntervals !== undefined)
 			this.currentIntervals = customIntervals;
-		}
 	}
 
 	/**
 	 * Initializes values which track the current interval
 	 * and the handle of the interval
 	 */
-	initializeTrackers() {
-		this.currentIntervalID = 0;
+	resetIntervalTrackers() {
+		this.currentIntervalStep = 0;
 		this.currentIntervalAmount = 0;
-		this.intervalHandle = null;
+		this.intervalID = null;
 	}
 
 	/**
@@ -52,7 +51,7 @@ export default class PollingService {
 	 * Start polling
 	 */
 	startPolling() {
-		this.intervalHandle = window.setInterval(() => {
+		this.intervalID = window.setInterval(() => {
 			// Get messages
 			this.api.getMessages();
 
@@ -61,33 +60,35 @@ export default class PollingService {
 
 			// Stop interval when counter reaches max
 			if(this.currentIntervalAmount === maxIntervalAmount) {
-				// Only update to the next interval if there is one
-				if(this.currentIntervalID < this.currentIntervals.length) {
-					this.currentIntervalID++;
-				} else {
-					return; // Continue using this interval
+				// Reset the tracker for how many intervals we had for the current step
+				this.currentIntervalAmount = 0;
+
+				// Only update to the next interval step if there is one
+				if(this.currentIntervalStep < this.currentIntervals.length) {
+					this.currentIntervalStep++;
+
+					// Stop/Remove the interval from the window
+					window.clearInterval(this.intervalID);
+
+					// Re-start polling
+					this.startPolling();
 				}
 
-				// Stop/Remove the interval from the window
-				window.clearInterval(this.intervalHandle);
-
-				// Re-start polling
-				this.startPolling();
+				// Else; just keep this interval running indefinitely
 			}
-		}, PollingService.intervalToValue(this.currentIntervals[this.currentIntervalID]));
+		}, PollingService.intervalToValue(this.currentIntervals[this.currentIntervalStep]));
 	}
 
 	/**
 	 * Stops the polling interval
 	 */
 	stopPolling() {
-		window.clearInterval(this.intervalHandle);
-		this.initializeTrackers();
+		window.clearInterval(this.intervalID);
+		this.resetIntervalTrackers();
 	}
 
 	/**
 	 * Stops polling and restarts it
-	 *
 	 */
 	restartPolling() {
 		this.stopPolling();
