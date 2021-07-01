@@ -81,7 +81,7 @@ export default class PollingService {
 
 		if(this.timeoutID)
 			clearTimeout(this.timeoutID);
-		this.intervalID = setTimeout(
+		this.timeoutID = setTimeout(
 			(_this) => {
 				if(_this.isRunning)
 					_this.startPolling();
