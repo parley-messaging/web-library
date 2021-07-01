@@ -26,10 +26,13 @@ class Conversation extends Component {
 	}
 
 	componentDidMount() {
+		ApiEventTarget.addEventListener(messagesEvent, this.handleMessages);
+
 		// Default the welcome message to the one in the props
 		this.setState(() => ({welcomeMessage: this.props.welcomeMessage}));
 
-		ApiEventTarget.addEventListener(messagesEvent, this.handleMessages);
+		// Get the new messages
+		this.props.restartPolling();
 	}
 
 	componentWillUnmount() {
@@ -120,6 +123,9 @@ class Conversation extends Component {
 	}
 }
 
-Conversation.propTypes = {welcomeMessage: PropTypes.string};
+Conversation.propTypes = {
+	restartPolling: PropTypes.func,
+	welcomeMessage: PropTypes.string,
+};
 
 export default Conversation;

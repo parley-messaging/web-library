@@ -103,6 +103,7 @@ class Chat extends Component {
 					title={this.props.title}
 				/>
 				<Conversation
+					restartPolling={this.props.restartPolling}
 					welcomeMessage={this.props.welcomeMessage}
 				/>
 				<ReplyActions
