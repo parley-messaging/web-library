@@ -30,7 +30,8 @@ class Message extends Component {
 		return (
 			<div className={classNames}>
 				{
-					this.props.message.agent
+					this.props.showAgent
+					&& this.props.message.agent
 					&& this.props.message.agent.name.length > 0
 						&& <div className={styles.name}>
 							{this.props.message.agent.name}
@@ -70,6 +71,7 @@ Message.propTypes = {
 		time: PropTypes.number.isRequired,
 		typeId: PropTypes.number.isRequired,
 	}),
+	showAgent: PropTypes.bool,
 };
 
 export default Message;

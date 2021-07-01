@@ -2,8 +2,6 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Conversation.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
-
-// components
 import DateGroup from "./DateGroup";
 import Message from "./Message";
 import QuickReplies from "./QuickReplies";
@@ -70,6 +68,17 @@ class Conversation extends Component {
 		return new Date(timestamp * toMillisecondsMultiplier).toLocaleDateString();
 	}
 
+	shouldRenderAgentName = (currentMessageId, previousMessageId) => {
+		if(this.state.messages[currentMessageId].typeId !== MessageTypes.Agent)
+			return false;
+
+		if(this.state.messages[previousMessageId]
+			&& this.state.messages[previousMessageId].typeId === MessageTypes.Agent)
+			return false;
+
+		return true;
+	}
+
 	static sortMessagesByID(messages) {
 		return messages.sort((left, right) => {
 			if(left.id < right.id)
@@ -108,7 +117,10 @@ class Conversation extends Component {
 								{
 									message.message !== null
 									&& message.message.length > 0
-										&& <Message message={message} />
+										&& <Message
+											message={message}
+											showAgent={this.shouldRenderAgentName(index, index - 1)}
+										   />
 								}
 								{
 									message.typeId === MessageTypes.Agent
