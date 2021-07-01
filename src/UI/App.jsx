@@ -32,11 +32,15 @@ export default class App extends React.Component {
 			version,
 		);
 
-		this.state = {messageIDs: []};
+		this.messageIDs = [];
 	}
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
+	}
+
+	componentWillUnmount() {
+		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
 	}
 
 	handleClick = () => {
@@ -65,15 +69,16 @@ export default class App extends React.Component {
 	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
-		const newMessageIDs = [];
+		let foundNewMessages = false;
 		eventData.detail.data.forEach((message) => {
-			if(!this.state.messageIDs.includes(message.id))
-				newMessageIDs.push(message.id);
+			if(!this.messageIDs.includes(message.id)) {
+				this.messageIDs.push(message.id);
+				foundNewMessages = true;
+			}
 		});
-		this.setState(prevState => ({messageIDs: prevState.messageIDs.concat(newMessageIDs)}));
 
 		// Show the chat when we received a new message
-		if(!this.state.showChat && newMessageIDs.length > 0)
+		if(!this.state.showChat && foundNewMessages)
 			this.showChat();
 	}
 
