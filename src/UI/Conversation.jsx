@@ -16,6 +16,7 @@ class Conversation extends Component {
 		super(props);
 
 		this.renderedDates = [];
+		this.conversationBottom = React.createRef();
 
 		// state
 		this.state = {
@@ -37,6 +38,13 @@ class Conversation extends Component {
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messagesEvent, this.handleMessages);
+	}
+
+	componentDidUpdate(prevProps, prevState, snapshot) {
+		if(prevState.messages.length !== this.state.messages.length) {
+			// Scroll to bottom
+			this.conversationBottom.current.scrollIntoView();
+		}
 	}
 
 	handleMessages = (eventData) => {
@@ -115,6 +123,7 @@ class Conversation extends Component {
 						this.state.stickyMessage
 							&& <Announcement message={this.state.stickyMessage} />
 					}
+					<div ref={this.conversationBottom} />
 				</div>
 				{/* <div className={styles.error}>*/}
 				{/* </div>*/}
