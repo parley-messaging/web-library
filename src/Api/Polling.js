@@ -36,7 +36,7 @@ export default class PollingService {
 	resetIntervalTrackers() {
 		this.currentIntervalStep = 0;
 		this.currentIntervalAmount = 0;
-		this.intervalID = null;
+		this.timeoutID = null;
 	}
 
 	/**
@@ -82,8 +82,8 @@ export default class PollingService {
 			// Else; just keep this interval running indefinitely
 		}
 
-		if(this.intervalID)
-			clearTimeout(this.intervalID);
+		if(this.timeoutID)
+			clearTimeout(this.timeoutID);
 		this.intervalID = setTimeout(
 			(_this) => {
 				if(_this.isRunning)
@@ -99,7 +99,7 @@ export default class PollingService {
 	 */
 	stopPolling() {
 		this.isRunning = false;
-		window.clearTimeout(this.intervalID);
+		window.clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();
 	}
 

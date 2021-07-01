@@ -16,7 +16,7 @@ describe("Polling Service", () => {
 		// ex; Current timing = 1010ms, Expected timing = 1000ms, Test result = success
 		// Important; a low value (compared to the interval) can result in flaky tests
 		const deviations = [
-			"10ms", "50ms",
+			"20ms", "50ms",
 		];
 
 		const collectPollTimings = new Cypress.Promise((resolve) => {
