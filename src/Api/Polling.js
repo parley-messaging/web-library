@@ -67,9 +67,6 @@ export default class PollingService {
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;
 
-		// console.log(`interval amount ${this.currentIntervalAmount}/${maxIntervalAmount}`);
-		// console.log(`interval step ${this.currentIntervalStep}/${this.currentIntervals.length - 1}`);
-
 		// Stop interval when counter reaches max
 		if(this.currentIntervalAmount === maxIntervalAmount) {
 			// Reset the tracker for how many intervals we had for the current step
