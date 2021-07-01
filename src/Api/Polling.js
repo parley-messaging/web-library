@@ -58,11 +58,11 @@ export default class PollingService {
 	/**
 	 * Start polling
 	 */
-	startPolling() {
+	async startPolling() {
 		this.isRunning = true;
 
 		// Get messages
-		this.api.getMessages();
+		await this.api.getMessages();
 
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;
