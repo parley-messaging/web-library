@@ -15,7 +15,9 @@ describe("Polling Service", () => {
 		// so that's why we need some room in which the timing can deviate
 		// ex; Current timing = 1010ms, Expected timing = 1000ms, Test result = success
 		// Important; a low value (compared to the interval) can result in flaky tests
-		const deviationAmount = 10;
+		const deviations = [
+			"10ms", "50ms",
+		];
 
 		const collectPollTimings = new Cypress.Promise((resolve) => {
 			// This mock pretends to be the API so we can track when we get a getMessages call
@@ -67,6 +69,9 @@ describe("Polling Service", () => {
 					// so it's timing should be instant
 					if(index === 0)
 						expectedPollTiming = 0;
+
+					// Convert deviation text to value in ms
+					const deviationAmount = PollingService.intervalToValue(deviations[customIntervalIndex]);
 
 					// Check if the timing is ~= the expected timing
 					// (checking timing exact is impossible to reliably test..)

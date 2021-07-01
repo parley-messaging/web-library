@@ -1,3 +1,5 @@
+import ow from "ow";
+
 const maxIntervalAmount = 5;
 const secondInMs = 1000;
 const minuteOrHourMultiplier = 60;
@@ -15,13 +17,16 @@ const intervalTimeUnits = {
 
 export default class PollingService {
 	constructor(api, customIntervals) {
-		this.resetIntervalTrackers();
-		this.currentIntervals = defaultIntervals;
-		this.api = api;
-		this.isRunning = false;
+		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
+		ow(customIntervals, "customIntervals", ow.array.nonEmpty);
+		ow(customIntervals, "customIntervals", ow.array.ofType(ow.string));
 
-		if(customIntervals !== undefined)
-			this.currentIntervals = customIntervals;
+		this.resetIntervalTrackers();
+
+		this.api = api;
+		this.currentIntervals = customIntervals || defaultIntervals;
+
+		this.isRunning = false;
 	}
 
 	/**
@@ -42,6 +47,8 @@ export default class PollingService {
 	 * @param intervalAsString
 	 */
 	static intervalToValue(intervalAsString) {
+		ow(intervalAsString, "intervalAsString", ow.string.nonEmpty);
+
 		const regex = /(?<timeValue>\d+)(?<timeUnit>\w+)/u;
 		const {groups: {timeValue, timeUnit}} = regex.exec(intervalAsString);
 
