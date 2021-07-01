@@ -28,6 +28,9 @@ class ReplyActions extends Component {
 				// Reset state
 				this.setState(() => ({reply: ""}));
 				this.props.replyTextRef.current.textArea.current.disabled = false;
+
+				// After re-enabling the focus must be set again
+				this.props.replyTextRef.current.textArea.current.focus();
 			});
 	}
 
