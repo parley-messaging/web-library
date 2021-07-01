@@ -1,4 +1,7 @@
 import PollingService from "../../src/Api/Polling";
+import ApiEventTarget from "../../src/Api/ApiEventTarget";
+import ApiResponseEvent from "../../src/Api/Private/ApiResponseEvent";
+import {messageSent, subscribe} from "../../src/Api/Constants/Events";
 
 describe("Polling Service", () => {
 	it("should poll with increasing intervals when using startPolling()", () => {
@@ -171,6 +174,76 @@ describe("Polling Service", () => {
 						// Confirm that there are more than 1 iterations
 						expect(iterations).to.equal(maxIterations);
 					});
+			});
+	});
+
+	it("should start polling on subscribe event", () => {
+		const customIntervals = ["10ms"];
+		let pollingService;
+
+		let gotCall = false;
+
+		const promise = new Cypress.Promise((resolve) => {
+			const apiMock = {
+				getMessages: () => {
+					gotCall = true;
+					resolve();
+				},
+			};
+
+			// eslint-disable-next-line no-unused-vars
+			pollingService = new PollingService(
+				apiMock,
+				customIntervals,
+			);
+
+			// Start the polling mechanism through an Event
+			ApiEventTarget.dispatchEvent(new ApiResponseEvent(subscribe, {}));
+		});
+
+		cy.wrap(promise, {timeout: 20000})
+			.then(() => {
+				expect(gotCall).to.equal(true);
+			});
+	});
+
+	it.only("should restart polling on messagesent event", () => {
+		const customIntervals = ["10ms"];
+		let pollingService;
+		let gotFirstRestart = false;
+		let gotSecondRestart = false;
+
+		const promise = new Cypress.Promise((resolve) => {
+			const apiMock = {
+				getMessages: () => {
+					if(!gotFirstRestart) {
+						gotFirstRestart = true;
+						pollingService.stopPolling();
+					} else if(!gotSecondRestart) {
+						gotSecondRestart = true;
+						pollingService.stopPolling();
+						resolve();
+					}
+				},
+			};
+
+			// eslint-disable-next-line no-unused-vars
+			pollingService = new PollingService(
+				apiMock,
+				customIntervals,
+			);
+
+			// First (re-)start of the polling mechanism through an Event
+			ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
+
+			// Second re-start of the polling mechanism through an Event
+			ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
+		});
+
+		cy.wrap(promise, {timeout: 20000})
+			.then(() => {
+				expect(gotFirstRestart).to.equal(true);
+				expect(gotSecondRestart).to.equal(true);
 			});
 	});
 });

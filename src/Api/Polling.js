@@ -1,4 +1,6 @@
 import ow from "ow";
+import ApiEventTarget from "./ApiEventTarget";
+import {messageSent, subscribe} from "./Constants/Events";
 
 const maxIntervalAmount = 5;
 const secondInMs = 1000;
@@ -18,8 +20,8 @@ const intervalTimeUnits = {
 export default class PollingService {
 	constructor(api, customIntervals) {
 		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
-		ow(customIntervals, "customIntervals", ow.array.nonEmpty);
-		ow(customIntervals, "customIntervals", ow.array.ofType(ow.string));
+		ow(customIntervals, "customIntervals", ow.optional.array.nonEmpty);
+		ow(customIntervals, "customIntervals", ow.optional.array.ofType(ow.string));
 
 		this.resetIntervalTrackers();
 
@@ -27,6 +29,9 @@ export default class PollingService {
 		this.currentIntervals = customIntervals || defaultIntervals;
 
 		this.isRunning = false;
+		this.eventListenersInitialized = false;
+
+		this.initializeEventListeners();
 	}
 
 	/**
@@ -37,6 +42,37 @@ export default class PollingService {
 		this.currentIntervalStep = 0;
 		this.currentIntervalAmount = 0;
 		this.timeoutID = null;
+	}
+
+	/**
+	 * Initializes the event listeners for Api events
+	 * Only does this once to prevent duplicate listeners
+	 */
+	initializeEventListeners() {
+		if(this.eventListenersInitialized)
+			return;
+
+		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+	}
+
+	// TODO: When should we call clear?
+	// Cant do it in `stopPolling()`, because how do you call `initializeEventListeners`
+	// again to start listening?
+	/**
+	 * Removes the event listeners from the event target
+	 */
+	clearEventListeners() {
+		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+	}
+
+	handleMessageSent = () => {
+		this.restartPolling();
+	}
+
+	handleSubscribe = () => {
+		this.startPolling();
 	}
 
 	/**
@@ -55,12 +91,7 @@ export default class PollingService {
 		return timeValue * intervalTimeUnits[timeUnit];
 	}
 
-	/**
-	 * Start polling
-	 */
-	async startPolling() {
-		this.isRunning = true;
-
+	async pollInterval() {
 		// Get messages
 		await this.api.getMessages();
 
@@ -84,11 +115,24 @@ export default class PollingService {
 		this.timeoutID = setTimeout(
 			(_this) => {
 				if(_this.isRunning)
-					_this.startPolling();
+					_this.pollInterval();
 			},
 			PollingService.intervalToValue(this.currentIntervals[this.currentIntervalStep]),
 			this,
 		);
+	}
+
+	/**
+	 * Start polling
+	 */
+	startPolling() {
+		this.isRunning = true;
+
+		// Setup event listeners for events that may be sent
+		// by the Api
+		this.initializeEventListeners();
+
+		this.pollInterval(); // Start the first interval
 	}
 
 	/**
@@ -98,6 +142,8 @@ export default class PollingService {
 		this.isRunning = false;
 		window.clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();
+
+		// this.clearEventListeners();
 	}
 
 	/**
