@@ -17,9 +17,9 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
-		// This is a simple way of telling the client that the
-		// message is being sent. We will implement a loading
-		// animation in #209
+		// While sending the message we don't want the user to keep
+		// trying to send this message by submitting the input field,
+		// so we disable it until we get a response from the API
 		this.props.replyTextRef.current.textArea.current.disabled = true;
 
 		// Send reply to Parley

@@ -52,10 +52,6 @@ export default class App extends React.Component {
 		this.setState(() => ({showChat: isBecomingVisible}));
 
 		if(isBecomingVisible) {
-			// In #208 we will implement localStorage
-			// so we can only execute this when you haven't
-			// subscribed before
-
 			this.Api.subscribeDevice(
 				undefined,
 				undefined,
