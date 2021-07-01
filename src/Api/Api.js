@@ -79,9 +79,9 @@ export default class Api {
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		let refererCopy = referer;
-		if(!refererCopy) {
+		if(!refererCopy)
 			refererCopy = window.location.href;
-		}
+
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -107,9 +107,9 @@ export default class Api {
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		let refererCopy = referer;
-		if(!refererCopy) {
+		if(!refererCopy)
 			refererCopy = window.location.href;
-		}
+
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
