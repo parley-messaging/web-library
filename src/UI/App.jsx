@@ -5,9 +5,9 @@ import Chat from "./Chat";
 import Api from "../Api/Api";
 import {API_ACCOUNT_IDENTIFICATION, API_DEVICE_IDENTIFICATION, API_DOMAIN} from "./tempConfig";
 import ApiEventTarget from "../Api/ApiEventTarget";
-import PollingService from "../Api/Polling";
-import {messageSent, subscribe} from "../Api/Constants/Events";
 import {version} from "../../package.json";
+import PollingService from "../Api/Polling";
+import {messages} from "../Api/Constants/Events";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -22,45 +22,59 @@ export default class App extends React.Component {
 			ApiEventTarget,
 		);
 		this.PollingService = new PollingService(this.Api);
+
+		this.Api.subscribeDevice(
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			version,
+		);
+
+		this.state = {messageIDs: []};
 	}
 
 	componentDidMount() {
-		ApiEventTarget.addEventListener(subscribe, this.handleDeviceSubscribed);
-		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
-	}
-
-	componentWillUnmount() {
-		ApiEventTarget.removeEventListener(subscribe, this.handleDeviceSubscribed);
-
-		this.PollingService.stopPolling();
-	}
-
-	handleDeviceSubscribed = () => {
-		this.PollingService.startPolling();
-	}
-
-	handleMessageSent = () => {
-		this.PollingService.restartPolling();
+		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
 	}
 
 	handleClick = () => {
 		this.toggleChat();
 	}
 
-	toggleChat = () => {
-		const isBecomingVisible = !this.state.showChat;
-		this.setState(() => ({showChat: isBecomingVisible}));
+	showChat = () => {
+		this.setState(() => ({showChat: true}));
+	}
 
-		if(isBecomingVisible) {
-			this.Api.subscribeDevice(
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				version,
-			);
-		}
+	hideChat = () => {
+		this.setState(() => ({showChat: false}));
+	}
+
+	toggleChat = () => {
+		if(this.state.showChat)
+			this.hideChat();
+		 else
+			this.showChat();
+	}
+
+	restartPolling = () => {
+		this.PollingService.restartPolling();
+	}
+
+	handleNewMessage = (eventData) => {
+		// Keep track of all the message IDs so we can show the
+		// chat when we received a new message
+		const newMessageIDs = [];
+		eventData.detail.data.forEach((message) => {
+			if(!this.state.messageIDs.includes(message.id))
+				newMessageIDs.push(message.id);
+		});
+		this.setState(prevState => ({messageIDs: prevState.messageIDs.concat(newMessageIDs)}));
+
+		// Show the chat when we received a new message
+		if(!this.state.showChat && newMessageIDs.length > 0)
+			this.showChat();
 	}
 
 	render() {
@@ -77,6 +91,7 @@ export default class App extends React.Component {
 						allowFileUpload={true}
 						api={this.Api}
 						onMinimizeClick={this.handleClick}
+						restartPolling={this.restartPolling}
 						title={title}
 						welcomeMessage={welcomeMessage}
 					   />

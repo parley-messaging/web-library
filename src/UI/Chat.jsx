@@ -102,7 +102,9 @@ class Chat extends Component {
 					onMinimizeClick={this.props.onMinimizeClick}
 					title={this.props.title}
 				/>
-				<Conversation welcomeMessage={this.props.welcomeMessage} />
+				<Conversation
+					welcomeMessage={this.props.welcomeMessage}
+				/>
 				<ReplyActions
 					allowEmoji={this.allowEmoji}
 					allowFileUpload={this.allowFileUpload}
@@ -110,6 +112,7 @@ class Chat extends Component {
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
 					replyTextRef={this.replyTextRef}
+					restartPolling={this.props.restartPolling}
 				/>
 			</div>
 		);
@@ -123,6 +126,7 @@ Chat.propTypes = {
 	onCloseClick: PropTypes.func,
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,
+	restartPolling: PropTypes.func,
 	title: PropTypes.string,
 	welcomeMessage: PropTypes.string,
 };

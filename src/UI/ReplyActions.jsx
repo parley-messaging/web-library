@@ -40,6 +40,7 @@ class ReplyActions extends Component {
 					onChange={this.handleChange}
 					onSubmit={this.handleSubmit}
 					ref={this.props.replyTextRef}
+					restartPolling={this.props.restartPolling}
 					value={this.state.reply}
 				/>
 				<div className={styles.actions}>
@@ -60,6 +61,7 @@ ReplyActions.propTypes = {
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
 	replyTextRef: PropTypes.object,
+	restartPolling: PropTypes.func,
 };
 
 export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);
