@@ -1,7 +1,7 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {subscribe} from "../../src/Api/Constants/Events";
+import {messageSend, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 
@@ -14,21 +14,7 @@ const config = {
 	userAdditionalInformation: {name: "weblib-v2_cypress-test"},
 	type: Web,
 	version: "010000",
-};
-const staticDevicesResponse = {
-	data: {},
-	notifications: [
-		{
-			type: "success",
-			message: "device_successfully_subscribed",
-		},
-	],
-	status: "SUCCESS",
-	metadata: {
-		values: {url: "devices"},
-		method: "post",
-		duration: 0.01,
-	},
+	message: "test message",
 };
 const primitiveTypes = [
 	{
@@ -66,7 +52,7 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 }
 
 describe("Api class", () => {
-	beforeEach(async () => {
+	beforeEach(() => {
 		config.api = new Api(
 			config.apiDomain,
 			config.accountIdentification,
@@ -76,7 +62,14 @@ describe("Api class", () => {
 
 		// Intercept api calls and respond with a static response
 		// This way we don't fill up the API with test data
-		await cy.intercept("POST", `${config.apiDomain}/**/devices`, staticDevicesResponse);
+		cy.fixture("postDevicesResponse.json").as("postDevicesResponse");
+		cy.fixture("postMessagesResponse.json").as("postMessagesResponse");
+		cy.get("@postDevicesResponse").then((json) => {
+			cy.intercept("POST", `${config.apiDomain}/**/devices`, json).as("postDevices");
+		});
+		cy.get("@postMessagesResponse").then((json) => {
+			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
+		});
 	});
 
 	describe("constructor", () => {
@@ -312,24 +305,7 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should fetch and return response using direct way", () => {
-			return config.api.subscribeDevice(
-				config.pushToken,
-				config.pushType,
-				true,
-				config.userAdditionalInformation,
-				config.type,
-				config.version,
-			)
-				.then((data) => {
-					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(staticDevicesResponse));
-				});
-		});
-
-		it("should fetch and return response using ApiEventTarget", () => {
-			ApiEventTarget.addEventListener(subscribe, (data) => {
-				expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(staticDevicesResponse));
-			});
+		it("should default referer to window.location.href", () => {
 			config.api.subscribeDevice(
 				config.pushToken,
 				config.pushType,
@@ -338,6 +314,104 @@ describe("Api class", () => {
 				config.type,
 				config.version,
 			);
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(JSON.parse(interception.request.body).referer)
+					.to.be.equal(window.location.href);
+			});
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@postDevicesResponse")
+				.then(async (fixture) => {
+					const data = await config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						true,
+						config.userAdditionalInformation,
+						config.type,
+						config.version,
+					);
+					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@postDevicesResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "subscribe" event
+						ApiEventTarget.addEventListener(subscribe, (data) => {
+							// Validate that the response from the API is correct
+							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
+							resolve();
+						});
+
+						config.api.subscribeDevice(
+							config.pushToken,
+							config.pushType,
+							true,
+							config.userAdditionalInformation,
+							config.type,
+							config.version,
+						);
+					});
+				});
+		});
+	});
+
+	describe("sendMessage()", () => {
+		it("should throw an error when using something other than a String as message", () => {
+			filterPrimitives(["string"]).forEach((set) => {
+				expect(() => config.api.sendMessage(set.value))
+					.to.throw(`Expected \`message\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as referer", () => {
+			filterPrimitives([
+				"string",
+				"undefined",
+			]).forEach((set) => {
+				expect(() => config.api.sendMessage(
+					config.message,
+					set.value,
+				))
+					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should default referer to window.location.href", () => {
+			config.api.sendMessage(config.message);
+
+			cy.wait("@postMessages").then((interception) => {
+				expect(JSON.parse(interception.request.body).referer)
+					.to.be.equal(window.location.href);
+			});
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					const data = await config.api.sendMessage(config.message);
+					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "subscribe" event
+						ApiEventTarget.addEventListener(messageSend, (data) => {
+							// Validate that the response from the API is correct
+							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
+							resolve();
+						});
+
+						config.api.sendMessage(config.message);
+					});
+				});
 		});
 	});
 });

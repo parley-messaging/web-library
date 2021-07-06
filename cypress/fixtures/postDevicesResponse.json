@@ -1,0 +1,17 @@
+{
+	"data": {},
+	"notifications": [
+		{
+			"type": "success",
+			"message": "device_successfully_subscribed"
+		}
+	],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "devices"
+		},
+		"method": "post",
+		"duration": 0.01
+	}
+}
