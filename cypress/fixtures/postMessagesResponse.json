@@ -1,0 +1,15 @@
+{
+	"data": {
+		"messageId": "10743"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages",
+			"message": "test"
+		},
+		"method": "post",
+		"duration": 0.01
+	}
+}
