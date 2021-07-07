@@ -24,6 +24,7 @@ class ReplyText extends Component {
 	handleFocus = () => {
 		if(this.props.isMobile)
 			this.props.fitToIDeviceScreen();
+		this.props.restartPolling();
 	};
 
 	handleBlur = () => {
@@ -57,6 +58,7 @@ ReplyText.propTypes = {
 	isMobile: PropTypes.bool,
 	onChange: PropTypes.func.isRequired,
 	onSubmit: PropTypes.func.isRequired,
+	restartPolling: PropTypes.func,
 	value: PropTypes.string,
 };
 

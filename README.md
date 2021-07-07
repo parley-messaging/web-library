@@ -39,3 +39,23 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 	```
 	npm start
 	```
+ 
+## Testing
+### Cypress
+#### Installation
+1. Install the following: https://docs.cypress.io/guides/getting-started/installing-cypress#Ubuntu-Debian
+1. Next install Cypress with NPM: https://docs.cypress.io/guides/getting-started/installing-cypress#npm-install
+3. ~~WSL can't (yet) open GUI applications on its own, that's why we need additional setup: https://nickymeuleman.netlify.app/blog/gui-on-wsl2-cypress~~
+   This is not necessary anymore due to `npm run cy:open` runs `bin/start_cypress.sh`. This also fixes the problem
+   with `DISPLAY` env variable not being set when this `npm` action is run through PhpStorm.
+4. (optional) For every browser you want to test you'll need to install it in your WSL environment  
+   Here is how to install chrome
+   ```bash
+   wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+   sudo apt -y install ./google-chrome-stable_current_amd64.deb
+   rm google-chrome-stable_current_amd64.deb
+   ```
+#### Start
+```
+npm run cy:open
+```

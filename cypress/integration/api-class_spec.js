@@ -1,9 +1,10 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {messageSend, subscribe} from "../../src/Api/Constants/Events";
+import {messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
+import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -284,7 +285,7 @@ describe("Api class", () => {
 				config.type,
 				wrongFormat,
 			))
-				.to.throw(`Expected string \`version\` to match \`/$[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u\`, got \`${wrongFormat}\``);
+				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
 		it("should throw an error when using something other than a String as referer", () => {
@@ -402,8 +403,8 @@ describe("Api class", () => {
 			cy.get("@postMessagesResponse")
 				.then(async (fixture) => {
 					return new Cypress.Promise((resolve) => {
-						// Subscribe to the "subscribe" event
-						ApiEventTarget.addEventListener(messageSend, (data) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(messageSent, (data) => {
 							// Validate that the response from the API is correct
 							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
 							resolve();
