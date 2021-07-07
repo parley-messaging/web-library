@@ -39,7 +39,6 @@ export default class App extends React.Component {
 			version,
 		);
 		this.messageIDs = new Set();
-		this.visibilityChange = "visibilitychange";
 	}
 
 	componentDidMount() {
@@ -47,7 +46,7 @@ export default class App extends React.Component {
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
-			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
+			document.addEventListener("visibilitychange", this.handleVisibilityChange);
 	}
 
 	componentWillUnmount() {
@@ -55,7 +54,7 @@ export default class App extends React.Component {
 		window.removeEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
-			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
+			document.removeEventListener("visibilitychange", this.handleVisibilityChange);
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
