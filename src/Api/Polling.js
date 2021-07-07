@@ -30,8 +30,6 @@ export default class PollingService {
 
 		this.isRunning = false;
 		this.eventListenersInitialized = false;
-
-		this.initializeEventListeners();
 	}
 
 	/**
@@ -54,17 +52,18 @@ export default class PollingService {
 
 		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+
+		this.eventListenersInitialized = true;
 	}
 
-	// TODO: When should we call clear?
-	// Cant do it in `stopPolling()`, because how do you call `initializeEventListeners`
-	// again to start listening?
 	/**
 	 * Removes the event listeners from the event target
 	 */
 	clearEventListeners() {
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+
+		this.eventListenersInitialized = false;
 	}
 
 	handleMessageSent = () => {
@@ -123,7 +122,8 @@ export default class PollingService {
 	}
 
 	/**
-	 * Start polling
+	 * Setup event listeners (for resetting the polling
+	 * on specific API events) and start with polling.
 	 */
 	startPolling() {
 		this.isRunning = true;
@@ -142,8 +142,7 @@ export default class PollingService {
 		this.isRunning = false;
 		window.clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();
-
-		// this.clearEventListeners();
+		this.clearEventListeners();
 	}
 
 	/**

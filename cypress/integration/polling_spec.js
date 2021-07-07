@@ -187,6 +187,7 @@ describe("Polling Service", () => {
 			const apiMock = {
 				getMessages: () => {
 					gotCall = true;
+					pollingService.stopPolling();
 					resolve();
 				},
 			};
@@ -196,6 +197,12 @@ describe("Polling Service", () => {
 				apiMock,
 				customIntervals,
 			);
+
+			// Normally we would call pollingService.startPolling();
+			// but that would also start the polling intervals
+			// We only want to track the intervals when they are
+			// started through the event listener, so we only initialize those
+			pollingService.initializeEventListeners();
 
 			// Start the polling mechanism through an Event
 			ApiEventTarget.dispatchEvent(new ApiResponseEvent(subscribe, {}));
@@ -207,7 +214,7 @@ describe("Polling Service", () => {
 			});
 	});
 
-	it.only("should restart polling on messagesent event", () => {
+	it("should restart polling on messagesent event", () => {
 		const customIntervals = ["10ms"];
 		let pollingService;
 		let gotFirstRestart = false;
@@ -219,6 +226,10 @@ describe("Polling Service", () => {
 					if(!gotFirstRestart) {
 						gotFirstRestart = true;
 						pollingService.stopPolling();
+						pollingService.initializeEventListeners(); // Re-init event listeners
+
+						// Second re-start of the polling mechanism through an Event
+						ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
 					} else if(!gotSecondRestart) {
 						gotSecondRestart = true;
 						pollingService.stopPolling();
@@ -232,11 +243,9 @@ describe("Polling Service", () => {
 				apiMock,
 				customIntervals,
 			);
+			pollingService.initializeEventListeners();
 
 			// First (re-)start of the polling mechanism through an Event
-			ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
-
-			// Second re-start of the polling mechanism through an Event
 			ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
 		});
 

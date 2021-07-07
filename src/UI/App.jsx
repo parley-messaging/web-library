@@ -41,6 +41,7 @@ export default class App extends React.Component {
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
+		this.PollingService.stopPolling(); // This will stop polling and remove any event listeners
 	}
 
 	handleClick = () => {
