@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Message.module.css";
+import * as styles from "./Message.module.css";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import MessageTypes from "../Api/Constants/MessageTypes";
