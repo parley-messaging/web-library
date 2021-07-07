@@ -138,7 +138,7 @@ export default class PollingService {
 	 */
 	stopPolling() {
 		this.isRunning = false;
-		window.clearTimeout(this.timeoutID);
+		clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();
 		this.clearEventListeners();
 	}
