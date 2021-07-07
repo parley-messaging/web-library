@@ -54,11 +54,11 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
-		this.setState(() => ({welcomeMessage: eventData.detail.welcomeMessage}));
-
-		this.setState(() => ({messages: eventData.detail.data}));
-
-		this.setState(() => ({stickyMessage: eventData.detail.stickyMessage}));
+		this.setState(() => ({
+			welcomeMessage: eventData.detail.welcomeMessage,
+			messages: eventData.detail.data,
+			stickyMessage: eventData.detail.stickyMessage,
+		}));
 	}
 
 	setRenderedDate = (date) => {
