@@ -32,7 +32,7 @@ export default class App extends React.Component {
 			DeviceTypes.Web,
 			version,
 		);
-		this.messageIDs = [];
+		this.messageIDs = new Set();
 	}
 
 	componentDidMount() {
@@ -89,8 +89,8 @@ export default class App extends React.Component {
 		// chat when we received a new message
 		let foundNewMessages = false;
 		eventData.detail.data.forEach((message) => {
-			if(!this.messageIDs.includes(message.id)) {
-				this.messageIDs.push(message.id);
+			if(!this.messageIDs.has(message.id)) {
+				this.messageIDs.add(message.id);
 				foundNewMessages = true;
 			}
 		});
