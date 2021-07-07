@@ -38,7 +38,6 @@ class Conversation extends Component {
 		ApiEventTarget.removeEventListener(messagesEvent, this.handleMessages);
 	}
 
-	// eslint-disable-next-line no-unused-vars
 	componentDidUpdate(prevProps, prevState, snapshot) {
 		// Scroll to bottom if there are new messages in the messages state
 		if(this.state.messages.length > 0 && prevState.messages.length > 0) {
