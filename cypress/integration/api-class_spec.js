@@ -1,7 +1,7 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {messageSend, subscribe} from "../../src/Api/Constants/Events";
+import {messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
@@ -403,8 +403,8 @@ describe("Api class", () => {
 			cy.get("@postMessagesResponse")
 				.then(async (fixture) => {
 					return new Cypress.Promise((resolve) => {
-						// Subscribe to the "subscribe" event
-						ApiEventTarget.addEventListener(messageSend, (data) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(messageSent, (data) => {
 							// Validate that the response from the API is correct
 							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
 							resolve();
