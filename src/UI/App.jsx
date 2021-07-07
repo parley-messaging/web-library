@@ -8,7 +8,6 @@ import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
-import PageVisibilityApi from "./PageVisibilityApi";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 
 export default class App extends React.Component {
@@ -33,18 +32,23 @@ export default class App extends React.Component {
 			version,
 		);
 		this.messageIDs = new Set();
+		this.visibilityChange = "visibilitychange";
 	}
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
-		document.addEventListener(PageVisibilityApi.visibilityChange, this.handleVisibilityChange);
 		window.addEventListener("focus", this.handleFocusWindow);
+
+		if(typeof document.hidden !== "undefined")
+			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 	}
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
-		document.removeEventListener(PageVisibilityApi.visibilityChange, this.handleVisibilityChange);
 		window.removeEventListener("focus", this.handleFocusWindow);
+
+		if(typeof document.hidden !== "undefined")
+			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
@@ -57,7 +61,7 @@ export default class App extends React.Component {
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
-		if(!document[PageVisibilityApi.hidden])
+		if(!document.hidden)
 			this.PollingService.restartPolling();
 	}
 
