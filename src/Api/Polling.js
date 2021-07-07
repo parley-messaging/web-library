@@ -60,6 +60,9 @@ export default class PollingService {
 	 * Removes the event listeners from the event target
 	 */
 	clearEventListeners() {
+		if(!this.eventListenersInitialized)
+			return;
+
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 
@@ -111,14 +114,12 @@ export default class PollingService {
 
 		if(this.timeoutID)
 			clearTimeout(this.timeoutID);
-		this.timeoutID = setTimeout(
-			(_this) => {
-				if(_this.isRunning)
-					_this.pollInterval();
-			},
-			PollingService.intervalToValue(this.currentIntervals[this.currentIntervalStep]),
-			this,
-		);
+		if(this.isRunning) {
+			this.timeoutID = setTimeout(
+				this.pollInterval.bind(this),
+				PollingService.intervalToValue(this.currentIntervals[this.currentIntervalStep]),
+			);
+		}
 	}
 
 	/**
@@ -140,7 +141,7 @@ export default class PollingService {
 	 */
 	stopPolling() {
 		this.isRunning = false;
-		window.clearTimeout(this.timeoutID);
+		clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();
 		this.clearEventListeners();
 	}

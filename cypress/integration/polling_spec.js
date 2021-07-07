@@ -14,6 +14,13 @@ describe("Polling Service", () => {
 		const pollTimings = [];
 		const maxPollTimingsLength = customIntervals.length * maxIntervalAmount;
 
+		// Calculate how long all intervals combined should take
+		const totalTimeInMs = customIntervals.reduce((a, b) => {
+			return (PollingService.intervalToValue(a) * maxIntervalAmount)
+				+ (PollingService.intervalToValue(b) * maxIntervalAmount);
+		});
+		const timeoutTime = totalTimeInMs + 500; // + a bit of wiggle room
+
 		// Checking timing performance is impossible to do exactly on the millisecond
 		// so that's why we need some room in which the timing can deviate
 		// ex; Current timing = 1010ms, Expected timing = 1000ms, Test result = success
@@ -53,7 +60,7 @@ describe("Polling Service", () => {
 			pollingService.startPolling();
 		});
 
-		cy.wrap(collectPollTimings, {timeout: 20000})
+		cy.wrap(collectPollTimings, {timeout: timeoutTime})
 			.then((collectedPollTimings) => {
 				expect(collectedPollTimings.length)
 					.equal(maxPollTimingsLength);
@@ -137,6 +144,10 @@ describe("Polling Service", () => {
 		const maxCallsUntilIteration = PollingService.getMaxIntervalAmount();
 		const maxIterations = 2;
 
+		// Calculate how long all intervals combined should take
+		const totalTimeInMs = PollingService.intervalToValue(customIntervals[0]) * maxCallsUntilIteration;
+		const timeoutTime = totalTimeInMs + 100; // + a bit of wiggle room
+
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
 				getMessages: () => {
@@ -166,7 +177,7 @@ describe("Polling Service", () => {
 			pollingService.startPolling();
 		});
 
-		cy.wrap(promise, {timeout: 20000})
+		cy.wrap(promise, {timeout: timeoutTime})
 			.then(() => {
 				const waitTime = PollingService.intervalToValue(customIntervals[0]) * 2;
 				cy.wait(waitTime)

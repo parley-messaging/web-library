@@ -15,7 +15,7 @@ import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
-import pageVisibilityApi from "./pageVisibilityApi";
+import DeviceTypes from "../Api/Constants/DeviceTypes";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -35,22 +35,27 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			DeviceTypes.Web,
 			version,
 		);
-		this.messageIDs = [];
+		this.messageIDs = new Set();
+		this.visibilityChange = "visibilitychange";
 	}
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
-		document.addEventListener(pageVisibilityApi.visibilityChange, this.handleVisibilityChange);
 		window.addEventListener("focus", this.handleFocusWindow);
+
+		if(typeof document.hidden !== "undefined")
+			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 	}
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
-		document.removeEventListener(pageVisibilityApi.visibilityChange, this.handleVisibilityChange);
 		window.removeEventListener("focus", this.handleFocusWindow);
+
+		if(typeof document.hidden !== "undefined")
+			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
@@ -63,7 +68,7 @@ export default class App extends React.Component {
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
-		if(!document[pageVisibilityApi.hidden])
+		if(!document.hidden)
 			this.PollingService.restartPolling();
 	}
 
@@ -95,8 +100,8 @@ export default class App extends React.Component {
 		// chat when we received a new message
 		let foundNewMessages = false;
 		eventData.detail.data.forEach((message) => {
-			if(!this.messageIDs.includes(message.id)) {
-				this.messageIDs.push(message.id);
+			if(!this.messageIDs.has(message.id)) {
+				this.messageIDs.add(message.id);
 				foundNewMessages = true;
 			}
 		});

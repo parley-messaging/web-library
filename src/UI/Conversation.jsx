@@ -18,7 +18,7 @@ class Conversation extends Component {
 
 		// state
 		this.state = {
-			welcomeMessage: "",
+			welcomeMessage: this.props.welcomeMessage,
 			messages: [],
 			stickyMessage: "",
 		};
@@ -26,9 +26,6 @@ class Conversation extends Component {
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messagesEvent, this.handleMessages);
-
-		// Default the welcome message to the one in the props
-		this.setState(() => ({welcomeMessage: this.props.welcomeMessage}));
 
 		// Get the new messages
 		this.props.restartPolling();
@@ -38,6 +35,7 @@ class Conversation extends Component {
 		ApiEventTarget.removeEventListener(messagesEvent, this.handleMessages);
 	}
 
+	// eslint-disable-next-line no-unused-vars
 	componentDidUpdate(prevProps, prevState, snapshot) {
 		// Scroll to bottom if there are new messages in the messages state
 		if(this.state.messages.length > 0 && prevState.messages.length > 0) {
@@ -56,11 +54,11 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
-		this.setState(() => ({welcomeMessage: eventData.detail.welcomeMessage}));
-
-		this.setState(() => ({messages: eventData.detail.data}));
-
-		this.setState(() => ({stickyMessage: eventData.detail.stickyMessage}));
+		this.setState(() => ({
+			welcomeMessage: eventData.detail.welcomeMessage,
+			messages: eventData.detail.data,
+			stickyMessage: eventData.detail.stickyMessage,
+		}));
 	}
 
 	setRenderedDate = (date) => {
