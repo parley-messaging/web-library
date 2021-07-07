@@ -18,7 +18,7 @@ class Conversation extends Component {
 
 		// state
 		this.state = {
-			welcomeMessage: "",
+			welcomeMessage: this.props.welcomeMessage,
 			messages: [],
 			stickyMessage: "",
 		};
@@ -26,9 +26,6 @@ class Conversation extends Component {
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messagesEvent, this.handleMessages);
-
-		// Default the welcome message to the one in the props
-		this.setState(() => ({welcomeMessage: this.props.welcomeMessage}));
 
 		// Get the new messages
 		this.props.restartPolling();
