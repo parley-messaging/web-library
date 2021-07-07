@@ -8,13 +8,14 @@ import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
+import pageVisibilityApi from "./pageVisibilityApi";
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		// State
 		this.state = {showChat: false};
+
 		this.Api = new Api(
 			API_DOMAIN,
 			API_ACCOUNT_IDENTIFICATION,
@@ -22,7 +23,6 @@ export default class App extends React.Component {
 			ApiEventTarget,
 		);
 		this.PollingService = new PollingService(this.Api);
-
 		this.Api.subscribeDevice(
 			undefined,
 			undefined,
@@ -31,17 +31,33 @@ export default class App extends React.Component {
 			undefined,
 			version,
 		);
-
 		this.messageIDs = [];
 	}
 
 	componentDidMount() {
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
+		document.addEventListener(pageVisibilityApi.visibilityChange, this.handleVisibilityChange);
+		window.addEventListener("focus", this.handleFocusWindow);
 	}
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
-		this.PollingService.stopPolling(); // This will stop polling and remove any event listeners
+		document.removeEventListener(pageVisibilityApi.visibilityChange, this.handleVisibilityChange);
+		window.removeEventListener("focus", this.handleFocusWindow);
+
+		// Stop polling and remove any event listeners created by the Polling Service
+		this.PollingService.stopPolling();
+	}
+
+	handleFocusWindow = () => {
+		// Restart polling when window receives focus
+		this.PollingService.restartPolling();
+	}
+
+	handleVisibilityChange = () => {
+		// Restart polling when page is becoming visible
+		if(!document[pageVisibilityApi.hidden])
+			this.PollingService.restartPolling();
 	}
 
 	handleClick = () => {

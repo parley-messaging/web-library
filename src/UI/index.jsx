@@ -10,11 +10,9 @@ const app = <App />;
 if(process.env.NODE_ENV === "production") {
 	ReactDOM.render(app, mountNode);
 } else {
-	// import("@axe-core/react").then((axe) => {
-	// 	// noinspection JSUnresolvedFunction
-	// 	axe.default(React, ReactDOM, axeInspectionTimoutMs);
-	// 	ReactDOM.render(app, mountNode);
-	// });
-	const axe = require("@axe-core/react");
-	axe(React, ReactDOM, axeInspectionTimoutMs);
+	import("@axe-core/react").then((axe) => {
+		// noinspection JSUnresolvedFunction
+		axe.default(React, ReactDOM, axeInspectionTimoutMs);
+		ReactDOM.render(app, mountNode);
+	});
 }
