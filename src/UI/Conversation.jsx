@@ -40,8 +40,18 @@ class Conversation extends Component {
 
 	// eslint-disable-next-line no-unused-vars
 	componentDidUpdate(prevProps, prevState, snapshot) {
-		if(prevState.messages.length !== this.state.messages.length) {
-			// Scroll to bottom
+		// Scroll to bottom if there are new messages in the messages state
+		if(this.state.messages.length > 0 && prevState.messages.length > 0) {
+			const currentStateLastMessage = this.state.messages[this.state.messages.length - 1];
+			const prevStateLastMessage = prevState.messages[prevState.messages.length - 1];
+
+			// We have to compare ids here because the API has a limit on how many messages it returns
+			// So eventually the lengths would always be equal..
+			if(currentStateLastMessage.id !== prevStateLastMessage.id)
+				this.conversationBottom.current.scrollIntoView();
+		} else if(this.state.messages.length > 0 && prevState.messages.length === 0) {
+			// We also want to scroll down when we start receiving the messages
+			// for the first time
 			this.conversationBottom.current.scrollIntoView();
 		}
 	}
@@ -91,6 +101,7 @@ class Conversation extends Component {
 	}
 
 	static getDerivedStateFromProps(props, state) {
+		// Sort messages before they get into the state
 		return {
 			...state,
 			messages: Conversation.sortMessagesByID(state.messages),
