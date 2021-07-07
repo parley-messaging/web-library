@@ -60,6 +60,9 @@ export default class PollingService {
 	 * Removes the event listeners from the event target
 	 */
 	clearEventListeners() {
+		if(!this.eventListenersInitialized)
+			return;
+
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 
