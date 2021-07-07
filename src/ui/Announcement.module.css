@@ -1,9 +1,0 @@
-.center {
-	color: var(--info-text-color, #535353);
-	font-size: 14px;
-	font-weight: 200;
-	text-align: center;
-}
-.center P {
-	margin: 0;
-}

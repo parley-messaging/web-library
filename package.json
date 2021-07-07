@@ -4,6 +4,17 @@
 	"description": "Front-end solution for Parley",
 	"private": true,
 	"main": "index.js",
+	"targets": {
+		"ui": {
+			"distDir": "dist/ui/browser/",
+			"context": "browser",
+			"isLibrary": false,
+			"outputFormat": "global",
+			"scopeHoist": true,
+			"sourceMap": true,
+			"optimize": false
+		}
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
@@ -45,6 +56,7 @@
 	"homepage": "https://github.com/parley-messaging/web-library#readme",
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^5.15.3",
+		"@fortawesome/fontawesome-svg-core": "^1.2.35",
 		"@fortawesome/free-regular-svg-icons": "^5.15.3",
 		"@fortawesome/free-solid-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
