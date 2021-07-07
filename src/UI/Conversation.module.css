@@ -1,0 +1,14 @@
+.wrapper {
+	display: grid;
+	max-width: inherit;
+	grid-template-columns: auto;
+	grid-template-rows: minmax(50%, 100%) auto;
+}
+
+.body {
+	overflow-y: auto;
+}
+
+.error {
+	/* ... */
+}

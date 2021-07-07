@@ -1,0 +1,27 @@
+.button {
+	display: block;
+	width: 36px;
+	height: 100%;
+	cursor: pointer;
+	font-size: 24px;
+}
+
+.menu {
+	padding: 0 6px;
+	margin-left: 5px;
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.minimize {
+	padding-bottom: 6px;
+	margin: auto;
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.close {
+	margin: auto;
+	grid-column: 2;
+	grid-row: 1;
+}

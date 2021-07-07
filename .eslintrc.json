@@ -8,7 +8,8 @@
 		"eslint:recommended",
 		"plugin:react/recommended",
 		"plugin:jsx-a11y/recommended",
-		"plugin:compat/recommended"
+		"plugin:compat/recommended",
+		"plugin:cypress/recommended"
 	],
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -19,7 +20,9 @@
 	},
 	"plugins": [
 		"react",
-		"jsx-a11y"
+		"jsx-a11y",
+		"@babel",
+		"cypress"
 	],
 	"rules": {
 		//Possible errors
@@ -65,12 +68,13 @@
 		"no-implicit-coercion": "error",
 		"no-implicit-globals": "error",
 		"no-implied-eval": "error",
-		"no-invalid-this": "error",
 		"no-iterator": "error",
 		"no-labels": "error",
 		"no-lone-blocks": "error",
 		"no-loop-func": "error",
-		"no-magic-numbers": "error",
+		"no-magic-numbers": ["error", {
+			"ignore": [-1, 0, 1]
+		}],
 		"no-multi-spaces": "error",
 		"no-multi-str": "error",
 		"no-new": "error",
@@ -108,7 +112,7 @@
 		"yoda": "error",
 		"no-shadow": "error",
 		"no-undef-init": "error",
-		"no-use-before-define": "error",
+		"no-use-before-define": ["error", {"functions": false}],
 		//Stylistic Issues
 		"array-bracket-newline": [
 			"error", {
@@ -210,7 +214,7 @@
 		"object-property-newline": "error",
 		"one-var": ["error", "never"],
 		"operator-assignment": "error",
-		"operator-linebreak": ["error", "after"],
+		"operator-linebreak": ["error", "before"],
 		"padded-blocks": ["error", "never"],
 		"prefer-exponentiation-operator": "error",
 		"prefer-object-spread": "error",
@@ -282,8 +286,10 @@
 			"ignoreCase": true
 		}],
 		"react/jsx-closing-bracket-location": ["error"],
-		"react/jsx-closing-tag-location": ["error"],
-		"react/jsx-curly-newline": ["error"],
+		"react/jsx-curly-newline": ["error", {
+			"multiline": "require",
+			"singleline": "forbid"
+		}],
 		"react/jsx-curly-brace-presence": ["error"],
 		"react/jsx-child-element-spacing": ["error"],
 		"react/jsx-curly-spacing": [
@@ -341,7 +347,8 @@
 				"prop": "ignore"
 			}
 		],
-		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
+		"@babel/no-invalid-this": "error"
 	},
 	"settings": {
 		"react": {
