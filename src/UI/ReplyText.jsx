@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./ReplyText.module.css";
+import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
 
 class ReplyText extends Component {

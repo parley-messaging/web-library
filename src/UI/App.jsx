@@ -16,16 +16,16 @@ export default class App extends React.Component {
 
 		this.state = {showChat: false};
 
-		const apiDomain = window.parleySettings
+		const apiDomain = window.parleySettings && window.parleySettings.apiDomain
 			? window.parleySettings.apiDomain
 			: API_DOMAIN;
-		const accountIdentification = window.parleySettings
+		const accountIdentification = window.parleySettings && window.parleySettings.roomNumber
 			? window.parleySettings.roomNumber
 			: API_ACCOUNT_IDENTIFICATION;
-		const deviceIdentification = window.parleySettings
+		const deviceIdentification = window.parleySettings && window.parleySettings.xIrisIdentification
 			? window.parleySettings.xIrisIdentification
 			: API_DEVICE_IDENTIFICATION;
-		const userAdditionalInformation = window.parleySettings
+		const userAdditionalInformation = window.parleySettings && window.parleySettings.userAdditionalInformation
 			? window.parleySettings.userAdditionalInformation
 			: undefined;
 
