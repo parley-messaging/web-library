@@ -28,7 +28,6 @@ export default class Api {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
-
 		this.setDomain(apiDomain);
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
@@ -54,6 +53,20 @@ export default class Api {
 		this.deviceIdentification = deviceIdentification;
 	}
 
+	/**
+	 * Subscribes this device in the API so it is allowed to send/receive messages
+	 * If the device is already subscribed, it returns `false`
+	 * Otherwise it will return a `Promise` which will contain the API response
+	 *
+	 * @param pushToken
+	 * @param pushType
+	 * @param pushEnabled
+	 * @param userAdditionalInformation
+	 * @param type
+	 * @param version
+	 * @param referer
+	 * @return {Promise<unknown>|boolean}
+	 */
 	subscribeDevice(
 		pushToken,
 		pushType,
@@ -68,7 +81,7 @@ export default class Api {
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(PushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		if(pushEnabled === true) {
-			// Somehow `message()` doesn't work with `nonEmpty`
+			// Somehow `.message()` doesn't work with `nonEmpty`
 			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
@@ -78,10 +91,15 @@ export default class Api {
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
+		// Check registration in local storage
+		const deviceInformation = localStorage.getItem("deviceInformation");
+		if(deviceInformation !== null && deviceInformation.length > 0)
+			return false;
+
+		// If the referer isn't set, set it to the window's url
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
-
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -98,6 +116,18 @@ export default class Api {
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
+
+				// Save registration in local storage
+				localStorage.setItem("deviceInformation", JSON.stringify({
+					identification: this.deviceIdentification,
+					pushToken,
+					pushType,
+					pushEnabled,
+					userAdditionalInformation,
+					type,
+					version,
+				}));
+
 				return data;
 			});
 	}
