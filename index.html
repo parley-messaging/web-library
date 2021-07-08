@@ -4,6 +4,13 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Messenger</title>
+
+	<!-- Load external libraries first -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"
+	      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/url-search-params-polyfill@8.1.0/index.min.js"></script>
+	<!-- END -->
+
 	<style>
 		:root {
 			--mobile-height: 1vh;
@@ -41,11 +48,80 @@
 			--shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 		}
 	</style>
+	<style>
+		html,
+		body {
+			width: 100%;
+			height: 100%;
+			min-height: 100%;
+			padding: 0;
+			margin: 0;
+		}
 
-	<link href="index.css" rel="stylesheet">
-	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"
-		  integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/url-search-params-polyfill@8.1.0/index.min.js"></script>
+		.hide-untill-start {
+			display: none;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		#loginContainer {
+			width: 20em;
+			padding: 1em;
+		}
+
+		#loginContainer > div {
+			margin-bottom: 1em;
+		}
+
+		#loginContainer * > button {
+			margin-top: 0.5em;
+		}
+
+		#startChatOptions *,
+		#loginOptions * {
+			margin-bottom: 0;
+		}
+
+		#loginOptions > form {
+			display: inline;
+		}
+
+		#toggleOptions.right {
+			position: fixed;
+			top: 8em;
+			left: 20em;
+		}
+
+		#toggleOptions.left {
+			position: fixed;
+			top: 8em;
+			left: 0;
+		}
+
+		#toggleOptionsBtn {
+			width: 1em;
+			height: 8em;
+			padding: 0.15em 0;
+			border-radius: 0 0.25em 0.25em 0;
+		}
+
+		#userAdditionalInformationError {
+			color: red;
+		}
+
+		.btn.btn-primary,
+		.btn.btn-primary:hover,
+		.btn.btn-primary:disabled {
+			background-color: var(--nav-background-color);
+		}
+
+		.btn {
+			border: none !important;
+		}
+	</style>
+	<link href="node_modules/@fortawesome/fontawesome-svg-core/styles.css" rel="stylesheet">
 </head>
 <body>
 <iframe width="0" height="0" class="hidden" name="dummyframe" id="dummyframe"></iframe>
@@ -58,6 +134,10 @@
 				<input type="text" id="accountId" class="form-control" placeholder="identification" required/>
 			</div>
 			<div class="form-group">
+				<label for="deviceId">Device Identification</label>
+				<input type="text" id="deviceId" class="form-control" placeholder="device identification" required/>
+			</div>
+			<div class="form-group">
 				<label for="apiDomain">Api Domain</label>
 				<input type="text" id="apiDomain" class="form-control" placeholder="api domain"
 					   value="https://api.parley.nu" required/>
@@ -67,7 +147,7 @@
 				<input type="text" id="background" class="form-control" placeholder="background url"
 					   value=""/>
 			</div>
-			<button type="submit" class="btn btn-primary" onclick="fromButtonClick = true">Create chat</button>
+			<button type="submit" class="btn btn-primary" onclick="window.fromButtonClick = true">Create chat</button>
 		</form>
 	</div>
 
@@ -79,6 +159,8 @@
 				<small id="userAdditionalInformationError" class="hidden"></small>
 			</div>
 			<button id="setUserAdditionalInformation" type="submit" class="btn btn-primary">Synchronize data</button>
+			<br>
+			<small>For now this will just restart your chat</small>
 		</form>
 	</div>
 </section>
@@ -91,194 +173,7 @@
 <div id="app"></div>
 <script src="src/UI/index.jsx" type="module"></script>
 <!-- END -->
+
+<script src="index.js" type="module"></script>
 </body>
-<script>
-	let showOptions = true;
-	let localStorageKey = "parleyDemoV2Settings";
-	let fromButtonClick = false;
-	let settingsUrl = "";
-
-	// Default config used to create a chat
-	let config = {
-		roomNumber: '0W4qcE5aXoKq9OzvHxj2'
-	};
-	window.parleySettingsDemo = config;
-
-	init();
-	function init() {
-		let demoSettings = JSON.parse(localStorage.getItem(localStorageKey));
-		if(!demoSettings) {
-			demoSettings = {};
-		}
-
-		// Check if we can set the form values from GET params
-		let accountId = findGetParameter("accountId") ? findGetParameter("accountId") : demoSettings.accountId;
-		document.getElementById("accountId").value = accountId ? accountId : document.getElementById("accountId").value;
-
-		let apiDomain = findGetParameter("apiDomain") ? findGetParameter("apiDomain") : demoSettings.apiDomain;
-		document.getElementById("apiDomain").value = apiDomain ? apiDomain : document.getElementById("apiDomain").value;
-
-		let background = findGetParameter("background") ? findGetParameter("background") : demoSettings.background;
-		document.getElementById("background").value = background ? background : document.getElementById("background").value;
-
-		if(findGetParameter("start") === "true") {
-			toggleOptions();
-			createChat();
-		}
-	}
-
-	function findGetParameter(parameterName) {
-		let result = null,
-			tmp = [];
-		location.search
-			.substr(1)
-			.split("&")
-			.forEach(function (item) {
-				tmp = item.split("=");
-				if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
-			});
-		return result;
-	}
-
-	function toggleOptions() {
-		showOptions = !showOptions;
-
-		if(!showOptions) {
-			document.getElementById("toggleOptions").classList.add("left");
-			document.getElementById("toggleOptions").classList.remove("right");
-			document.getElementById("toggleOptionsBtn").innerHTML = ">";
-		} else {
-			document.getElementById("toggleOptions").classList.add("right");
-			document.getElementById("toggleOptions").classList.remove("left");
-			document.getElementById("toggleOptionsBtn").innerHTML = "<";
-		}
-	}
-
-	function loadDependencies(url, identification, backgroundUrl, onLoad) {
-		// Unload previous dependencies
-		if(document.getElementById("parley-style")) document.head.removeChild(document.getElementById("parley-style"));
-		if(document.getElementById("parley-app")) document.head.removeChild(document.getElementById("parley-app"));
-		delete window.parleySettings;
-
-		url = url+version+"/"+identification;
-
-		// Load latest messenger.css
-		let style = document.createElement('link');
-		style.href = url+"/messenger.css";
-		style.type = "text/css";
-		style.rel = "stylesheet";
-		style.id = "parley-style";
-		style.onload = function() {
-			// Load latest app.js
-			let script = document.createElement('script');
-			script.src = url+"/app.js";
-			script.id = 'parley-app';
-			script.onload = function() {
-				// Set page's background
-				document.body.style.background = "url("+backgroundUrl+") center no-repeat";
-				document.body.style.backgroundSize = "100%";
-
-				onLoad();
-			};
-			document.head.appendChild(script);
-		};
-		document.head.appendChild(style);
-	}
-
-	function createChat() {
-		if(fromButtonClick === true) {
-			// Reset all cookies if there were any
-			window.localStorage.clear();
-		}
-
-		// Un hide all nodes with the `hide-untill-start` classname
-		let nodes = document.querySelectorAll(".hide-untill-start");
-		for (let i = 0; i < nodes.length; i++) {
-			nodes.item(i).classList.remove("hide-untill-start");
-		}
-
-		// Get values from input fields
-		config.roomNumber = document.getElementById("accountId").value;
-		config.apiDomain = document.getElementById("apiDomain").value;
-		let backgroundUrl = document.getElementById("background").value;
-		let identification = "0W4qcE5aXoKq9OzvHxj2"; // Use this as a default identification to find the dependencies for
-		let pathToDist = "https://parleycdn.com/";
-
-		// Save settings url
-		let urlSearchParams = new URLSearchParams();
-		urlSearchParams.append("accountId", config.roomNumber);
-		urlSearchParams.append("apiDomain", config.apiDomain);
-		urlSearchParams.append("background", backgroundUrl);
-		urlSearchParams.append("start", "true");
-		settingsUrl = location.origin + location.pathname + "?" + urlSearchParams.toString();
-		window.history.pushState("", document.title, settingsUrl);
-
-		// Save settings into cookie and load on page refresh
-		localStorage.setItem(localStorageKey, JSON.stringify({
-			accountId: config.roomNumber,
-			apiDomain: config.apiDomain,
-			background: backgroundUrl,
-		}));
-
-		loadDependencies(pathToDist, identification, backgroundUrl, function() {
-			// Create the chat with the default config and the input values
-			window.parleySettings = config;
-
-			setTimeout(function() {
-				// Show invite notification so you can directly send a message
-				window.parleySettings.showInviteNotification();
-			}, 150);
-		});
-
-		return false; // To cancel the form's submit
-	}
-
-	function loginChat() {
-		document.getElementById("login").disabled = true;
-		let authHeader = document.getElementById("authHeader").value;
-
-		window.parleySettings.registerNewDevice(authHeader, function(){
-			alert("You are now logged in!");
-
-			document.getElementById("logout").disabled = false;
-		}, function(){
-			alert("Something went wrong while logging in, please refresh and try again.");
-		});
-
-		return false; // To cancel the form's submit
-	}
-
-	function logoutChat() {
-		window.parleySettings.registerNewDevice("");
-		window.parleySettings.hideParleyMessenger();
-		setTimeout(function() {
-			// Show invite notification so you can directly send a message
-			window.parleySettings.showInviteNotification();
-		}, 150);
-
-		alert("You have been logged out!");
-
-		document.getElementById("login").disabled = false;
-		document.getElementById("logout").disabled = true;
-	}
-
-	function setAdditionalInfo() {
-		try {
-			let value = document.getElementById("userAdditionalInformation").value;
-
-			let json = JSON.parse(value);
-			document.getElementById("userAdditionalInformationError").innerHTML = "";
-			document.getElementById("userAdditionalInformationError").classList.add("hidden");
-		} catch (e) {
-			document.getElementById("userAdditionalInformationError").innerHTML = e.message;
-			document.getElementById("userAdditionalInformationError").classList.remove("hidden");
-
-			return false;
-		}
-
-		window.parleySettings.userAdditionalInformation = json;
-		alert("User additional information has been send to the server!");
-		return false; // Cancel form's submit
-	}
-</script>
 </html>
