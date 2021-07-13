@@ -3,11 +3,19 @@
 	"version": "2.0.0",
 	"description": "Front-end solution for Parley",
 	"private": true,
-	"main": "index.js",
+	"main": "index.html",
+	"targets": {
+		"basic": {
+			"distDir": "dist/basic/",
+			"scopeHoist": true,
+			"sourceMap": false,
+			"optimize": true
+		}
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
-		"build": "npx parcel build index.html",
+		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --target basic index.html",
+		"build": "npx parcel build --target basic index.html",
 		"test:open": "./bin/start_cypress.sh",
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
 	},
@@ -48,6 +56,8 @@
 		"@fortawesome/free-regular-svg-icons": "^5.15.3",
 		"@fortawesome/free-solid-svg-icons": "^5.15.3",
 		"@fortawesome/react-fontawesome": "^0.1.14",
+		"@parcel/babel-plugin-transform-runtime": "*",
+		"@parcel/babel-preset-env": "*",
 		"ow": "^0.24.1",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
