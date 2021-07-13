@@ -7,7 +7,7 @@
 import Config from "./Private/Config";
 import ow from "ow";
 import {
-	ApiFetchFailed,
+	ApiFetchFailed, ApiGenericError,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
@@ -99,6 +99,13 @@ export default class Api {
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
 			});
 	}
 
@@ -122,6 +129,13 @@ export default class Api {
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, data));
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
 			});
 	}
 
@@ -133,6 +147,13 @@ export default class Api {
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
+					errorNotifications,
+					warningNotifications,
+					data: [],
+				}));
 			});
 	}
 }
@@ -144,11 +165,17 @@ function fetchWrapper(url, options) {
 			.then((json) => {
 				// Check if we have an API error and throw it
 				if(json.status === ErrorStatus) {
-					const errorNotifications = json.notifications
-						.filter(notification => notification.type === ErrorResponse);
-					const warningNotifications = json.notifications
-						.filter(notification => notification.type === WarningResponse);
-					reject(errorNotifications, warningNotifications);
+					if(json.notifications) {
+						const errorNotifications = json.notifications
+							.map(notification => notification.type === ErrorResponse && notification.message);
+						const warningNotifications = json.notifications
+							.map(notification => notification.type === WarningResponse && notification.message);
+
+						reject(errorNotifications, warningNotifications);
+					} else {
+						// eslint-disable-next-line prefer-promise-reject-errors
+						reject([ApiGenericError], []);
+					}
 				} else {
 					resolve(json);
 				}
