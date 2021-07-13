@@ -3,23 +3,26 @@ import PropTypes from "prop-types";
 import Launcher from "./Launcher";
 import Chat from "./Chat";
 import Api from "../Api/Api";
-import {API_ACCOUNT_IDENTIFICATION, API_DEVICE_IDENTIFICATION, API_DOMAIN} from "./tempConfig";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
+import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./context";
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {showChat: false};
+		this.state = {
+			showChat: false,
+			interfaceTexts: InterfaceTexts,
+		};
 
 		this.Api = new Api(
-			API_DOMAIN,
-			API_ACCOUNT_IDENTIFICATION,
-			API_DEVICE_IDENTIFICATION,
+			ApiOptions.apiDomain,
+			ApiOptions.accountIdentification,
+			ApiOptions.deviceIdentification,
 			ApiEventTarget,
 		);
 		this.PollingService = new PollingService(this.Api);
@@ -105,25 +108,22 @@ export default class App extends React.Component {
 	}
 
 	render() {
-		const title = "Default Chat - EN";
-		const welcomeMessage = "Welcome to our support chat, you can expect a response in ~1 minute.";
-
 		return (
-			<>
+			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				<Launcher onClick={this.handleClick} />
 				{
 					this.state.showChat
-					&& <Chat
-						allowEmoji={true}
-						allowFileUpload={true}
-						api={this.Api}
-						onMinimizeClick={this.handleClick}
-						restartPolling={this.restartPolling}
-						title={title}
-						welcomeMessage={welcomeMessage}
-					   />
+						&& <Chat
+							allowEmoji={true}
+							allowFileUpload={true}
+							api={this.Api}
+							onMinimizeClick={this.handleClick}
+							restartPolling={this.restartPolling}
+							title={InterfaceTexts.desc}
+							welcomeMessage={InterfaceTexts.infoText}
+						   />
 				}
-			</>
+			</InterfaceTextsContext.Provider>
 		);
 	}
 }

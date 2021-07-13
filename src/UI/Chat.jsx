@@ -5,8 +5,14 @@ import Header from "./Header";
 import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
 import Api from "../Api/Api";
+import ApiEventTarget from "../Api/ApiEventTarget";
+import {messages, messageSent} from "../Api/Constants/Events";
+import {InterfaceTextsContext} from "./context";
+import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
 
 class Chat extends Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
@@ -17,6 +23,8 @@ class Chat extends Component {
 		this.correctionTimeoutID = null;
 		this.chatRef = React.createRef();
 		this.replyTextRef = React.createRef();
+
+		this.state = {errorNotification: ""};
 	}
 
 	startCorrection(correction, chatNode) {
@@ -80,19 +88,44 @@ class Chat extends Component {
 
 	componentDidMount() {
 		this.replyTextRef.current.textArea.current.focus();
+
+		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
+		ApiEventTarget.addEventListener(messages, this.handleMessages);
 	}
 
 	componentWillUnmount() {
 		clearInterval(this.correctionIntervalID);
 		clearTimeout(this.correctionTimeoutID);
+
+		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
+		ApiEventTarget.removeEventListener(messages, this.handleMessages);
+	}
+
+	handleMessageSent = (event) => {
+		let error = this.context.messageSendFailed;
+		if(event.detail.errorNotifications) {
+			if(event.detail.errorNotifications[0] === ApiGenericError)
+				error = ApiGenericError;
+			if(event.detail.errorNotifications[0] === ApiFetchFailed)
+				error = this.context.serviceUnreachableNotification;
+		}
+
+		this.setState(() => ({errorNotification: error}));
+	}
+
+	handleMessages = (event) => {
+		this.setErrorNotifications(event.detail);
+	}
+
+	setErrorNotifications = (eventData) => {
+		if(eventData.errorNotifications && eventData.errorNotifications.length > 0)
+			this.setState(() => ({errorNotification: eventData.errorNotifications[0]}));
 	}
 
 	render() {
-		const classNames = `
-			${styles.chat} 
-			${this.isMobile ? styles.mobile : ""}
-			${this.isIosDevice ? styles.ios : ""}
-		`;
+		let classNames = styles.chat;
+		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
+		classNames += ` ${this.isIosDevice ? styles.ios : ""}`;
 
 		return (
 			<div className={classNames} id={this.idName} ref={this.chatRef}>
@@ -106,6 +139,12 @@ class Chat extends Component {
 					restartPolling={this.props.restartPolling}
 					welcomeMessage={this.props.welcomeMessage}
 				/>
+				{
+					this.state.errorNotification.length > 0
+					&& <div className={styles.error}>
+						{this.state.errorNotification}
+					</div>
+				}
 				<ReplyActions
 					allowEmoji={this.allowEmoji}
 					allowFileUpload={this.allowFileUpload}

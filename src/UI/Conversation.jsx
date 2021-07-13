@@ -146,8 +146,6 @@ class Conversation extends Component {
 					}
 					<div ref={this.conversationBottom} />
 				</div>
-				{/* <div className={styles.error}>*/}
-				{/* </div>*/}
 			</div>
 		);
 	}

@@ -41,3 +41,11 @@
 	width: calc(var(--mobile-width, 1vw) * 100);
 	height: calc(var(--mobile-height, 1vh) * 100);
 }
+
+.error {
+	width: 100%;
+	padding: 0.25em;
+	background-color: var(--error-background-color);
+	color: var(--error-text-color);
+	text-align: center;
+}
