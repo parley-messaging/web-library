@@ -6,7 +6,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall index.html",
+		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 index.html",
 		"build": "npx parcel build index.html",
 		"test:open": "./bin/start_cypress.sh",
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"

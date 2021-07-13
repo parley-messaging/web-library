@@ -1,6 +1,9 @@
 {
 	"modules": true,
 	"plugins": {
+		"postcss-modules": {
+			"generateScopedName": "[local]__[contenthash]"
+		},
 		"autoprefixer": {},
 		"postcss-reporter": {
 			"plugins": [
