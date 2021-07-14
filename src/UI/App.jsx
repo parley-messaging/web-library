@@ -11,8 +11,6 @@ import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./context";
 
 export default class App extends React.Component {
-	static contextType = InterfaceTextsContext;
-
 	constructor(props) {
 		super(props);
 
@@ -122,8 +120,8 @@ export default class App extends React.Component {
 							closeButton={this.state.closeButton}
 							onMinimizeClick={this.handleClick}
 							restartPolling={this.restartPolling}
-							title={this.context.desc}
-							welcomeMessage={this.context.infoText}
+							title={this.state.interfaceTexts.desc}
+							welcomeMessage={this.state.interfaceTexts.infoText}
 						   />
 				}
 			</InterfaceTextsContext.Provider>
