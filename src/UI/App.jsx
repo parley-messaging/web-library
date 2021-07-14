@@ -11,12 +11,14 @@ import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./context";
 
 export default class App extends React.Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
 		this.state = {
 			showChat: false,
-			interfaceTexts: InterfaceTexts,
+			interfaceTexts: InterfaceTexts.english, // TODO: Check prefered language and change accordingly
 		};
 
 		this.Api = new Api(
@@ -117,10 +119,11 @@ export default class App extends React.Component {
 							allowEmoji={true}
 							allowFileUpload={true}
 							api={this.Api}
+							closeButton={this.state.closeButton}
 							onMinimizeClick={this.handleClick}
 							restartPolling={this.restartPolling}
-							title={InterfaceTexts.desc}
-							welcomeMessage={InterfaceTexts.infoText}
+							title={this.context.desc}
+							welcomeMessage={this.context.infoText}
 						   />
 				}
 			</InterfaceTextsContext.Provider>
