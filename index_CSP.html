@@ -7,17 +7,13 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<!-- Strict CSP (for testing CSP support) -->
-	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu">
-	<meta http-equiv="Content-Security-Policy" content="style-src 'self' 'unsafe-inline'">
-	<meta http-equiv="Content-Security-Policy" content="img-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="font-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self'">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://api.parley.nu"> <!-- Somehow the connect-src doesn't work so we have to set it in the fallback default-src.. -->
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
 	<!---->
 
 	<title>Document</title>
 	<link href="index_CSP.css" rel="stylesheet" type="text/css" />
-	<link href="./node_modules/@fortawesome/fontawesome-svg-core/styles.css" rel="stylesheet" type="text/css" />
+
+<!--	<link href="./node_modules/@fortawesome/fontawesome-svg-core/styles.css" rel="stylesheet"/>-->
 </head>
 <body>
 <div id="app"></div>
