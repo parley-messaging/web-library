@@ -119,11 +119,16 @@ describe("UI", () => {
 
 	describe("parley config settings", () => {
 		describe("country setting", () => {
-			it.only("should change the language of interface texts", () => {
+			it("should change the language of interface texts", () => {
+				const parleyConfig = {
+					country: "en",
+					runOptions: {interfaceTexts: {desc: "Messenger - EN"}},
+				};
+
 				cy.visit("/", {
 					onBeforeLoad: (window) => {
 						// eslint-disable-next-line no-param-reassign
-						window.parleySettings = {country: "en"};
+						window.parleySettings = parleyConfig;
 					},
 				});
 
@@ -146,12 +151,18 @@ describe("UI", () => {
 					.find("[class^=text__]")
 					.find("textarea")
 					.should("have.attr", "placeholder", InterfaceTexts.dutch.placeholderMessenger);
+
+				// Extra test to validate that custom interface texts (desc we set above)
+				// have not been overwritten by the new language's defaults
+				cy.get("@app")
+					.find("[class^=title__]")
+					.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
 			});
 		});
 		describe("runOptions", () => {
 			describe("interfaceTexts setting", () => {
 				it("should change the interface text", () => {
-					const parleyConfig = {runOptions: {InterfaceTexts: {desc: "This is the title bar"}}};
+					const parleyConfig = {runOptions: {interfaceTexts: {desc: "This is the title bar"}}};
 
 					cy.visit("/", {
 						onBeforeLoad: (win) => {
@@ -166,13 +177,13 @@ describe("UI", () => {
 
 					cy.get("@app")
 						.find("[class^=title__]")
-						.should("have.text", parleyConfig.runOptions.InterfaceTexts.desc);
+						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
 
 					// Test if it changes during runtime
 					const newTitle = "This is the title bar #2";
 					cy.window().then((win) => {
 						// eslint-disable-next-line no-param-reassign
-						win.parleySettings.runOptions.InterfaceTexts.desc = newTitle;
+						win.parleySettings.runOptions.interfaceTexts.desc = newTitle;
 					});
 
 					cy.get("@app")

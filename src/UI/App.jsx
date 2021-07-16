@@ -22,7 +22,7 @@ export default class App extends React.Component {
 			interfaceLanguage,
 			interfaceTexts: {
 				...interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english,
-				...window?.parleySettings?.runOptions?.InterfaceTexts,
+				...window?.parleySettings?.runOptions?.interfaceTexts,
 			},
 		};
 
@@ -49,16 +49,16 @@ export default class App extends React.Component {
 			= window.parleySettings ? window.parleySettings : {};
 		window.parleySettings.runOptions
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
-		window.parleySettings.runOptions.InterfaceTexts
-			= window.parleySettings.runOptions.InterfaceTexts ? window.parleySettings.runOptions.InterfaceTexts : {};
+		window.parleySettings.runOptions.interfaceTexts
+			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
 
 		// Create proxy for each layer we need to track
 		window.parleySettings
 			= this.createParleyProxy(window.parleySettings);
 		window.parleySettings.runOptions
 			= this.createParleyProxy(window.parleySettings.runOptions);
-		window.parleySettings.runOptions.InterfaceTexts
-			= this.createParleyProxy(window.parleySettings.runOptions.InterfaceTexts, "InterfaceTexts");
+		window.parleySettings.runOptions.interfaceTexts
+			= this.createParleyProxy(window.parleySettings.runOptions.interfaceTexts, "interfaceTexts");
 	}
 
 	createParleyProxy = (target, parent) => new Proxy(target, {
@@ -88,11 +88,21 @@ export default class App extends React.Component {
 	})
 
 	toggleLanguage = (newLanguage) => {
-		// TODO: If interface text has changed, we need to merge state.interfaceTexts and InterfaceTexts.X
-		if(newLanguage === "nl")
-			this.setState(() => ({interfaceTexts: InterfaceTexts.dutch}));
-		else
-			this.setState(() => ({interfaceTexts: InterfaceTexts.english}));
+		let newInterfaceTexts = deepMerge(
+			InterfaceTexts.english,
+			window.parleySettings.runOptions.interfaceTexts,
+		);
+		if(newLanguage === "nl") {
+			newInterfaceTexts = deepMerge(
+				InterfaceTexts.dutch,
+				window.parleySettings.runOptions.interfaceTexts,
+			);
+		}
+
+		// We use setParleySettingIntoState() here instead of setState()
+		// because we don't want any invalid properties
+		// from the window.parleySetting ending up in the state
+		this.setParleySettingIntoState(newInterfaceTexts, "interfaceTexts");
 	}
 
 	/**
@@ -106,13 +116,13 @@ export default class App extends React.Component {
 	 */
 	setParleySettingIntoState = (value, property) => {
 		const newKey = this.convertLegacySettings(property);
-		Logger.debug(`Converted ${property} to ${newKey}`);
 
 		const newObject = {};
 		newObject[newKey] = value;
 
 		if(Object.prototype.hasOwnProperty.call(this.state, newKey)) {
-			// TODO: Also validate contents of objects, otherwise you can still fill up the state with nonsense, just camouflaged as an object
+			// TODO: Should we validate contents of objects?
+			//  otherwise you can still fill up the state with nonsense, just camouflaged as an object
 
 			this.setState(prevState => deepMerge(prevState, newObject));
 
@@ -137,8 +147,6 @@ export default class App extends React.Component {
 			return "interfaceLanguage";
 		else if(legacyKey === "roomNumber")
 			return "accountIdentification";
-		else if(legacyKey === "InterfaceTexts")
-			return "interfaceTexts";
 
 		return legacyKey;
 	}
