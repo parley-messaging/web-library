@@ -16,11 +16,21 @@ export const InterfaceTexts = {
 		buttonLauncher: "toggle chat window visibility",
 		desc: "Messenger",
 		infoText: "Welcome to our support chat, you can expect a response in ~1 minute.",
-		placeholderMessenger: "Type here your message...",
+		placeholderMessenger: "Type your message here...",
 		messageSendFailed: "Something went wrong while sending your message, please try again later",
 		serviceUnreachableNotification: "The service is unreachable at the moment, please try again later",
 	},
-	dutch: {},
+	dutch: {
+		buttonMenu: "toon optie menu",
+		buttonMinimize: "verberg chat scherm",
+		buttonClose: "stop chat sessie",
+		buttonLauncher: "chat scherm zichtbaarheid schakelen",
+		desc: "Messenger",
+		infoText: "Welkom bij de support chat, je kan een reactie verwachten binnen ~1 minuut.",
+		placeholderMessenger: "Typ hier uw bericht...",
+		messageSendFailed: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw",
+		serviceUnreachableNotification: "De service is momenteel niet bereikbaar, probeer het later opnieuw",
+	},
 };
 
 export const ApiOptionsContext = React.createContext(ApiOptions);

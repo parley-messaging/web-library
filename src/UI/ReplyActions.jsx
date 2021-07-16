@@ -4,7 +4,7 @@ import styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
-import {InterfaceTextsContext} from "./context";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class ReplyActions extends Component {
 	constructor(props) {

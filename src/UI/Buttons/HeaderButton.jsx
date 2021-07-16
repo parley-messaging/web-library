@@ -5,7 +5,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons/faBars";
 import {faWindowMinimize} from "@fortawesome/free-regular-svg-icons/faWindowMinimize";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
-import {InterfaceTextsContext} from "../context";
+import {InterfaceTextsContext} from "../Scripts/Context";
 
 export const menuType = "menu";
 export const minimizeType = "minimize";

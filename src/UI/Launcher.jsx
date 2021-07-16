@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import styles from "./Launcher.module.css";
 import LauncherSVG from "./Resources/launcher.svg";
-import {InterfaceTextsContext} from "./context";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Launcher extends Component {
 	render() {

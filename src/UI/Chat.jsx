@@ -7,7 +7,7 @@ import ReplyActions from "./ReplyActions";
 import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {messages, messageSent} from "../Api/Constants/Events";
-import {InterfaceTextsContext} from "./context";
+import {InterfaceTextsContext} from "./Scripts/Context";
 import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
 
 class Chat extends Component {

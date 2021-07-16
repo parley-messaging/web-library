@@ -8,15 +8,22 @@ import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
-import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./context";
+import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
+import deepMerge from "deepmerge";
+import Logger from "js-logger";
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
+		const interfaceLanguage = window?.parleySettings?.country || "en";
 		this.state = {
 			showChat: false,
-			interfaceTexts: InterfaceTexts.english, // TODO: Check prefered language and change accordingly
+			interfaceLanguage,
+			interfaceTexts: {
+				...interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english,
+				...window?.parleySettings?.runOptions?.InterfaceTexts,
+			},
 		};
 
 		this.Api = new Api(
@@ -36,6 +43,113 @@ export default class App extends React.Component {
 		);
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
+
+		// Make sure layers to proxy exist
+		window.parleySettings
+			= window.parleySettings ? window.parleySettings : {};
+		window.parleySettings.runOptions
+			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
+		window.parleySettings.runOptions.InterfaceTexts
+			= window.parleySettings.runOptions.InterfaceTexts ? window.parleySettings.runOptions.InterfaceTexts : {};
+
+		// Create proxy for each layer we need to track
+		window.parleySettings
+			= this.createParleyProxy(window.parleySettings);
+		window.parleySettings.runOptions
+			= this.createParleyProxy(window.parleySettings.runOptions);
+		window.parleySettings.runOptions.InterfaceTexts
+			= this.createParleyProxy(window.parleySettings.runOptions.InterfaceTexts, "InterfaceTexts");
+	}
+
+	createParleyProxy = (target, parent) => new Proxy(target, {
+		set: (obj, property, value) => {
+			// eslint-disable-next-line no-param-reassign
+			obj[property] = value; // no-op, always allow setting something
+
+			Logger.info(`Setter fired for property: ${property} with value: ${JSON.stringify(value)}`);
+
+			// If we don't stringify `value`, it will log a reference which can contain
+			// a changed value and not the real value at this time
+
+			if(parent) {
+				// If we have a parent we need to put our value
+				// inside that parent and save the parent (with the value)
+				// into the state, instead of saving the value only
+				const newValue = {};
+				newValue[property] = value;
+
+				this.setParleySettingIntoState(newValue, parent); // Try to save the value into the State
+			} else {
+				this.setParleySettingIntoState(value, property); // Try to save the value into the State
+			}
+
+			return true; // Indicate success
+		},
+	})
+
+	toggleLanguage = (newLanguage) => {
+		// TODO: If interface text has changed, we need to merge state.interfaceTexts and InterfaceTexts.X
+		if(newLanguage === "nl")
+			this.setState(() => ({interfaceTexts: InterfaceTexts.dutch}));
+		else
+			this.setState(() => ({interfaceTexts: InterfaceTexts.english}));
+	}
+
+	/**
+	 * Puts a Parley setting and it's value into the state
+	 * It wil convert legacy setting names to the new ones
+	 * if applicable
+	 *
+	 * @param value
+	 * @param property
+	 * @return boolean
+	 */
+	setParleySettingIntoState = (value, property) => {
+		const newKey = this.convertLegacySettings(property);
+		Logger.debug(`Converted ${property} to ${newKey}`);
+
+		const newObject = {};
+		newObject[newKey] = value;
+
+		if(Object.prototype.hasOwnProperty.call(this.state, newKey)) {
+			// TODO: Also validate contents of objects, otherwise you can still fill up the state with nonsense, just camouflaged as an object
+
+			this.setState(prevState => deepMerge(prevState, newObject));
+
+			Logger.info(`Merged the following into the state: ${JSON.stringify(newObject)}`);
+
+			return true;
+		}
+
+		Logger.warn("Property is not initialized in the state; ", newObject, " so this was not added to the state");
+		return false;
+	}
+
+	/**
+	 * Converts legacy parley setting names to the new ones
+	 * If the `legacyKey` is not recognized, it is returned untouched
+	 *
+	 * @param legacyKey
+	 * @return {string|*}
+	 */
+	convertLegacySettings = (legacyKey) => {
+		if(legacyKey === "country")
+			return "interfaceLanguage";
+		else if(legacyKey === "roomNumber")
+			return "accountIdentification";
+		else if(legacyKey === "InterfaceTexts")
+			return "interfaceTexts";
+
+		return legacyKey;
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	shouldComponentUpdate(nextProps, nextState, nextContext) {
+		// Toggle interface language if it has changed
+		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
+			this.toggleLanguage(nextState.interfaceLanguage);
+
+		return true;
 	}
 
 	componentDidMount() {
@@ -44,6 +158,8 @@ export default class App extends React.Component {
 
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
+
+		this.setState(() => ({showChat: false}));
 	}
 
 	componentWillUnmount() {
@@ -129,4 +245,7 @@ export default class App extends React.Component {
 	}
 }
 
-App.propTypes = {name: PropTypes.string};
+App.propTypes = {
+	debug: PropTypes.bool,
+	name: PropTypes.string,
+};
