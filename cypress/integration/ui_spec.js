@@ -1,3 +1,5 @@
+import {InterfaceTexts} from "../../src/UI/Scripts/Context";
+
 function clickOnLauncher() {
 	cy.get("@app")
 		.find("[class^=launcher__]")
@@ -32,7 +34,11 @@ function findMessage(testMessage) {
 describe("UI", () => {
 	describe("sending messages", () => {
 		beforeEach(() => {
-			cy.visit("/");
+			cy.visit("/", {
+				onLoad: (window) => {
+					window.initParleyMessenger();
+				},
+			});
 
 			cy.get("[id=app]").as("app");
 		});
@@ -108,6 +114,72 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
+		});
+	});
+
+	describe("parley config settings", () => {
+		describe("country setting", () => {
+			it.only("should change the language of interface texts", () => {
+				cy.visit("/", {
+					onBeforeLoad: (window) => {
+						// eslint-disable-next-line no-param-reassign
+						window.parleySettings = {country: "en"};
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=text__]")
+					.find("textarea")
+					.should("have.attr", "placeholder", InterfaceTexts.english.placeholderMessenger);
+
+				// Test if it changes during runtime
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.country = "nl";
+				});
+
+				cy.get("@app")
+					.find("[class^=text__]")
+					.find("textarea")
+					.should("have.attr", "placeholder", InterfaceTexts.dutch.placeholderMessenger);
+			});
+		});
+		describe("runOptions", () => {
+			describe("interfaceTexts setting", () => {
+				it("should change the interface text", () => {
+					const parleyConfig = {runOptions: {InterfaceTexts: {desc: "This is the title bar"}}};
+
+					cy.visit("/", {
+						onBeforeLoad: (win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings = parleyConfig;
+						},
+					});
+
+					cy.get("[id=app]").as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=title__]")
+						.should("have.text", parleyConfig.runOptions.InterfaceTexts.desc);
+
+					// Test if it changes during runtime
+					const newTitle = "This is the title bar #2";
+					cy.window().then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.runOptions.InterfaceTexts.desc = newTitle;
+					});
+
+					cy.get("@app")
+						.find("[class^=title__]")
+						.should("have.text", newTitle);
+				});
+			});
 		});
 	});
 });
