@@ -31,6 +31,12 @@ function findMessage(testMessage) {
 		.should("be.visible");
 }
 
+function findChatError(error) {
+	cy.get("@app")
+		.find("[class^=error__]")
+		.should("have.text", error);
+}
+
 describe("UI", () => {
 	describe("sending messages", () => {
 		beforeEach(() => {
@@ -190,6 +196,39 @@ describe("UI", () => {
 						.find("[class^=title__]")
 						.should("have.text", newTitle);
 				});
+			});
+		});
+		describe("roomNumber", () => {
+			it.only("should register a new device when switching accounts", () => {
+				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const testMessage = "test message before switching room numbers";
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Test if it changes during runtime
+				const newAccountIdentification = "1234";
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.roomNumber = newAccountIdentification;
+				});
+
+				clickOnLauncher();
+				findChatError("api_key_not_valid");
+
+				// There isn't any good way to check if the new device is registered
+				// All we can do is check if the api returns the error due to
+				// the new (invalid) account identification
 			});
 		});
 	});

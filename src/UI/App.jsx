@@ -24,12 +24,15 @@ export default class App extends React.Component {
 				...interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english,
 				...window?.parleySettings?.runOptions?.interfaceTexts,
 			},
+			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
+			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
+			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
 		};
 
 		this.Api = new Api(
-			ApiOptions.apiDomain,
-			ApiOptions.accountIdentification,
-			ApiOptions.deviceIdentification,
+			this.state.apiDomain,
+			this.state.accountIdentification,
+			this.state.deviceIdentification,
 			ApiEventTarget,
 		);
 		this.PollingService = new PollingService(this.Api);
@@ -156,6 +159,25 @@ export default class App extends React.Component {
 		// Toggle interface language if it has changed
 		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
 			this.toggleLanguage(nextState.interfaceLanguage);
+
+		// Create a new Api instance and register a new device when accountIdentification has changed
+		if(nextState.accountIdentification !== this.state.accountIdentification) {
+			this.Api = new Api(
+				nextState.apiDomain,
+				nextState.accountIdentification,
+				nextState.deviceIdentification,
+				ApiEventTarget,
+			);
+			this.PollingService = new PollingService(this.Api);
+			this.Api.subscribeDevice(
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				DeviceTypes.Web,
+				version,
+			);
+		}
 
 		return true;
 	}
