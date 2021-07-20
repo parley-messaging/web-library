@@ -160,35 +160,108 @@ describe("UI", () => {
 			});
 		});
 		describe("runOptions", () => {
-			describe("interfaceTexts setting", () => {
-				it("should change the interface text", () => {
-					const parleyConfig = {runOptions: {interfaceTexts: {desc: "This is the title bar"}}};
+			describe("interfaceTexts", () => {
+				describe("desc", () => {
+					it("should change the title text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {desc: "This is the title bar"}}};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
+						cy.visit("/", {
+							onBeforeLoad: (win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings = parleyConfig;
+							},
+						});
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=title__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
+
+						// Test if it changes during runtime
+						const newTitle = "This is the title bar #2";
+						cy.window().then((win) => {
 							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
+							win.parleySettings.runOptions.interfaceTexts.desc = newTitle;
+						});
+
+						cy.get("@app")
+							.find("[class^=title__]")
+							.should("have.text", newTitle);
 					});
+				});
+				describe("infoText", () => {
+					it("should change the welcome message", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {infoText: "This is the info text"}}};
 
-					cy.get("[id=app]").as("app");
+						// To test this we need to ignore the API's `welcomeMessage`
+						cy.fixture("getMessagesResponse.json").then((json) => {
+							const _json = {
+								...json,
+								welcomeMessage: null,
+							};
+							cy.intercept("GET", "*/**/messages", _json);
+						});
 
-					clickOnLauncher();
+						cy.visit("/", {
+							onBeforeLoad: (win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings = parleyConfig;
+							},
+						});
 
-					cy.get("@app")
-						.find("[class^=title__]")
-						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
+						cy.get("[id=app]").as("app");
 
-					// Test if it changes during runtime
-					const newTitle = "This is the title bar #2";
-					cy.window().then((win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings.runOptions.interfaceTexts.desc = newTitle;
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.first()
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.infoText);
+
+						// Test if it changes during runtime
+						const newInfoText = "This is the info text #2";
+						cy.window().then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.interfaceTexts.infoText = newInfoText;
+						});
+
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.first()
+							.should("have.text", newInfoText);
 					});
+					it("should get overridden by API's welcomeMessage", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {infoText: "This is the info text"}}};
+						const welcomeMessage = "This is the API's welcome message";
 
-					cy.get("@app")
-						.find("[class^=title__]")
-						.should("have.text", newTitle);
+						// To test this we need to change the API's `welcomeMessage`
+						cy.fixture("getMessagesResponse.json").then((json) => {
+							const _json = {
+								...json,
+								welcomeMessage,
+							};
+							cy.intercept("GET", "*/**/messages", _json);
+						});
+
+						cy.visit("/", {
+							onBeforeLoad: (win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings = parleyConfig;
+							},
+						});
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.first()
+							.should("have.text", welcomeMessage);
+					});
 				});
 			});
 		});

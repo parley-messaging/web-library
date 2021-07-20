@@ -18,7 +18,7 @@ class Conversation extends Component {
 
 		// state
 		this.state = {
-			welcomeMessage: this.props.welcomeMessage,
+			welcomeMessage: "",
 			messages: [],
 			stickyMessage: "",
 		};
@@ -107,13 +107,14 @@ class Conversation extends Component {
 
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
+		const welcomeMessage = this.state.welcomeMessage || this.props.welcomeMessage;
 
 		return (
 			<div className={styles.wrapper}>
 				<div className={styles.body}>
 					{
-						this.state.welcomeMessage
-							&& <Announcement message={this.state.welcomeMessage} />
+						welcomeMessage
+							&& <Announcement message={welcomeMessage} />
 					}
 					{
 						this.state.messages.map((message, index, array) => (

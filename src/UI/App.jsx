@@ -56,20 +56,11 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
-
-		// Create proxy for each layer we need to track
-		window.parleySettings
-			= this.createParleyProxy(window.parleySettings);
-		window.parleySettings.runOptions
-			= this.createParleyProxy(window.parleySettings.runOptions);
-		window.parleySettings.runOptions.interfaceTexts
-			= this.createParleyProxy(window.parleySettings.runOptions.interfaceTexts, "interfaceTexts");
 	}
 
 	createParleyProxy = (target, parent) => new Proxy(target, {
 		set: (obj, property, value) => {
-			// eslint-disable-next-line no-param-reassign
-			obj[property] = value; // no-op, always allow setting something
+			Reflect.set(obj, property, value); // no-op, always allow setting something
 
 			Logger.info(`Setter fired for property: ${property} with value: ${JSON.stringify(value)}`);
 
@@ -154,6 +145,8 @@ export default class App extends React.Component {
 			return "accountIdentification";
 		else if(legacyKey === "authHeader")
 			return "deviceAuthorization";
+		else if(legacyKey === "infoText")
+			return "welcomeMessage";
 
 		return legacyKey;
 	}
@@ -213,6 +206,16 @@ export default class App extends React.Component {
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 
 		this.setState(() => ({showChat: false}));
+
+		// Create proxy for each layer we need to track
+		// We do this after the mount because `createParleyProxy` contains
+		// `setState()` calls, which should not be called before mounting
+		window.parleySettings
+			= this.createParleyProxy(window.parleySettings);
+		window.parleySettings.runOptions
+			= this.createParleyProxy(window.parleySettings.runOptions);
+		window.parleySettings.runOptions.interfaceTexts
+			= this.createParleyProxy(window.parleySettings.runOptions.interfaceTexts, "interfaceTexts");
 	}
 
 	componentWillUnmount() {
@@ -224,6 +227,10 @@ export default class App extends React.Component {
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
+
+		// Remove Proxy from parleySettings which will remove set() trap from proxy
+		// so it doesn't call `setState()` anymore
+		window.parleySettings = JSON.parse(JSON.stringify(window.parleySettings));
 	}
 
 	handleFocusWindow = () => {
