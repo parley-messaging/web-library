@@ -263,6 +263,39 @@ describe("UI", () => {
 							.should("have.text", welcomeMessage);
 					});
 				});
+				describe("placeholderMessenger", () => {
+					it("should change the input's placeholder text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {placeholderMessenger: "This is the placeholder"}}};
+
+						cy.visit("/", {
+							onBeforeLoad: (win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings = parleyConfig;
+							},
+						});
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=text__]")
+							.find("textarea")
+							.should("have.attr", "placeholder", parleyConfig.runOptions.interfaceTexts.placeholderMessenger);
+
+						// Test if it changes during runtime
+						const newPlaceholder = "This is the placeholder #2";
+						cy.window().then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.interfaceTexts.placeholderMessenger = newPlaceholder;
+						});
+
+						cy.get("@app")
+							.find("[class^=text__]")
+							.find("textarea")
+							.should("have.attr", "placeholder", newPlaceholder);
+					});
+				});
 			});
 		});
 		describe("roomNumber", () => {
