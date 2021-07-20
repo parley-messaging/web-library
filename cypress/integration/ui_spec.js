@@ -1,7 +1,7 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 
 function clickOnLauncher() {
-	cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=launcher__]")
 		.find("button")
 		.should("be.visible")
@@ -9,7 +9,7 @@ function clickOnLauncher() {
 }
 
 function sendMessage(testMessage) {
-	cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=chat__]")
 		.should("be.visible")
 		.find("[class^=footer__]")
@@ -22,7 +22,7 @@ function sendMessage(testMessage) {
 }
 
 function findMessage(testMessage) {
-	cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=wrapper__]")
 		.should("be.visible")
 		.find("[class^=body__]")
@@ -32,7 +32,7 @@ function findMessage(testMessage) {
 }
 
 function findChatError(error) {
-	cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=error__]")
 		.should("have.text", error);
 }
@@ -199,9 +199,9 @@ describe("UI", () => {
 			});
 		});
 		describe("roomNumber", () => {
-			it.only("should register a new device when switching accounts", () => {
+			it("should register a new device when switching accounts", () => {
 				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
-				const testMessage = "test message before switching room numbers";
+				const testMessage = `test message before switching room numbers${Date.now()}`;
 
 				cy.visit("/", {
 					onBeforeLoad: (win) => {
@@ -229,6 +229,34 @@ describe("UI", () => {
 				// There isn't any good way to check if the new device is registered
 				// All we can do is check if the api returns the error due to
 				// the new (invalid) account identification
+			});
+		});
+		describe("authHeader", () => {
+			it.only("should re-register the device when it changes", () => {
+				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const testMessage = `test message before switching auth header ${Date.now()}`;
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Test if it changes during runtime
+				const newAuthHeader = "1234";
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.authHeader = newAuthHeader;
+				});
+
+				findChatError("authentication_not_valid");
 			});
 		});
 	});

@@ -62,6 +62,7 @@ export default class Api {
 		type,
 		version,
 		referer,
+		authorization,
 	) {
 		// Validate params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
@@ -77,15 +78,18 @@ export default class Api {
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
-
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
-			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
+			headers: {
+				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
+				Authorization: authorization || "",
+			},
 			body: JSON.stringify({
 				pushToken,
 				pushType,

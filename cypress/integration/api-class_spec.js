@@ -16,6 +16,7 @@ const config = {
 	type: Web,
 	version: "010000",
 	message: "test message",
+	referer: "weblib-v2_cypress-test",
 };
 const primitiveTypes = [
 	{
@@ -303,6 +304,25 @@ describe("Api class", () => {
 					set.value,
 				))
 					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as authorization", () => {
+			filterPrimitives([
+				"string",
+				"undefined", // Dont test for undefined, because authorization is optional and if we give undefined it will test for other params next
+			]).forEach((set) => {
+				expect(() => config.api.subscribeDevice(
+					config.pushToken,
+					config.pushType,
+					true,
+					config.userAdditionalInformation,
+					config.type,
+					config.version,
+					config.referer,
+					set.value,
+				))
+					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 

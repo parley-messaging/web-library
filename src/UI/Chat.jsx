@@ -6,7 +6,7 @@ import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
 import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
-import {messages, messageSent} from "../Api/Constants/Events";
+import {messages, messageSent, subscribe} from "../Api/Constants/Events";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
 
@@ -91,6 +91,7 @@ class Chat extends Component {
 
 		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.addEventListener(messages, this.handleMessages);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 	}
 
 	componentWillUnmount() {
@@ -99,21 +100,29 @@ class Chat extends Component {
 
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 	}
 
 	handleMessageSent = (event) => {
-		let error = this.context.messageSendFailed;
-		if(event.detail.errorNotifications) {
+		if(event.detail.errorNotifications && event.detail.errorNotifications.length > 0) {
+			let error = this.context.messageSendFailed;
+
 			if(event.detail.errorNotifications[0] === ApiGenericError)
 				error = ApiGenericError;
-			if(event.detail.errorNotifications[0] === ApiFetchFailed)
+			else if(event.detail.errorNotifications[0] === ApiFetchFailed)
 				error = this.context.serviceUnreachableNotification;
-		}
+			else
+				error = event.detail.errorNotification[0];
 
-		this.setState(() => ({errorNotification: error}));
+			this.setState(() => ({errorNotification: error}));
+		}
 	}
 
 	handleMessages = (event) => {
+		this.setErrorNotifications(event.detail);
+	}
+
+	handleSubscribe = (event) => {
 		this.setErrorNotifications(event.detail);
 	}
 

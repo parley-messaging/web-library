@@ -27,6 +27,7 @@ export default class App extends React.Component {
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
 			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
+			deviceAuthorization: window?.parleySettings?.authHeader || "",
 		};
 
 		this.Api = new Api(
@@ -150,6 +151,8 @@ export default class App extends React.Component {
 			return "interfaceLanguage";
 		else if(legacyKey === "roomNumber")
 			return "accountIdentification";
+		else if(legacyKey === "authHeader")
+			return "deviceAuthorization";
 
 		return legacyKey;
 	}
@@ -176,6 +179,20 @@ export default class App extends React.Component {
 				undefined,
 				DeviceTypes.Web,
 				version,
+			);
+		}
+
+		// Re-register device when deviceAuthorization changes
+		if(nextState.deviceAuthorization !== this.state.deviceAuthorization) {
+			this.Api.subscribeDevice(
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				DeviceTypes.Web,
+				version,
+				undefined,
+				nextState.deviceAuthorization,
 			);
 		}
 
