@@ -31,12 +31,6 @@ function findMessage(testMessage) {
 		.should("be.visible");
 }
 
-function findChatError(error) {
-	return cy.get("@app")
-		.find("[class^=error__]")
-		.should("have.text", error);
-}
-
 describe("UI", () => {
 	describe("sending messages", () => {
 		beforeEach(() => {
@@ -218,21 +212,23 @@ describe("UI", () => {
 
 				// Test if it changes during runtime
 				const newAccountIdentification = "1234";
+				cy.intercept("POST", "*/**/devices", (req) => {
+					expect(req.headers)
+						.to.have.deep.property("x-iris-identification");
+					expect(req.headers["x-iris-identification"])
+						.to.match(new RegExp(`^${newAccountIdentification}:`, "u"));
+				}).as("createDevice");
+
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.roomNumber = newAccountIdentification;
 				});
 
-				clickOnLauncher();
-				findChatError("api_key_not_valid");
-
-				// There isn't any good way to check if the new device is registered
-				// All we can do is check if the api returns the error due to
-				// the new (invalid) account identification
+				cy.wait("@createDevice");
 			});
 		});
 		describe("authHeader", () => {
-			it.only("should re-register the device when it changes", () => {
+			it("should re-register the device when it changes", () => {
 				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 				const testMessage = `test message before switching auth header ${Date.now()}`;
 
@@ -251,12 +247,51 @@ describe("UI", () => {
 
 				// Test if it changes during runtime
 				const newAuthHeader = "1234";
+				cy.intercept("POST", "*/**/devices", (req) => {
+					expect(req.headers)
+						.to.have.deep.property("authorization", newAuthHeader);
+				}).as("createDevice");
+
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.authHeader = newAuthHeader;
 				});
 
-				findChatError("authentication_not_valid");
+				cy.wait("@createDevice");
+			});
+		});
+		describe("userAdditionalInformation", () => {
+			it("should re-register the device when it changes", () => {
+				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const testMessage = `test message before switching userAdditionalInformation ${Date.now()}`;
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Test if it changes during runtime
+				const newUserAdditionalInformation = {"some-key": "some-value"};
+
+				cy.intercept("POST", "*/**/devices", (req) => {
+					expect(JSON.parse(req.body))
+						.to.have.deep.property("userAdditionalInformation", newUserAdditionalInformation);
+				}).as("createDevice");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.userAdditionalInformation = newUserAdditionalInformation;
+				});
+
+				cy.wait("@createDevice");
 			});
 		});
 	});

@@ -26,8 +26,9 @@ export default class App extends React.Component {
 			},
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
-			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
-			deviceAuthorization: window?.parleySettings?.authHeader || "",
+			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification, // TODO: Test reactivity (do we even need it?)
+			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
+			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 		};
 
 		this.Api = new Api(
@@ -176,19 +177,24 @@ export default class App extends React.Component {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
+				nextState.userAdditionalInformation,
 				DeviceTypes.Web,
 				version,
+				undefined,
+				nextState.deviceAuthorization,
 			);
 		}
 
 		// Re-register device when deviceAuthorization changes
-		if(nextState.deviceAuthorization !== this.state.deviceAuthorization) {
+		// and when userAdditionalInformation changes
+		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
+			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+		) {
 			this.Api.subscribeDevice(
 				undefined,
 				undefined,
 				undefined,
-				undefined,
+				nextState.userAdditionalInformation,
 				DeviceTypes.Web,
 				version,
 				undefined,

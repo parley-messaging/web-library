@@ -104,31 +104,38 @@ class Chat extends Component {
 	}
 
 	handleMessageSent = (event) => {
-		if(event.detail.errorNotifications && event.detail.errorNotifications.length > 0) {
-			let error = this.context.messageSendFailed;
-
-			if(event.detail.errorNotifications[0] === ApiGenericError)
-				error = ApiGenericError;
-			else if(event.detail.errorNotifications[0] === ApiFetchFailed)
-				error = this.context.serviceUnreachableNotification;
-			else
-				error = event.detail.errorNotification[0];
-
-			this.setState(() => ({errorNotification: error}));
-		}
+		// If we have any errors, show then to the client
+		if(event.detail.errorNotifications)
+			this.setErrorNotifications(event, this.context.messageSendFailed);
 	}
 
 	handleMessages = (event) => {
-		this.setErrorNotifications(event.detail);
+		// If we have any errors, show then to the client
+		if(event.detail.errorNotifications)
+			this.setErrorNotifications(event, this.context.messageSendFailed);
 	}
 
 	handleSubscribe = (event) => {
-		this.setErrorNotifications(event.detail);
+		// If we have any errors, show then to the client
+		if(event.detail.errorNotifications)
+			this.setErrorNotifications(event, this.context.messageSendFailed);
 	}
 
-	setErrorNotifications = (eventData) => {
-		if(eventData.errorNotifications && eventData.errorNotifications.length > 0)
-			this.setState(() => ({errorNotification: eventData.errorNotifications[0]}));
+	setErrorNotifications = (event, defaultError) => {
+		// Choose the default error if set
+		// otherwise take the first error, from the notifications, as the default
+		let error = defaultError || event.detail.errorNotifications[0];
+
+		// Check if this is a generic error
+		if(event.detail.errorNotifications[0] === ApiGenericError)
+			error = ApiGenericError;
+
+		// Check if this is an error due to the service being unreachable
+		else if(event.detail.errorNotifications[0] === ApiFetchFailed)
+			error = this.context.serviceUnreachableNotification;
+
+		// Save the error in the state so we can show it in the next update
+		this.setState(() => ({errorNotification: error}));
 	}
 
 	render() {
