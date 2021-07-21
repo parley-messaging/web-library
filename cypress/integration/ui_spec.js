@@ -139,7 +139,7 @@ describe("UI", () => {
 				cy.get("@app")
 					.find("[class^=text__]")
 					.find("textarea")
-					.should("have.attr", "placeholder", InterfaceTexts.english.placeholderMessenger);
+					.should("have.attr", "placeholder", InterfaceTexts.english.inputPlaceholder);
 
 				// Test if it changes during runtime
 				cy.window().then((win) => {
@@ -150,7 +150,7 @@ describe("UI", () => {
 				cy.get("@app")
 					.find("[class^=text__]")
 					.find("textarea")
-					.should("have.attr", "placeholder", InterfaceTexts.dutch.placeholderMessenger);
+					.should("have.attr", "placeholder", InterfaceTexts.dutch.inputPlaceholder);
 
 				// Extra test to validate that custom interface texts (desc we set above)
 				// have not been overwritten by the new language's defaults
@@ -368,7 +368,10 @@ describe("UI", () => {
 		});
 		describe("userAdditionalInformation", () => {
 			it("should re-register the device when it changes", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const parleyConfig = {
+					roomNumber: "0W4qcE5aXoKq9OzvHxj2",
+					userAdditionalInformation: {"some-key": "some-value"},
+				};
 				const testMessage = `test message before switching userAdditionalInformation ${Date.now()}`;
 
 				cy.visit("/", {
@@ -385,7 +388,10 @@ describe("UI", () => {
 				findMessage(testMessage); // Wait until the server received the new message
 
 				// Test if it changes during runtime
-				const newUserAdditionalInformation = {"some-key": "some-value"};
+				const newUserAdditionalInformation = {
+					"some-key": "some-value",
+					"some-layer": {"some-key-in-layer": "some-value-in-layer"},
+				};
 
 				cy.intercept("POST", "*/**/devices", (req) => {
 					expect(JSON.parse(req.body))
@@ -394,7 +400,7 @@ describe("UI", () => {
 
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
-					win.parleySettings.userAdditionalInformation = newUserAdditionalInformation;
+					win.parleySettings.userAdditionalInformation["some-layer"] = newUserAdditionalInformation["some-layer"];
 				});
 
 				cy.wait("@createDevice");

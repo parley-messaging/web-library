@@ -10,6 +10,8 @@ import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
+import {Observable} from "object-observer";
+import deepForEach from "deep-for-each";
 import Logger from "js-logger";
 
 export default class App extends React.Component {
@@ -17,12 +19,21 @@ export default class App extends React.Component {
 		super(props);
 
 		const interfaceLanguage = window?.parleySettings?.country || "en";
+		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
 			interfaceLanguage,
 			interfaceTexts: {
-				...interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english,
-				...window?.parleySettings?.runOptions?.interfaceTexts,
+				title: window?.parleySettings?.runOptions?.interfaceTexts
+					?.desc || interfaceTextsDefaults.title,
+				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
+					?.placeholderMessenger || interfaceTextsDefaults.inputPlaceholder,
+				sendingMessageFailedError: window?.parleySettings?.runOptions?.interfaceTexts
+					?.messageSendFailed || interfaceTextsDefaults.sendingMessageFailedError,
+				serviceUnreachableError: window?.parleySettings?.runOptions?.interfaceTexts
+					?.serviceUnreachableNotification || interfaceTextsDefaults.serviceUnreachableError,
+				welcomeMessage: window?.parleySettings?.runOptions?.interfaceTexts
+					?.infoText || interfaceTextsDefaults.welcomeMessage,
 			},
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
@@ -56,99 +67,6 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
-	}
-
-	createParleyProxy = (target, parent) => new Proxy(target, {
-		set: (obj, property, value) => {
-			Reflect.set(obj, property, value); // no-op, always allow setting something
-
-			Logger.info(`Setter fired for property: ${property} with value: ${JSON.stringify(value)}`);
-
-			// If we don't stringify `value`, it will log a reference which can contain
-			// a changed value and not the real value at this time
-
-			if(parent) {
-				// If we have a parent we need to put our value
-				// inside that parent and save the parent (with the value)
-				// into the state, instead of saving the value only
-				const newValue = {};
-				newValue[property] = value;
-
-				this.setParleySettingIntoState(newValue, parent); // Try to save the value into the State
-			} else {
-				this.setParleySettingIntoState(value, property); // Try to save the value into the State
-			}
-
-			return true; // Indicate success
-		},
-	})
-
-	toggleLanguage = (newLanguage) => {
-		let newInterfaceTexts = deepMerge(
-			InterfaceTexts.english,
-			window.parleySettings.runOptions.interfaceTexts,
-		);
-		if(newLanguage === "nl") {
-			newInterfaceTexts = deepMerge(
-				InterfaceTexts.dutch,
-				window.parleySettings.runOptions.interfaceTexts,
-			);
-		}
-
-		// We use setParleySettingIntoState() here instead of setState()
-		// because we don't want any invalid properties
-		// from the window.parleySetting ending up in the state
-		this.setParleySettingIntoState(newInterfaceTexts, "interfaceTexts");
-	}
-
-	/**
-	 * Puts a Parley setting and it's value into the state
-	 * It wil convert legacy setting names to the new ones
-	 * if applicable
-	 *
-	 * @param value
-	 * @param property
-	 * @return boolean
-	 */
-	setParleySettingIntoState = (value, property) => {
-		const newKey = this.convertLegacySettings(property);
-
-		const newObject = {};
-		newObject[newKey] = value;
-
-		if(Object.prototype.hasOwnProperty.call(this.state, newKey)) {
-			// TODO: Should we validate contents of objects?
-			//  otherwise you can still fill up the state with nonsense, just camouflaged as an object
-
-			this.setState(prevState => deepMerge(prevState, newObject));
-
-			Logger.info(`Merged the following into the state: ${JSON.stringify(newObject)}`);
-
-			return true;
-		}
-
-		Logger.warn("Property is not initialized in the state; ", newObject, " so this was not added to the state");
-		return false;
-	}
-
-	/**
-	 * Converts legacy parley setting names to the new ones
-	 * If the `legacyKey` is not recognized, it is returned untouched
-	 *
-	 * @param legacyKey
-	 * @return {string|*}
-	 */
-	convertLegacySettings = (legacyKey) => {
-		if(legacyKey === "country")
-			return "interfaceLanguage";
-		else if(legacyKey === "roomNumber")
-			return "accountIdentification";
-		else if(legacyKey === "authHeader")
-			return "deviceAuthorization";
-		else if(legacyKey === "infoText")
-			return "welcomeMessage";
-
-		return legacyKey;
 	}
 
 	// eslint-disable-next-line no-unused-vars
@@ -207,15 +125,10 @@ export default class App extends React.Component {
 
 		this.setState(() => ({showChat: false}));
 
-		// Create proxy for each layer we need to track
+		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
-		window.parleySettings
-			= this.createParleyProxy(window.parleySettings);
-		window.parleySettings.runOptions
-			= this.createParleyProxy(window.parleySettings.runOptions);
-		window.parleySettings.runOptions.interfaceTexts
-			= this.createParleyProxy(window.parleySettings.runOptions.interfaceTexts, "interfaceTexts");
+		window.parleySettings = this.createParleyProxy(window.parleySettings);
 	}
 
 	componentWillUnmount() {
@@ -231,6 +144,140 @@ export default class App extends React.Component {
 		// Remove Proxy from parleySettings which will remove set() trap from proxy
 		// so it doesn't call `setState()` anymore
 		window.parleySettings = JSON.parse(JSON.stringify(window.parleySettings));
+	}
+
+	/**
+	 * This will create a Proxy for everything inside `target`
+	 * It wil trap the `set` function
+	 * When the `set` is called, it will direct this update to
+	 * `setParleySettingIntoState` which will rename old settings
+	 * to new, and save it into the state (if possible)
+	 *
+	 * @param target
+	 * @return Observable
+	 */
+	createParleyProxy = (target) => {
+		const proxy = Observable.from(target);
+		proxy.observe((changes) => {
+			changes.forEach((change) => {
+				// If the new value is an object, we need to go through
+				// ALL properties and rename/apply them to the state
+				// We ignore "userAdditionalInformation", because we don't
+				// care about renaming it's keys.
+				if(typeof change.value === "object"
+					&& change.value !== null
+					&& change.path[0] !== "userAdditionalInformation"
+				) {
+					deepForEach(change.value, (value, key) => {
+						// Extend the path with the key
+						// Make sure we "clone" instead of direct referencing change.path
+						const fullPath = [
+							...change.path,
+							key,
+						];
+
+						this.setParleySettingIntoState(fullPath, value);
+					});
+
+				// If it is anything else than an object, we can
+				// directly rename/apply it to the state
+				} else {
+					this.setParleySettingIntoState(change.path, change.value);
+				}
+			});
+		});
+
+		return proxy;
+	}
+
+	/**
+	 * This will update the interfaceTexts values in the state
+	 * to the ones of the correct language.
+	 * It will preserve any overrides made using `window.parleySettings`
+	 *
+	 * @param newLanguage
+	 */
+	toggleLanguage = (newLanguage) => {
+		let newInterfaceTexts = deepMerge(
+			InterfaceTexts.english,
+			window.parleySettings.runOptions.interfaceTexts,
+		);
+		if(newLanguage === "nl") {
+			newInterfaceTexts = deepMerge(
+				InterfaceTexts.dutch,
+				window.parleySettings.runOptions.interfaceTexts,
+			);
+		}
+
+		// We use setParleySettingIntoState() here instead of setState()
+		// because we don't want any invalid properties
+		// from the window.parleySetting ending up in the state
+		// TODO: This also tries to save things like "buttonMenu", which is in the context
+		//  but not in the state.. This produces warnings for each setting that is not in state
+		deepForEach(newInterfaceTexts, (value, key) => {
+			this.setParleySettingIntoState([
+				"runOptions", "interfaceTexts", key,
+			], value);
+		});
+	}
+
+	/**
+	 * This will update the state with the new value
+	 * and a renamed key (if needed)
+	 * It looks trough the `path` to see if we need
+	 * to rename a key to it's new variant.
+	 *
+	 * @param path
+	 * @param value
+	 */
+	setParleySettingIntoState = (path, value) => {
+		const layer0 = 0;
+		const layer1 = 1;
+		const layer2 = 2;
+
+		let objectToSaveIntoState;
+
+		if(path[layer0] === "runOptions") {
+			if(path[layer1] === "interfaceTexts") {
+				// Check if interfaceTexts has the property from layer2
+				// If it does, we add the whole layer to `interfaceTexts`
+				// Important: This only goes until layer2, it will not validate properties beyond that
+				if(Object.prototype.hasOwnProperty.call(this.state.interfaceTexts, path[layer2])) {
+					objectToSaveIntoState = {interfaceTexts: {}};
+					objectToSaveIntoState.interfaceTexts[path[layer2]] = value;
+				} else if(path[layer2] === "desc") {
+					objectToSaveIntoState = {interfaceTexts: {title: value}};
+				} else if(path[layer2] === "infoText") {
+					objectToSaveIntoState = {interfaceTexts: {welcomeMessage: value}};
+				} else if(path[layer2] === "placeholderMessenger") {
+					objectToSaveIntoState = {interfaceTexts: {inputPlaceholder: value}};
+				} else if(path[layer1] === "language") {
+					objectToSaveIntoState = {interfaceLanguage: value};
+				}
+			}
+		} else if(path[layer0] === "roomNumber") {
+			objectToSaveIntoState = {accountIdentification: value};
+		} else if(path[layer0] === "authHeader") {
+			objectToSaveIntoState = {deviceAuthorization: value};
+		} else if(path[layer0] === "country") {
+			objectToSaveIntoState = {interfaceLanguage: value};
+		} else if(path[layer0] === "userAdditionalInformation") {
+			objectToSaveIntoState = {userAdditionalInformation: {}};
+			objectToSaveIntoState.userAdditionalInformation
+				= JSON.parse(JSON.stringify(window.parleySettings.userAdditionalInformation));
+
+			// For `userAdditionalInformation` we don't care about validating
+			// the contents. So we can just directly add it to the state.
+			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
+			// from the object
+		}
+
+		if(objectToSaveIntoState) {
+			this.setState(prevState => deepMerge(prevState, objectToSaveIntoState));
+			Logger.debug("Saved into state:", objectToSaveIntoState);
+		} else {
+			Logger.debug("Found unknown setting:", path.join("."));
+		}
 	}
 
 	handleFocusWindow = () => {
@@ -296,8 +343,8 @@ export default class App extends React.Component {
 							closeButton={this.state.closeButton}
 							onMinimizeClick={this.handleClick}
 							restartPolling={this.restartPolling}
-							title={this.state.interfaceTexts.desc}
-							welcomeMessage={this.state.interfaceTexts.infoText}
+							title={this.state.interfaceTexts.title}
+							welcomeMessage={this.state.interfaceTexts.welcomeMessage}
 						   />
 				}
 			</InterfaceTextsContext.Provider>

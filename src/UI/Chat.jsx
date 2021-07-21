@@ -106,19 +106,19 @@ class Chat extends Component {
 	handleMessageSent = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.messageSendFailed);
+			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	handleMessages = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.messageSendFailed);
+			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	handleSubscribe = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.messageSendFailed);
+			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	setErrorNotifications = (event, defaultError) => {
@@ -132,7 +132,7 @@ class Chat extends Component {
 
 		// Check if this is an error due to the service being unreachable
 		else if(event.detail.errorNotifications[0] === ApiFetchFailed)
-			error = this.context.serviceUnreachableNotification;
+			error = this.context.serviceUnreachableError;
 
 		// Save the error in the state so we can show it in the next update
 		this.setState(() => ({errorNotification: error}));
@@ -156,7 +156,7 @@ class Chat extends Component {
 					welcomeMessage={this.props.welcomeMessage}
 				/>
 				{
-					this.state.errorNotification.length > 0
+					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
 						{this.state.errorNotification}
 					</div>

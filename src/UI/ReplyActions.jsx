@@ -46,7 +46,7 @@ class ReplyActions extends Component {
 								isMobile={this.props.isMobile}
 								onChange={this.handleChange}
 								onSubmit={this.handleSubmit}
-								placeholder={interfaceTexts.placeholderMessenger}
+								placeholder={interfaceTexts.inputPlaceholder}
 								ref={this.props.replyTextRef}
 								restartPolling={this.props.restartPolling}
 								value={this.state.reply}

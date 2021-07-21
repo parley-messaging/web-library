@@ -10,8 +10,8 @@ export const ApiOptions = {
 
 export const InterfaceTexts = {
 	english: {
-		// TODO: Add to docs
 		// New in v2
+		// TODO: Add to docs
 		buttonMenu: "show options menu",
 		buttonMinimize: "hide chat window",
 		buttonClose: "stop chat session",
@@ -19,16 +19,16 @@ export const InterfaceTexts = {
 		messageRetrieveFailed: "Something went wrong while retrieving your messages, please try again later",
 		deviceRegistrationFailed: "Something went wrong while registering your device, please try again later",
 
-		// Old from v1
-		desc: "Messenger",
-		infoText: "Welcome to our support chat, you can expect a response in ~1 minute.",
-		placeholderMessenger: "Type your message here...",
-		messageSendFailed: "Something went wrong while sending your message, please try again later",
-		serviceUnreachableNotification: "The service is unreachable at the moment, please try again later",
+		// Old from v1 (but renamed)
+		title: "Messenger", // Was `desc`
+		welcomeMessage: "Welcome to our support chat, you can expect a response in ~1 minute.", // Was `infoText`
+		inputPlaceholder: "Type your message here...", // Was `placeholderMessenger`
+		sendingMessageFailedError: "Something went wrong while sending your message, please try again later", // Was `messageSendFailed`
+		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
 	},
 	dutch: {
-		// TODO: Add to docs
 		// New from v2
+		// TODO: Add to docs
 		buttonMenu: "toon optie menu",
 		buttonMinimize: "verberg chat scherm",
 		buttonClose: "stop chat sessie",
@@ -36,12 +36,12 @@ export const InterfaceTexts = {
 		messageRetrieveFailed: "Er ging iets fout bij het ophalen van je berichten, probeer het later opnieuw",
 		deviceRegistrationFailed: "Er ging iets fout bij het registreren van je apparaat, probeer het later opnieuw",
 
-		// Old from v1
-		desc: "Messenger",
-		infoText: "Welkom bij de support chat, je kan een reactie verwachten binnen ~1 minuut.",
-		placeholderMessenger: "Typ hier uw bericht...",
-		messageSendFailed: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw",
-		serviceUnreachableNotification: "De service is momenteel niet bereikbaar, probeer het later opnieuw",
+		// Old from v1 (but renamed)
+		title: "Messenger", // Was `desc`
+		welcomeMessage: "Welkom bij de support chat, je kan een reactie verwachten binnen ~1 minuut.", // Was `infoText`
+		inputPlaceholder: "Typ hier uw bericht...", // Was `placeholderMessenger`
+		sendingMessageFailedError: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw", // Was `messageSendFailed`
+		serviceUnreachableError: "De service is momenteel niet bereikbaar, probeer het later opnieuw", // Was `serviceUnreachableNotification`
 	},
 };
 
