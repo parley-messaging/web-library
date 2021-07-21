@@ -13,6 +13,7 @@ import deepMerge from "deepmerge";
 import {Observable} from "object-observer";
 import deepForEach from "deep-for-each";
 import Logger from "js-logger";
+import {areWeOnline} from "./Scripts/WorkingHours";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -22,6 +23,7 @@ export default class App extends React.Component {
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
+			offline: false,
 			interfaceLanguage,
 			interfaceTexts: {
 				title: window?.parleySettings?.runOptions?.interfaceTexts
@@ -40,6 +42,8 @@ export default class App extends React.Component {
 			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification, // TODO: Test reactivity (do we even need it?)
 			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
+			workingHours: window?.parleySettings?.weekdays || undefined,
+			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 		};
 
 		this.Api = new Api(
@@ -113,17 +117,21 @@ export default class App extends React.Component {
 			);
 		}
 
+		// Check working hours when they changed
+		if(nextState.workingHours !== this.state.workingHours)
+			this.checkWorkingHours();
+
 		return true;
 	}
 
 	componentDidMount() {
+		this.checkWorkingHours();
+
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
-
-		this.setState(() => ({showChat: false}));
 
 		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
@@ -161,11 +169,14 @@ export default class App extends React.Component {
 		proxy.observe((changes) => {
 			changes.forEach((change) => {
 				// If the new value is an object, we need to go through
-				// ALL properties and rename/apply them to the state
+				// ALL properties and rename/apply them to the state.
+				// We don't want arrays because we dont want to loop
+				// over them.
 				// We ignore "userAdditionalInformation", because we don't
 				// care about renaming it's keys.
 				if(typeof change.value === "object"
 					&& change.value !== null
+					&& !Array.isArray(change.value)
 					&& change.path[0] !== "userAdditionalInformation"
 				) {
 					deepForEach(change.value, (value, key) => {
@@ -251,16 +262,19 @@ export default class App extends React.Component {
 					objectToSaveIntoState = {interfaceTexts: {welcomeMessage: value}};
 				} else if(path[layer2] === "placeholderMessenger") {
 					objectToSaveIntoState = {interfaceTexts: {inputPlaceholder: value}};
-				} else if(path[layer1] === "language") {
-					objectToSaveIntoState = {interfaceLanguage: value};
 				}
 			}
+		} else if(path[layer0] === "interface") {
+			if(path[layer1] === "hideChatAfterBusinessHours")
+				objectToSaveIntoState = {hideChatOutsideWorkingHours: value};
 		} else if(path[layer0] === "roomNumber") {
 			objectToSaveIntoState = {accountIdentification: value};
 		} else if(path[layer0] === "authHeader") {
 			objectToSaveIntoState = {deviceAuthorization: value};
 		} else if(path[layer0] === "country") {
 			objectToSaveIntoState = {interfaceLanguage: value};
+		} else if(path[layer0] === "weekdays") {
+			objectToSaveIntoState = {workingHours: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
 			objectToSaveIntoState = {userAdditionalInformation: {}};
 			objectToSaveIntoState.userAdditionalInformation
@@ -330,10 +344,17 @@ export default class App extends React.Component {
 			this.showChat();
 	}
 
+	checkWorkingHours = () => {
+		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
+	}
+
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
-				<Launcher onClick={this.handleClick} />
+				{
+					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
+						&& <Launcher onClick={this.handleClick} />
+				}
 				{
 					this.state.showChat
 						&& <Chat
