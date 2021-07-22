@@ -164,7 +164,7 @@ function init() {
 	const background = findGetParameter("background") ? findGetParameter("background") : demoSettings.background;
 	document.getElementById("background").value = background ? background : document.getElementById("background").value;
 
-	if(findGetParameter("start") === "true") {
+	if(findGetParameter("start") === "true" || demoSettings) {
 		toggleOptions();
 		createChat();
 	}
