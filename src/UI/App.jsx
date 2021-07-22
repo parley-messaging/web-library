@@ -44,6 +44,7 @@ export default class App extends React.Component {
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
 			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification, // TODO: Test reactivity (do we even need it?)
 			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
+			deviceVersion: version.substr(0, version.indexOf("-")), // Strip any pre-release data
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
@@ -62,7 +63,7 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 			DeviceTypes.Web,
-			version,
+			this.state.deviceVersion,
 		);
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
@@ -97,7 +98,7 @@ export default class App extends React.Component {
 				undefined,
 				nextState.userAdditionalInformation,
 				DeviceTypes.Web,
-				version,
+				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization,
 			);
@@ -114,7 +115,7 @@ export default class App extends React.Component {
 				undefined,
 				nextState.userAdditionalInformation,
 				DeviceTypes.Web,
-				version,
+				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization,
 			);
