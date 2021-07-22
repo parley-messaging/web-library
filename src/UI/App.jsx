@@ -14,6 +14,7 @@ import {Observable} from "object-observer";
 import deepForEach from "deep-for-each";
 import Logger from "js-logger";
 import {areWeOnline} from "./Scripts/WorkingHours";
+import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -24,6 +25,8 @@ export default class App extends React.Component {
 		this.state = {
 			showChat: false,
 			offline: false,
+			isMobile: isMobile(),
+			isiOSMobile: isiOSMobileDevice(),
 			interfaceLanguage,
 			interfaceTexts: {
 				title: window?.parleySettings?.runOptions?.interfaceTexts
@@ -362,6 +365,8 @@ export default class App extends React.Component {
 							allowFileUpload={true}
 							api={this.Api}
 							closeButton={this.state.closeButton}
+							isMobile={this.state.isMobile}
+							isiOSMobile={this.state.isiOSMobile}
 							onMinimizeClick={this.handleClick}
 							restartPolling={this.restartPolling}
 							title={this.state.interfaceTexts.title}

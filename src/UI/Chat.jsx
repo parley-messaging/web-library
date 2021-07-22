@@ -16,8 +16,9 @@ class Chat extends Component {
 	constructor(props) {
 		super(props);
 
-		this.isMobile = false;
-		this.isIosDevice = false; // If true; will correct width/height according to window inner width/height
+		this.isMobile = this.props.isMobile || false; // If true; will add mobile styling to render
+		this.isiOSDevice = this.props.isiOSMobile || false; // If true; will correct width/height according to window inner width/height
+
 		this.idName = "chat";
 		this.correctionIntervalID = null;
 		this.correctionTimeoutID = null;
@@ -71,7 +72,7 @@ class Chat extends Component {
 	}
 
 	fitToIDeviceScreen = async () => {
-		if(!this.isIosDevice)
+		if(!this.isiOSDevice)
 			return;
 
 		const chatNode = this.chatRef.current;
@@ -141,7 +142,7 @@ class Chat extends Component {
 	render() {
 		let classNames = styles.chat;
 		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
-		classNames += ` ${this.isIosDevice ? styles.ios : ""}`;
+		classNames += ` ${this.isiOSDevice ? styles.ios : ""}`;
 
 		return (
 			<div className={classNames} id={this.idName} ref={this.chatRef}>
@@ -179,6 +180,8 @@ Chat.propTypes = {
 	allowEmoji: PropTypes.bool,
 	allowFileUpload: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
+	isiOSMobile: PropTypes.bool,
+	isMobile: PropTypes.bool,
 	onCloseClick: PropTypes.func,
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,
