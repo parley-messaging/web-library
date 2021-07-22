@@ -2,12 +2,20 @@
 
 let showOptions = true;
 const localStorageKey = "parleyDemoV2Settings";
-window.fromButtonClick = false;
+let fromButtonClick = false;
 let settingsUrl = "";
 
 // Default config used to create a chat
 const config = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 window.parleySettingsDemo = config;
+
+// Create event handlers
+document.getElementById("startChatOptionsForm").addEventListener("click", createChat);
+document.getElementById("startChatOptionsFormSubmitButton").addEventListener("click", () => {
+	fromButtonClick = true;
+});
+document.getElementById("additionalInformationForm").addEventListener("click", setAdditionalInfo);
+document.getElementById("toggleOptionsButton").addEventListener("click", toggleOptions);
 
 function findGetParameter(parameterName) {
 	let result = null;
@@ -30,17 +38,17 @@ function toggleOptions() {
 		document.getElementById("loginContainer").style.display = "block";
 		document.getElementById("toggleOptions").classList.add("right");
 		document.getElementById("toggleOptions").classList.remove("left");
-		document.getElementById("toggleOptionsBtn").innerHTML = "<";
+		document.getElementById("toggleOptionsButton").innerHTML = "<";
 	} else {
 		document.getElementById("loginContainer").style.display = "none";
 		document.getElementById("toggleOptions").classList.add("left");
 		document.getElementById("toggleOptions").classList.remove("right");
-		document.getElementById("toggleOptionsBtn").innerHTML = ">";
+		document.getElementById("toggleOptionsButton").innerHTML = ">";
 	}
 }
 
 function createChat() {
-	if(window.fromButtonClick === true) {
+	if(fromButtonClick === true) {
 		// Reset all cookies if there were any
 		window.localStorage.clear();
 
@@ -123,7 +131,7 @@ function setAdditionalInfo() {
 		document.getElementById("userAdditionalInformationError").classList.add("hidden");
 
 		window.parleySettings.userAdditionalInformation = json;
-		window.fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
+		fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
 		createChat(); // re-create the chat so it re-registers
 
 		document.getElementById("userAdditionalInformationError").innerHTML = "User additional information has been send to the server!";

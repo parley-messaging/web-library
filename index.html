@@ -7,15 +7,21 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<!-- Strict CSP (for testing CSP support) -->
-	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
+	<meta http-equiv="Content-Security-Policy" content="
+		connect-src 'self' https://api.parley.nu;
+		style-src 'self'
+		'unsafe-inline';
+		img-src 'self';
+		font-src 'self';
+		script-src 'self';
+		default-src 'self'
+	">
 	<!---->
 
 	<title>Messenger</title>
 
 	<!-- Load external libraries first -->
-	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"
-	      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/url-search-params-polyfill@8.1.0/index.min.js"></script>
+	<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<!-- END -->
 
 	<style>
@@ -107,7 +113,7 @@
 			left: 0;
 		}
 
-		#toggleOptionsBtn {
+		#toggleOptionsButton {
 			width: 1em;
 			height: 8em;
 			padding: 0.15em 0;
@@ -135,7 +141,7 @@
 
 <section id="loginContainer">
 	<div id="startChatOptions">
-		<form onsubmit="createChat()" action="#" target="dummyframe" autocomplete="on">
+		<form id="startChatOptionsForm" action="#" target="dummyframe" autocomplete="on">
 			<div class="form-group">
 				<label for="accountId">Account Identification</label>
 				<input type="text" id="accountId" class="form-control" placeholder="identification" required/>
@@ -154,12 +160,12 @@
 				<input type="text" id="background" class="form-control" placeholder="background url"
 					   value=""/>
 			</div>
-			<button type="submit" class="btn btn-primary" onclick="window.fromButtonClick = true">Create chat</button>
+			<button id="startChatOptionsFormSubmitButton" type="submit" class="btn btn-primary">Create chat</button>
 		</form>
 	</div>
 
 	<div id="additionalInformation" class="hide-untill-start">
-		<form onsubmit="setAdditionalInfo()" action="#" target="dummyframe" autocomplete="off">
+		<form id="additionalInformationForm" action="#" target="dummyframe" autocomplete="off">
 			<div class="form-group">
 				<label for="userAdditionalInformation">User additional information</label>
 				<textarea id="userAdditionalInformation" class="form-control" required rows="3">{"key": "data"}</textarea>
@@ -173,7 +179,7 @@
 </section>
 
 <div id="toggleOptions" class="right">
-	<button class="btn btn-primary" id="toggleOptionsBtn" onclick="toggleOptions()"><</button>
+	<button  class="btn btn-primary" id="toggleOptionsButton"><</button>
 </div>
 
 <!-- Load the actual chat widget -->

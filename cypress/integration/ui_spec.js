@@ -36,7 +36,7 @@ describe("UI", () => {
 		beforeEach(() => {
 			cy.visit("/", {
 				onLoad: (window) => {
-					window.initParleyMessenger();
+					window.startParleyMessenger();
 				},
 			});
 
