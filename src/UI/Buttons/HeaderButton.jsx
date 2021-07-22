@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./HeaderButton.module.css";
+import * as styles from "./HeaderButton.module.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons/faBars";
 import {faWindowMinimize} from "@fortawesome/free-regular-svg-icons/faWindowMinimize";

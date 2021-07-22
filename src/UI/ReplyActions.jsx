@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./ReplyActions.module.css";
+import * as styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
