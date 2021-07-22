@@ -6,6 +6,10 @@
 			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+	<!-- Strict CSP (for testing CSP support) -->
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
+	<!---->
+
 	<title>Document</title>
 	<style>
 		:root {
@@ -13,15 +17,15 @@
 			--mobile-width: 1vw;
 			--font: 'OpenSans', sans-serif;
 			--background-color: #FFF;
-			--background-image: ''; /* TODO: Not used */
+			--background-image: ''; /* Not used */
 			--nav-background-color: #00006B;
 			--nav-text-color: #FFF;
 			--date-color: #404040;
-			--input-background-color: #218259; /* TODO: Not used */
-			--input-text-color: #FFF; /* TODO: Not used */
+			--input-background-color: #218259; /* Not used */
+			--input-text-color: #FFF; /* Not used */
 			--user-background-color: #4BF0B9;
 			--user-text-color: #00006B;
-			--user-sent-color: #090; /* TODO: Not used */
+			--user-sent-color: #090; /* Not used */
 			--user-time-color: #00006B;
 			--account-background-color: #E7E3E0;
 			--account-text-color: #535353;
