@@ -3,24 +3,20 @@
 	"version": "2.0.0",
 	"description": "Front-end solution for Parley",
 	"private": true,
-	"main": "index.js",
 	"targets": {
 		"ui": {
-			"distDir": "dist/ui/browser/",
-			"context": "browser",
-			"isLibrary": false,
-			"outputFormat": "global",
-			"scopeHoist": true,
-			"sourceMap": false,
-			"optimize": true
+			"distDir": "dist/ui"
+		},
+		"cdn-demo": {
+			"distDir": "dist/ui/cdn-demo",
+			"publicUrl": "/demo/v2/"
 		}
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 index.html",
-		"start-csp": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8182 index_CSP.html",
-		"build": "npx parcel build index.html",
-		"build-csp": "npx parcel build --target ui index_CSP.html",
+		"build": "npx parcel build --target ui index.html",
+		"build-cdn-demo": "npx parcel build --target cdn-demo index.html",
 		"test:open": "./bin/start_cypress.sh",
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
 	},
@@ -96,8 +92,7 @@
 		"eslint-plugin-no-only-tests": "^2.6.0",
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-unused-imports": "^1.1.2",
-		"parcel": "2.0.0-beta.3.1",
-		"postcss": "^8.3.5",
+		"parcel": "2.0.0-nightly.776",
 		"postcss-reporter": "^7.0.2",
 		"stylelint": "^13.13.1",
 		"stylelint-config-idiomatic-order": "^8.1.0",
