@@ -10,11 +10,11 @@ const config = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 window.parleySettingsDemo = config;
 
 // Create event handlers
-document.getElementById("startChatOptionsForm").addEventListener("click", createChat);
+document.getElementById("startChatOptionsForm").addEventListener("submit", createChat);
 document.getElementById("startChatOptionsFormSubmitButton").addEventListener("click", () => {
 	fromButtonClick = true;
 });
-document.getElementById("additionalInformationForm").addEventListener("click", setAdditionalInfo);
+document.getElementById("additionalInformationForm").addEventListener("submit", setAdditionalInfo);
 document.getElementById("toggleOptionsButton").addEventListener("click", toggleOptions);
 
 function findGetParameter(parameterName) {
@@ -131,8 +131,9 @@ function setAdditionalInfo() {
 		document.getElementById("userAdditionalInformationError").classList.add("hidden");
 
 		window.parleySettings.userAdditionalInformation = json;
-		fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
-		createChat(); // re-create the chat so it re-registers
+
+		// fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
+		// createChat(); // re-create the chat so it re-registers
 
 		document.getElementById("userAdditionalInformationError").innerHTML = "User additional information has been send to the server!";
 		document.getElementById("userAdditionalInformationError").style.color = "green";
