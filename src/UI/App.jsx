@@ -70,7 +70,7 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			this.state.userAdditionalInformation,
 			DeviceTypes.Web,
 			version,
 		);

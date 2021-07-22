@@ -12,7 +12,7 @@ Logger.useDefaults({
 
 const mountNode = document.getElementById("app");
 
-window.initParleyMessenger = () => {
+window.startParleyMessenger = () => {
 	// eslint-disable-next-line no-undef
 	if(process.env.NODE_ENV === "development") {
 		Logger.setLevel(Logger.DEBUG); // Make sure you enable "verbose" logging in your console to see DEBUG logs
@@ -22,6 +22,6 @@ window.initParleyMessenger = () => {
 	}
 };
 
-window.destroyParleyMessenger = () => {
+window.removeParleyMessenger = () => {
 	ReactDOM.unmountComponentAtNode(mountNode);
 };

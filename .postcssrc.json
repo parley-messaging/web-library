@@ -1,7 +1,10 @@
 {
 	"plugins": {
 		"postcss-modules": {
-			"generateScopedName": "[local]__[contenthash]"
+			"generateScopedName": "[local]__[contenthash]",
+			"globalModulePaths": [
+				"index.html"
+			]
 		},
 		"autoprefixer": {},
 		"postcss-reporter": {
