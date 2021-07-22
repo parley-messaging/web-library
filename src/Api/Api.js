@@ -93,15 +93,25 @@ export default class Api {
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
-		// Check registration in local storage
-		const deviceInformation = localStorage.getItem("deviceInformation");
-		if(deviceInformation !== null && deviceInformation.length > 0)
-			return false;
-
 		// If the referer isn't set, set it to the window's url
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
+
+		const body = JSON.stringify({
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version,
+			referer: refererCopy,
+		});
+
+		// Check registration in local storage
+		const storedDeviceInformation = localStorage.getItem("deviceInformation");
+		if(storedDeviceInformation === body)
+			return false; // No need to call the API if we don't have any new data
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -109,29 +119,13 @@ export default class Api {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 				Authorization: authorization || "",
 			},
-			body: JSON.stringify({
-				pushToken,
-				pushType,
-				pushEnabled,
-				userAdditionalInformation,
-				type,
-				version,
-				referer: refererCopy,
-			}),
+			body,
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 
 				// Save registration in local storage
-				localStorage.setItem("deviceInformation", JSON.stringify({
-					identification: this.deviceIdentification,
-					pushToken,
-					pushType,
-					pushEnabled,
-					userAdditionalInformation,
-					type,
-					version,
-				}));
+				localStorage.setItem("deviceInformation", body);
 
 				return data;
 			})
