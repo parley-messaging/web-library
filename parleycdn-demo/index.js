@@ -132,9 +132,6 @@ function setAdditionalInfo() {
 
 		window.parleySettings.userAdditionalInformation = json;
 
-		// fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
-		// createChat(); // re-create the chat so it re-registers
-
 		document.getElementById("userAdditionalInformationError").innerHTML = "User additional information has been send to the server!";
 		document.getElementById("userAdditionalInformationError").style.color = "green";
 		document.getElementById("userAdditionalInformationError").classList.remove("hidden");
