@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Messenger</title>
+	<meta name="viewport"
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<title>Messenger Demo</title>
 
 	<!-- Load external libraries first -->
-	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"
-	      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	<script src="https://cdn.jsdelivr.net/npm/url-search-params-polyfill@8.1.0/index.min.js"></script>
+	<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<!-- END -->
 
 	<style>
@@ -17,15 +18,15 @@
 			--mobile-width: 1vw;
 			--font: 'OpenSans', sans-serif;
 			--background-color: #FFF;
-			--background-image: ''; /* TODO: Not used */
+			--background-image: ''; /* Not used */
 			--nav-background-color: #00006B;
 			--nav-text-color: #FFF;
 			--date-color: #404040;
-			--input-background-color: #218259; /* TODO: Not used */
-			--input-text-color: #FFF; /* TODO: Not used */
+			--input-background-color: #218259; /* Not used */
+			--input-text-color: #FFF; /* Not used */
 			--user-background-color: #4BF0B9;
 			--user-text-color: #00006B;
-			--user-sent-color: #090; /* TODO: Not used */
+			--user-sent-color: #090; /* Not used */
 			--user-time-color: #00006B;
 			--account-background-color: #E7E3E0;
 			--account-text-color: #535353;
@@ -100,7 +101,7 @@
 			left: 0;
 		}
 
-		#toggleOptionsBtn {
+		#toggleOptionsButton {
 			width: 1em;
 			height: 8em;
 			padding: 0.15em 0;
@@ -121,14 +122,13 @@
 			border: none !important;
 		}
 	</style>
-	<link href="node_modules/@fortawesome/fontawesome-svg-core/styles.css" rel="stylesheet">
 </head>
 <body>
 <iframe width="0" height="0" class="hidden" name="dummyframe" id="dummyframe"></iframe>
 
 <section id="loginContainer">
 	<div id="startChatOptions">
-		<form onsubmit="createChat()" action="#" target="dummyframe" autocomplete="on">
+		<form id="startChatOptionsForm" action="#" target="dummyframe" autocomplete="on">
 			<div class="form-group">
 				<label for="accountId">Account Identification</label>
 				<input type="text" id="accountId" class="form-control" placeholder="identification" required/>
@@ -140,33 +140,49 @@
 			<div class="form-group">
 				<label for="apiDomain">Api Domain</label>
 				<input type="text" id="apiDomain" class="form-control" placeholder="api domain"
-					   value="https://api.parley.nu" required/>
+				       value="https://api.parley.nu" required/>
 			</div>
 			<div class="form-group">
 				<label for="background">Background</label>
 				<input type="text" id="background" class="form-control" placeholder="background url"
-					   value=""/>
+				       value=""/>
 			</div>
-			<button type="submit" class="btn btn-primary" onclick="window.fromButtonClick = true">Create chat</button>
+			<div class="form-group">
+				<label for="language">Language</label>
+				<select id="language" class="custom-select">
+					<option selected value="nl">Nederlands</option>
+					<option value="en">English</option>
+				</select>
+			</div>
+			<button id="startChatOptionsFormSubmitButton" type="submit" class="btn btn-primary">Create chat</button>
 		</form>
 	</div>
 
+	<div id="loginOptions" class="hide-untill-start">
+		<form id="loginOptionsForm" action="#" target="dummyframe" autocomplete="on">
+			<div class="form-group">
+				<label for="authHeader">Auth header</label>
+				<input type="text" id="authHeader" class="form-control" placeholder="auth header" required/>
+			</div>
+			<button id="login" type="submit" class="btn btn-primary">Log in</button>
+		</form>
+		<button id="logout" class="btn btn-danger">Log out</button>
+	</div>
+
 	<div id="additionalInformation" class="hide-untill-start">
-		<form onsubmit="setAdditionalInfo()" action="#" target="dummyframe" autocomplete="off">
+		<form id="additionalInformationForm" action="#" target="dummyframe" autocomplete="off">
 			<div class="form-group">
 				<label for="userAdditionalInformation">User additional information</label>
 				<textarea id="userAdditionalInformation" class="form-control" required rows="3">{"key": "data"}</textarea>
 				<small id="userAdditionalInformationError" class="hidden"></small>
 			</div>
 			<button id="setUserAdditionalInformation" type="submit" class="btn btn-primary">Synchronize data</button>
-			<br>
-			<small>For now this will just restart your chat</small>
 		</form>
 	</div>
 </section>
 
 <div id="toggleOptions" class="right">
-	<button class="btn btn-primary" id="toggleOptionsBtn" onclick="toggleOptions()"><</button>
+	<button  class="btn btn-primary" id="toggleOptionsButton"><</button>
 </div>
 
 <!-- Load the actual chat widget -->
