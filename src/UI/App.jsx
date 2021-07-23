@@ -20,7 +20,7 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		const interfaceLanguage = window?.parleySettings?.country || "en";
+		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
@@ -267,6 +267,8 @@ export default class App extends React.Component {
 				} else if(path[layer2] === "placeholderMessenger") {
 					objectToSaveIntoState = {interfaceTexts: {inputPlaceholder: value}};
 				}
+			} else if(path[layer1] === "country") {
+				objectToSaveIntoState = {interfaceLanguage: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -275,8 +277,6 @@ export default class App extends React.Component {
 			objectToSaveIntoState = {accountIdentification: value};
 		} else if(path[layer0] === "authHeader") {
 			objectToSaveIntoState = {deviceAuthorization: value};
-		} else if(path[layer0] === "country") {
-			objectToSaveIntoState = {interfaceLanguage: value};
 		} else if(path[layer0] === "weekdays") {
 			objectToSaveIntoState = {workingHours: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
