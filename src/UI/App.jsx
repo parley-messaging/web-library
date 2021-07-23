@@ -44,7 +44,7 @@ export default class App extends React.Component {
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
 			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification, // TODO: Test reactivity (do we even need it?)
 			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
-			deviceVersion: version.substr(0, version.indexOf("-")), // Strip any pre-release data
+			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
