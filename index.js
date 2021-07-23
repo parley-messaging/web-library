@@ -2,12 +2,25 @@
 
 let showOptions = true;
 const localStorageKey = "parleyDemoV2Settings";
-window.fromButtonClick = false;
+let fromButtonClick = false;
 let settingsUrl = "";
 
 // Default config used to create a chat
-const config = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+const config = {
+	roomNumber: "0W4qcE5aXoKq9OzvHxj2",
+	runOptions: {},
+};
 window.parleySettingsDemo = config;
+
+// Create event handlers
+document.getElementById("startChatOptionsForm").addEventListener("submit", createChat);
+document.getElementById("startChatOptionsFormSubmitButton").addEventListener("click", () => {
+	fromButtonClick = true;
+});
+document.getElementById("additionalInformationForm").addEventListener("submit", setAdditionalInfo);
+document.getElementById("toggleOptionsButton").addEventListener("click", toggleOptions);
+document.getElementById("loginOptionsForm").addEventListener("submit", loginChat);
+document.getElementById("logout").addEventListener("click", logoutChat);
 
 function findGetParameter(parameterName) {
 	let result = null;
@@ -30,17 +43,17 @@ function toggleOptions() {
 		document.getElementById("loginContainer").style.display = "block";
 		document.getElementById("toggleOptions").classList.add("right");
 		document.getElementById("toggleOptions").classList.remove("left");
-		document.getElementById("toggleOptionsBtn").innerHTML = "<";
+		document.getElementById("toggleOptionsButton").innerHTML = "<";
 	} else {
 		document.getElementById("loginContainer").style.display = "none";
 		document.getElementById("toggleOptions").classList.add("left");
 		document.getElementById("toggleOptions").classList.remove("right");
-		document.getElementById("toggleOptionsBtn").innerHTML = ">";
+		document.getElementById("toggleOptionsButton").innerHTML = ">";
 	}
 }
 
 function createChat() {
-	if(window.fromButtonClick === true) {
+	if(fromButtonClick === true) {
 		// Reset all cookies if there were any
 		window.localStorage.clear();
 
@@ -59,6 +72,8 @@ function createChat() {
 	config.xIrisIdentification = document.getElementById("deviceId").value;
 	config.apiDomain = document.getElementById("apiDomain").value;
 	const backgroundUrl = document.getElementById("background").value;
+	const language = document.getElementById("language").value;
+	config.runOptions.country = language;
 
 	// Save settings url
 	const urlSearchParams = new URLSearchParams();
@@ -66,6 +81,7 @@ function createChat() {
 	urlSearchParams.append("deviceId", config.xIrisIdentification);
 	urlSearchParams.append("apiDomain", config.apiDomain);
 	urlSearchParams.append("background", backgroundUrl);
+	urlSearchParams.append("language", language);
 	urlSearchParams.append("start", "true");
 	settingsUrl = `${location.origin + location.pathname}?${urlSearchParams.toString()}`;
 	window.history.pushState("", document.title, settingsUrl);
@@ -76,6 +92,7 @@ function createChat() {
 		deviceId: config.xIrisIdentification,
 		apiDomain: config.apiDomain,
 		background: backgroundUrl,
+		language,
 	}));
 
 	// Create the chat with the default config and the input values
@@ -87,27 +104,16 @@ function createChat() {
 
 function loginChat() {
 	document.getElementById("login").disabled = true;
-	const authHeader = document.getElementById("authHeader").value;
+	window.parleySettings.authHeader = document.getElementById("authHeader").value;
+	alert("You are now logged in!");
 
-	window.parleySettings.registerNewDevice(authHeader, () => {
-		alert("You are now logged in!");
-
-		document.getElementById("logout").disabled = false;
-	}, () => {
-		alert("Something went wrong while logging in, please refresh and try again.");
-	});
+	document.getElementById("logout").disabled = false;
 
 	return false; // To cancel the form's submit
 }
 
 function logoutChat() {
-	window.parleySettings.registerNewDevice("");
-	window.parleySettings.hideParleyMessenger();
-	setTimeout(() => {
-	// Show invite notification so you can directly send a message
-		window.parleySettings.showInviteNotification();
-	}, 150);
-
+	window.parleySettings.authHeader = "";
 	alert("You have been logged out!");
 
 	document.getElementById("login").disabled = false;
@@ -123,8 +129,6 @@ function setAdditionalInfo() {
 		document.getElementById("userAdditionalInformationError").classList.add("hidden");
 
 		window.parleySettings.userAdditionalInformation = json;
-		window.fromButtonClick = true; // This will make sure the createChat() deletes all storage items + the chat
-		createChat(); // re-create the chat so it re-registers
 
 		document.getElementById("userAdditionalInformationError").innerHTML = "User additional information has been send to the server!";
 		document.getElementById("userAdditionalInformationError").style.color = "green";
@@ -156,7 +160,10 @@ function init() {
 	const background = findGetParameter("background") ? findGetParameter("background") : demoSettings.background;
 	document.getElementById("background").value = background ? background : document.getElementById("background").value;
 
-	if(findGetParameter("start") === "true") {
+	const language = findGetParameter("language") ? findGetParameter("language") : demoSettings.country;
+	document.getElementById("language").value = language ? language : document.getElementById("language").value;
+
+	if(findGetParameter("start") === "true" || demoSettings) {
 		toggleOptions();
 		createChat();
 	}
