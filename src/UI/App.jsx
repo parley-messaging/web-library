@@ -113,11 +113,11 @@ export default class App extends React.Component {
 				undefined,
 				undefined,
 				undefined,
-				nextState.userAdditionalInformation,
+				nextState.userAdditionalInformation || undefined,
 				DeviceTypes.Web,
 				this.state.deviceVersion,
 				undefined,
-				nextState.deviceAuthorization,
+				nextState.deviceAuthorization || undefined,
 			);
 		}
 
