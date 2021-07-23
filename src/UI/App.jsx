@@ -53,7 +53,7 @@ export default class App extends React.Component {
 			},
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
-			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification, // TODO: Test reactivity (do we even need it?)
+			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
 			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
 			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
@@ -242,8 +242,6 @@ export default class App extends React.Component {
 		// We use setParleySettingIntoState() here instead of setState()
 		// because we don't want any invalid properties
 		// from the window.parleySetting ending up in the state
-		// TODO: This also tries to save things like "buttonMenu", which is in the context
-		//  but not in the state.. This produces warnings for each setting that is not in state
 		deepForEach(newInterfaceTexts, (value, key) => {
 			this.setParleySettingIntoState([
 				"runOptions", "interfaceTexts", key,
