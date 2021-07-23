@@ -106,6 +106,7 @@ export default class Api {
 			type,
 			version,
 			referer: refererCopy,
+			authorization,
 		});
 
 		// Check registration in local storage
