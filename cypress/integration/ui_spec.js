@@ -115,50 +115,56 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 		});
+
+		it("should hide the error when clicking the close error button", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			cy.intercept("POST", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while sending your message, please try again later");
+
+			cy.intercept("POST", "*/**/messages"); // Remove handler
+
+			// Click the error close button
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.find("[class^=closeButton__]")
+				.should("be.visible")
+				.click();
+
+			// Validate that the error disappeared
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("not.exist");
+		});
 	});
 
 	describe("parley config settings", () => {
-		describe("country setting", () => {
-			it("should change the language of interface texts", () => {
-				const parleyConfig = {
-					country: "en",
-					runOptions: {interfaceTexts: {desc: "Messenger - EN"}},
-				};
-
-				cy.visit("/", {
-					onBeforeLoad: (window) => {
-						// eslint-disable-next-line no-param-reassign
-						window.parleySettings = parleyConfig;
-					},
-				});
-
-				cy.get("[id=app]").as("app");
-
-				clickOnLauncher();
-
-				cy.get("@app")
-					.find("[class^=text__]")
-					.find("textarea")
-					.should("have.attr", "placeholder", InterfaceTexts.english.inputPlaceholder);
-
-				// Test if it changes during runtime
-				cy.window().then((win) => {
-					// eslint-disable-next-line no-param-reassign
-					win.parleySettings.country = "nl";
-				});
-
-				cy.get("@app")
-					.find("[class^=text__]")
-					.find("textarea")
-					.should("have.attr", "placeholder", InterfaceTexts.dutch.inputPlaceholder);
-
-				// Extra test to validate that custom interface texts (desc we set above)
-				// have not been overwritten by the new language's defaults
-				cy.get("@app")
-					.find("[class^=title__]")
-					.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
-			});
-		});
 		describe("runOptions", () => {
 			describe("interfaceTexts", () => {
 				describe("desc", () => {
@@ -295,6 +301,49 @@ describe("UI", () => {
 							.find("textarea")
 							.should("have.attr", "placeholder", newPlaceholder);
 					});
+				});
+			});
+			describe("country", () => {
+				it("should change the language of interface texts", () => {
+					const parleyConfig = {
+						runOptions: {
+							country: "en",
+							interfaceTexts: {desc: "Messenger - EN"},
+						},
+					};
+
+					cy.visit("/", {
+						onBeforeLoad: (window) => {
+							// eslint-disable-next-line no-param-reassign
+							window.parleySettings = parleyConfig;
+						},
+					});
+
+					cy.get("[id=app]").as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=text__]")
+						.find("textarea")
+						.should("have.attr", "placeholder", InterfaceTexts.english.inputPlaceholder);
+
+					// Test if it changes during runtime
+					cy.window().then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.runOptions.country = "nl";
+					});
+
+					cy.get("@app")
+						.find("[class^=text__]")
+						.find("textarea")
+						.should("have.attr", "placeholder", InterfaceTexts.dutch.inputPlaceholder);
+
+					// Extra test to validate that custom interface texts (desc we set above)
+					// have not been overwritten by the new language's defaults
+					cy.get("@app")
+						.find("[class^=title__]")
+						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
 				});
 			});
 		});

@@ -9,6 +9,8 @@ import ApiEventTarget from "../Api/ApiEventTarget";
 import {messages, messageSent, subscribe} from "../Api/Constants/Events";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
 
 class Chat extends Component {
 	static contextType = InterfaceTextsContext;
@@ -139,10 +141,15 @@ class Chat extends Component {
 		this.setState(() => ({errorNotification: error}));
 	}
 
+	handleErrorCloseButtonClick = () => {
+		this.setState(() => ({errorNotification: undefined}));
+	}
+
 	render() {
 		let classNames = styles.chat;
 		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
 		classNames += ` ${this.isiOSDevice ? styles.ios : ""}`;
+		const typeButton = "button";
 
 		return (
 			<div className={classNames} id={this.idName} ref={this.chatRef}>
@@ -159,6 +166,14 @@ class Chat extends Component {
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
+						<button
+							aria-label={this.context.buttonErrorClose}
+							className={styles.closeButton}
+							onClick={this.handleErrorCloseButtonClick}
+							type={typeButton}
+						>
+							<FontAwesomeIcon icon={faTimes} />
+						</button>
 						{this.state.errorNotification}
 					</div>
 				}
