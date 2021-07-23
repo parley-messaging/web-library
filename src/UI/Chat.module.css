@@ -45,8 +45,8 @@
 .error {
 	width: 100%;
 	padding: 0.25em;
-	background-color: var(--error-background-color);
-	color: var(--error-text-color);
+	background-color: var(--error-background-color, #4A5E83);
+	color: var(--error-text-color, #FFF);
 	text-align: center;
 }
 
