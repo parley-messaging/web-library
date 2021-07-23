@@ -29,6 +29,7 @@ export default class App extends React.Component {
 			isiOSMobile: isiOSMobileDevice(),
 			interfaceLanguage,
 			interfaceTexts: {
+				...interfaceTextsDefaults,
 				title: window?.parleySettings?.runOptions?.interfaceTexts
 					?.desc || interfaceTextsDefaults.title,
 				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
