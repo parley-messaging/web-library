@@ -11,7 +11,6 @@ export const ApiOptions = {
 export const InterfaceTexts = {
 	english: {
 		// New in v2
-		// TODO: Add to docs
 		buttonMenu: "show options menu",
 		buttonMinimize: "hide chat window",
 		buttonClose: "stop chat session",
@@ -29,7 +28,6 @@ export const InterfaceTexts = {
 	},
 	dutch: {
 		// New from v2
-		// TODO: Add to docs
 		buttonMenu: "toon optie menu",
 		buttonMinimize: "verberg chat scherm",
 		buttonClose: "stop chat sessie",

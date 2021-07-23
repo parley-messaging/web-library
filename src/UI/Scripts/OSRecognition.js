@@ -8,13 +8,6 @@ export function isMobile() {
 	// it that of a touch device.
 	const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
-	// TODO:
-	//  Normally we would also match `(hover: none),(hover: on-demand)`
-	//  to determine if the primary pointer device
-	//  has no (or limited) hover capabilities
-	//  But somehow on browserstack.com the hover capability
-	//  exists `(hover: hover)` ...
-
 	return isTouch;
 }
 
