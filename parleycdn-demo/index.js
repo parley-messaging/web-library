@@ -58,7 +58,7 @@ function createChat() {
 		window.localStorage.clear();
 
 		// Remove old messenger
-		window.removeParleyMessenger();
+		window.destroyParleyMessenger();
 	}
 
 	// Un hide all nodes with the `hide-untill-start` classname
@@ -97,7 +97,7 @@ function createChat() {
 
 	// Create the chat with the default config and the input values
 	window.parleySettings = config;
-	window.startParleyMessenger();
+	window.initParleyMessenger();
 
 	return false; // To cancel the form's submit
 }

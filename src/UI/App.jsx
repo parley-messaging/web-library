@@ -85,6 +85,10 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
+
+		// Global functions
+		window.hideParleyMessenger = this.hideChat;
+		window.showParleyMessenger = this.showChat;
 	}
 
 	// eslint-disable-next-line no-unused-vars
