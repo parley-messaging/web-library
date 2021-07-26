@@ -1,5 +1,5 @@
 :root {
-	font-family: OpenSans, sans-serif;
+	font-family: var(--font, OpenSans, sans-serif);
 	font-size: 14px;
 	font-weight: 400;
 }
