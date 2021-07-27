@@ -3,10 +3,10 @@
 	top: 0;
 	display: grid;
 	margin: 0;
-	background-color: var(--nav-background-color, #4A5E83);
+	background-color: var(--parley-nav-background-color, #4A5E83);
 	border-radius: 5px 5px 0 0;
 	box-shadow: 0 1px 3px 0 rgba(74, 94, 131, 0.07);
-	color: var(--nav-text-color, #FFF);
+	color: var(--parley-nav-text-color, #FFF);
 	grid-template-columns: 0.4fr 1fr 0.5fr;
 	grid-template-rows: 100%;
 	text-align: center;
@@ -15,7 +15,7 @@
 .header button {
 	border: none;
 	background-color: transparent;
-	color: var(--button-label-text-color, #FFF);
+	color: var(--parley-button-label-text-color, #FFF);
 }
 
 .left {

@@ -7,8 +7,8 @@
 	display: inline-block;
 	height: 15px;
 	padding: 0 5px;
-	border-bottom: 1px solid var(--date-color, #404040);
-	color: var(--date-color, #404040);
+	border-bottom: 1px solid var(--parley-date-color, #404040);
+	color: var(--parley-date-color, #404040);
 	font-size: 11px;
 	line-height: 15px;
 }

@@ -69,7 +69,7 @@ class Chat extends Component {
 			}
 
 			inner = getCurrentInner();
-			chatNode.style.setProperty(`--mobile-${correction}`, `${inner * oneHundredth}px`);
+			chatNode.style.setProperty(`--parley-mobile-${correction}`, `${inner * oneHundredth}px`);
 		}, intervalTime);
 	}
 

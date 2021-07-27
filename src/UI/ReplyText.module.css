@@ -4,7 +4,7 @@
 	padding: 7px 0 5px 7px;
 	border: none;
 	border-radius: 5px;
-	font-family: var(--font, OpenSans, sans-serif);
+	font-family: var(--parley-font, OpenSans, sans-serif);
 	font-size: 15px;
 	line-height: 20px;
 	outline: 0;

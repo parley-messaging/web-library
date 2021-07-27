@@ -45,28 +45,28 @@
 
 .message a {
 	background-color: transparent;
-	color: var(--link-color, #4891F5);
+	color: var(--parley-link-color, #4891F5);
 	text-decoration: none;
 	text-decoration-skip: objects;
 }
 
 .user .message {
-	background-color: var(--user-background-color, #4A5E83);
+	background-color: var(--parley-user-background-color, #4A5E83);
 	border-radius: 10px 10px 0;
-	color: var(--user-text-color, #FFF);
+	color: var(--parley-user-text-color, #FFF);
 	float: right;
 }
 
 .agent .message {
-	background: var(--account-background-color, #E7E3E0);
+	background: var(--parley-account-background-color, #E7E3E0);
 	border-radius: 0 10px 10px;
-	color: var(--account-text-color, #535353);
+	color: var(--parley-account-text-color, #535353);
 	float: left;
 }
 
 .name {
 	padding: 0 0 5px;
-	color: var(--agent-name-color, rgba(0, 0, 0, 0.68));
+	color: var(--parley-agent-name-color, rgba(0, 0, 0, 0.68));
 	font-size: 13px;
 }
 
