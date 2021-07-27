@@ -103,6 +103,7 @@ export default class App extends React.Component {
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification) {
+			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
 			this.Api = new Api(
 				nextState.apiDomain,
 				nextState.accountIdentification,

@@ -65,6 +65,7 @@ export default class Api {
 	 * @param type
 	 * @param version
 	 * @param referer
+	 * @param authorization
 	 * @return {Promise<unknown>|boolean}
 	 */
 	subscribeDevice(
