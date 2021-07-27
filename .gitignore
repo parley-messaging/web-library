@@ -19,3 +19,5 @@ ssl
 # Testing & Code Coverage
 /.nyc_output/
 /coverage/
+/cypress/videos
+/cypress.local.json

@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./ReplyText.module.css";
+import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
 
 class ReplyText extends Component {
@@ -33,7 +33,6 @@ class ReplyText extends Component {
 	};
 
 	render() {
-		const placeholder = "Type here your message...";
 		const maxRows = 3;
 
 		return (
@@ -44,7 +43,7 @@ class ReplyText extends Component {
 					onChange={this.props.onChange}
 					onFocus={this.handleFocus}
 					onKeyDown={this.handleKeyDown}
-					placeholder={placeholder}
+					placeholder={this.props.placeholder}
 					ref={this.textArea}
 					value={this.props.value}
 				/>
@@ -58,6 +57,7 @@ ReplyText.propTypes = {
 	isMobile: PropTypes.bool,
 	onChange: PropTypes.func.isRequired,
 	onSubmit: PropTypes.func.isRequired,
+	placeholder: PropTypes.string,
 	restartPolling: PropTypes.func,
 	value: PropTypes.string,
 };

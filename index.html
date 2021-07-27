@@ -5,20 +5,22 @@
 	<meta name="viewport"
 			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>Document</title>
+
+	<title>Messenger</title>
+
 	<style>
 		:root {
 			--mobile-height: 1vh;
 			--mobile-width: 1vw;
 			--font: 'OpenSans', sans-serif;
 			--background-color: #FFF;
-			--background-image: ''; /* TODO: Not used */
 			--nav-background-color: #00006B;
 			--nav-text-color: #FFF;
+			--error-background-color: var(--nav-background-color);
+			--error-text-color: var(--nav-text-color);
 			--date-color: #404040;
 			--user-background-color: #4BF0B9;
 			--user-text-color: #00006B;
-			--user-sent-color: #090; /* TODO: Not used */
 			--user-time-color: #00006B;
 			--account-background-color: #E7E3E0;
 			--account-text-color: #535353;
@@ -45,7 +47,9 @@
 	</style>
 </head>
 <body>
+<!-- Load the actual chat widget -->
 <div id="app"></div>
-<script src="src/UI/index.jsx" type="module"></script>
+<script onload="window.initParleyMessenger()" src="src/UI/index.jsx" type="module"></script>
+<!-- END -->
 </body>
 </html>

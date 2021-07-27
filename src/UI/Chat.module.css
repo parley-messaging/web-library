@@ -22,7 +22,7 @@
 	max-height: 80%;
 	background-color: var(--background-color, #FFF);
 	border-radius: 5px;
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow, 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19));
 	grid-template-columns: 1fr;
 	grid-template-rows: 45px minmax(0, 1fr) auto;
 }
@@ -40,4 +40,24 @@
 .chat.mobile.ios {
 	width: calc(var(--mobile-width, 1vw) * 100);
 	height: calc(var(--mobile-height, 1vh) * 100);
+}
+
+.error {
+	width: 100%;
+	padding: 0.25em;
+	background-color: var(--error-background-color, #4A5E83);
+	color: var(--error-text-color, #FFF);
+	text-align: center;
+}
+
+.closeButton {
+	display: block;
+	width: 36px;
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	color: var(--button-label-text-color, #FFF);
+	cursor: pointer;
+	float: right;
+	font-size: 24px;
 }

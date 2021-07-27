@@ -7,7 +7,7 @@
 import Config from "./Private/Config";
 import ow from "ow";
 import {
-	ApiFetchFailed,
+	ApiFetchFailed, ApiGenericError,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
@@ -28,7 +28,6 @@ export default class Api {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
-
 		this.setDomain(apiDomain);
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
@@ -54,6 +53,21 @@ export default class Api {
 		this.deviceIdentification = deviceIdentification;
 	}
 
+	/**
+	 * Subscribes this device in the API so it is allowed to send/receive messages
+	 * If the device is already subscribed, it returns `false`
+	 * Otherwise it will return a `Promise` which will contain the API response
+	 *
+	 * @param pushToken
+	 * @param pushType
+	 * @param pushEnabled
+	 * @param userAdditionalInformation
+	 * @param type
+	 * @param version
+	 * @param referer
+	 * @param authorization
+	 * @return {Promise<unknown>|boolean}
+	 */
 	subscribeDevice(
 		pushToken,
 		pushType,
@@ -62,13 +76,14 @@ export default class Api {
 		type,
 		version,
 		referer,
+		authorization,
 	) {
 		// Validate params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(PushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		if(pushEnabled === true) {
-			// Somehow `message()` doesn't work with `nonEmpty`
+			// Somehow `.message()` doesn't work with `nonEmpty`
 			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
@@ -77,28 +92,51 @@ export default class Api {
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
+		// If the referer isn't set, set it to the window's url
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
+		const body = JSON.stringify({
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version,
+			referer: refererCopy,
+			authorization,
+		});
+
+		// Check registration in local storage
+		const storedDeviceInformation = localStorage.getItem("deviceInformation");
+		if(storedDeviceInformation === body)
+			return false; // No need to call the API if we don't have any new data
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
-			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
-			body: JSON.stringify({
-				pushToken,
-				pushType,
-				pushEnabled,
-				userAdditionalInformation,
-				type,
-				version,
-				referer: refererCopy,
-			}),
+			headers: {
+				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
+				Authorization: authorization || "",
+			},
+			body,
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
+
+				// Save registration in local storage
+				localStorage.setItem("deviceInformation", body);
+
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
 			});
 	}
 
@@ -122,6 +160,13 @@ export default class Api {
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, data));
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
 			});
 	}
 
@@ -133,6 +178,13 @@ export default class Api {
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
 				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
+					errorNotifications,
+					warningNotifications,
+					data: [],
+				}));
 			});
 	}
 }
@@ -144,11 +196,17 @@ function fetchWrapper(url, options) {
 			.then((json) => {
 				// Check if we have an API error and throw it
 				if(json.status === ErrorStatus) {
-					const errorNotifications = json.notifications
-						.filter(notification => notification.type === ErrorResponse);
-					const warningNotifications = json.notifications
-						.filter(notification => notification.type === WarningResponse);
-					reject(errorNotifications, warningNotifications);
+					if(json.notifications) {
+						const errorNotifications = json.notifications
+							.map(notification => notification.type === ErrorResponse && notification.message);
+						const warningNotifications = json.notifications
+							.map(notification => notification.type === WarningResponse && notification.message);
+
+						reject(errorNotifications, warningNotifications);
+					} else {
+						// eslint-disable-next-line prefer-promise-reject-errors
+						reject([ApiGenericError], []);
+					}
 				} else {
 					resolve(json);
 				}

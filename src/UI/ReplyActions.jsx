@@ -1,9 +1,10 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./ReplyActions.module.css";
+import * as styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -36,23 +37,30 @@ class ReplyActions extends Component {
 
 	render() {
 		return (
-			<div className={styles.footer}>
-				<ReplyText
-					fitToIDeviceScreen={this.props.fitToIDeviceScreen}
-					isMobile={this.props.isMobile}
-					onChange={this.handleChange}
-					onSubmit={this.handleSubmit}
-					ref={this.props.replyTextRef}
-					restartPolling={this.props.restartPolling}
-					value={this.state.reply}
-				/>
-				<div className={styles.actions}>
-					{
-						this.props.isMobile && this.state.reply !== ""
-						&& <MobileSubmit onClick={this.handleSubmit} />
-					}
-				</div>
-			</div>
+			<InterfaceTextsContext.Consumer>
+				{
+					interfaceTexts => (
+						<div className={styles.footer}>
+							<ReplyText
+								fitToIDeviceScreen={this.props.fitToIDeviceScreen}
+								isMobile={this.props.isMobile}
+								onChange={this.handleChange}
+								onSubmit={this.handleSubmit}
+								placeholder={interfaceTexts.inputPlaceholder}
+								ref={this.props.replyTextRef}
+								restartPolling={this.props.restartPolling}
+								value={this.state.reply}
+							/>
+							<div className={styles.actions}>
+								{
+									this.props.isMobile && this.state.reply !== ""
+									&& <MobileSubmit onClick={this.handleSubmit} />
+								}
+							</div>
+						</div>
+					)
+				}
+			</InterfaceTextsContext.Consumer>
 		);
 	}
 }

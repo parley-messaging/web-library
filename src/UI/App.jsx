@@ -1,25 +1,70 @@
+import {config} from "@fortawesome/fontawesome-svg-core";
+
+// Make sure this is before any other `fontawesome` API calls
+// This will disable the automatic css insertion
+// More info: https://fontawesome.com/v5.15/how-to-use/on-the-web/other-topics/security
+config.autoAddCss = false;
+
+// Next we need to manually import the fontawesome CSS
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
 import React from "react";
 import PropTypes from "prop-types";
 import Launcher from "./Launcher";
 import Chat from "./Chat";
 import Api from "../Api/Api";
-import {API_ACCOUNT_IDENTIFICATION, API_DEVICE_IDENTIFICATION, API_DOMAIN} from "./tempConfig";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
+import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
+import deepMerge from "deepmerge";
+import {Observable} from "object-observer";
+import deepForEach from "deep-for-each";
+import Logger from "js-logger";
+import {areWeOnline} from "./Scripts/WorkingHours";
+import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {showChat: false};
+		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
+		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
+		this.state = {
+			showChat: false,
+			offline: false,
+			isMobile: isMobile(),
+			isiOSMobile: isiOSMobileDevice(),
+			interfaceLanguage,
+			interfaceTexts: {
+				...interfaceTextsDefaults,
+				title: window?.parleySettings?.runOptions?.interfaceTexts
+					?.desc || interfaceTextsDefaults.title,
+				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
+					?.placeholderMessenger || interfaceTextsDefaults.inputPlaceholder,
+				sendingMessageFailedError: window?.parleySettings?.runOptions?.interfaceTexts
+					?.messageSendFailed || interfaceTextsDefaults.sendingMessageFailedError,
+				serviceUnreachableError: window?.parleySettings?.runOptions?.interfaceTexts
+					?.serviceUnreachableNotification || interfaceTextsDefaults.serviceUnreachableError,
+				welcomeMessage: window?.parleySettings?.runOptions?.interfaceTexts
+					?.infoText || interfaceTextsDefaults.welcomeMessage,
+			},
+			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
+			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
+			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
+			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
+			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
+			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
+			workingHours: window?.parleySettings?.weekdays || undefined,
+			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+		};
 
 		this.Api = new Api(
-			API_DOMAIN,
-			API_ACCOUNT_IDENTIFICATION,
-			API_DEVICE_IDENTIFICATION,
+			this.state.apiDomain,
+			this.state.accountIdentification,
+			this.state.deviceIdentification,
 			ApiEventTarget,
 		);
 		this.PollingService = new PollingService(this.Api);
@@ -27,20 +72,94 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			this.state.userAdditionalInformation,
 			DeviceTypes.Web,
-			version,
+			this.state.deviceVersion,
 		);
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
+
+		// Make sure layers to proxy exist
+		window.parleySettings
+			= window.parleySettings ? window.parleySettings : {};
+		window.parleySettings.runOptions
+			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
+		window.parleySettings.runOptions.interfaceTexts
+			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
+
+		// Store library version into window
+		window.parleySettings.version = version;
+
+		// Global functions
+		window.hideParleyMessenger = this.hideChat;
+		window.showParleyMessenger = this.showChat;
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	shouldComponentUpdate(nextProps, nextState, nextContext) {
+		// Toggle interface language if it has changed
+		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
+			this.toggleLanguage(nextState.interfaceLanguage);
+
+		// Create a new Api instance and register a new device when accountIdentification has changed
+		if(nextState.accountIdentification !== this.state.accountIdentification) {
+			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
+			this.Api = new Api(
+				nextState.apiDomain,
+				nextState.accountIdentification,
+				nextState.deviceIdentification,
+				ApiEventTarget,
+			);
+			this.PollingService = new PollingService(this.Api);
+			this.Api.subscribeDevice(
+				undefined,
+				undefined,
+				undefined,
+				nextState.userAdditionalInformation,
+				DeviceTypes.Web,
+				this.state.deviceVersion,
+				undefined,
+				nextState.deviceAuthorization,
+			);
+		}
+
+		// Re-register device when deviceAuthorization changes
+		// and when userAdditionalInformation changes
+		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
+			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+		) {
+			this.Api.subscribeDevice(
+				undefined,
+				undefined,
+				undefined,
+				nextState.userAdditionalInformation || undefined,
+				DeviceTypes.Web,
+				this.state.deviceVersion,
+				undefined,
+				nextState.deviceAuthorization || undefined,
+			);
+		}
+
+		// Check working hours when they changed
+		if(nextState.workingHours !== this.state.workingHours)
+			this.checkWorkingHours();
+
+		return true;
 	}
 
 	componentDidMount() {
+		this.checkWorkingHours();
+
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
+
+		// Create proxy for parley settings to track any changes
+		// We do this after the mount because `createParleyProxy` contains
+		// `setState()` calls, which should not be called before mounting
+		window.parleySettings = this.createParleyProxy(window.parleySettings);
 	}
 
 	componentWillUnmount() {
@@ -52,6 +171,148 @@ export default class App extends React.Component {
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
+
+		// Remove Proxy from parleySettings which will remove set() trap from proxy
+		// so it doesn't call `setState()` anymore
+		window.parleySettings = JSON.parse(JSON.stringify(window.parleySettings));
+	}
+
+	/**
+	 * This will create a Proxy for everything inside `target`
+	 * It wil trap the `set` function
+	 * When the `set` is called, it will direct this update to
+	 * `setParleySettingIntoState` which will rename old settings
+	 * to new, and save it into the state (if possible)
+	 *
+	 * @param target
+	 * @return Observable
+	 */
+	createParleyProxy = (target) => {
+		const proxy = Observable.from(target);
+		proxy.observe((changes) => {
+			changes.forEach((change) => {
+				// If the new value is an object, we need to go through
+				// ALL properties and rename/apply them to the state.
+				// We don't want arrays because we dont want to loop
+				// over them.
+				// We ignore "userAdditionalInformation", because we don't
+				// care about renaming it's keys.
+				if(typeof change.value === "object"
+					&& change.value !== null
+					&& !Array.isArray(change.value)
+					&& change.path[0] !== "userAdditionalInformation"
+				) {
+					deepForEach(change.value, (value, key) => {
+						// Extend the path with the key
+						// Make sure we "clone" instead of direct referencing change.path
+						const fullPath = [
+							...change.path,
+							key,
+						];
+
+						this.setParleySettingIntoState(fullPath, value);
+					});
+
+				// If it is anything else than an object, we can
+				// directly rename/apply it to the state
+				} else {
+					this.setParleySettingIntoState(change.path, change.value);
+				}
+			});
+		});
+
+		return proxy;
+	}
+
+	/**
+	 * This will update the interfaceTexts values in the state
+	 * to the ones of the correct language.
+	 * It will preserve any overrides made using `window.parleySettings`
+	 *
+	 * @param newLanguage
+	 */
+	toggleLanguage = (newLanguage) => {
+		let newInterfaceTexts = deepMerge(
+			InterfaceTexts.english,
+			window.parleySettings.runOptions.interfaceTexts,
+		);
+		if(newLanguage === "nl") {
+			newInterfaceTexts = deepMerge(
+				InterfaceTexts.dutch,
+				window.parleySettings.runOptions.interfaceTexts,
+			);
+		}
+
+		// We use setParleySettingIntoState() here instead of setState()
+		// because we don't want any invalid properties
+		// from the window.parleySetting ending up in the state
+		deepForEach(newInterfaceTexts, (value, key) => {
+			this.setParleySettingIntoState([
+				"runOptions", "interfaceTexts", key,
+			], value);
+		});
+	}
+
+	/**
+	 * This will update the state with the new value
+	 * and a renamed key (if needed)
+	 * It looks trough the `path` to see if we need
+	 * to rename a key to it's new variant.
+	 *
+	 * @param path
+	 * @param value
+	 */
+	setParleySettingIntoState = (path, value) => {
+		const layer0 = 0;
+		const layer1 = 1;
+		const layer2 = 2;
+
+		let objectToSaveIntoState;
+
+		if(path[layer0] === "runOptions") {
+			if(path[layer1] === "interfaceTexts") {
+				// Check if interfaceTexts has the property from layer2
+				// If it does, we add the whole layer to `interfaceTexts`
+				// Important: This only goes until layer2, it will not validate properties beyond that
+				if(Object.prototype.hasOwnProperty.call(this.state.interfaceTexts, path[layer2])) {
+					objectToSaveIntoState = {interfaceTexts: {}};
+					objectToSaveIntoState.interfaceTexts[path[layer2]] = value;
+				} else if(path[layer2] === "desc") {
+					objectToSaveIntoState = {interfaceTexts: {title: value}};
+				} else if(path[layer2] === "infoText") {
+					objectToSaveIntoState = {interfaceTexts: {welcomeMessage: value}};
+				} else if(path[layer2] === "placeholderMessenger") {
+					objectToSaveIntoState = {interfaceTexts: {inputPlaceholder: value}};
+				}
+			} else if(path[layer1] === "country") {
+				objectToSaveIntoState = {interfaceLanguage: value};
+			}
+		} else if(path[layer0] === "interface") {
+			if(path[layer1] === "hideChatAfterBusinessHours")
+				objectToSaveIntoState = {hideChatOutsideWorkingHours: value};
+		} else if(path[layer0] === "roomNumber") {
+			objectToSaveIntoState = {accountIdentification: value};
+		} else if(path[layer0] === "authHeader") {
+			objectToSaveIntoState = {deviceAuthorization: value};
+		} else if(path[layer0] === "weekdays") {
+			objectToSaveIntoState = {workingHours: value};
+		} else if(path[layer0] === "userAdditionalInformation") {
+			objectToSaveIntoState = {userAdditionalInformation: {}};
+			objectToSaveIntoState.userAdditionalInformation
+				= JSON.parse(JSON.stringify(window.parleySettings.userAdditionalInformation));
+
+			// For `userAdditionalInformation` we don't care about validating
+			// the contents. So we can just directly add it to the state.
+			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
+			// from the object
+		}
+
+		if(objectToSaveIntoState) {
+			this.setState(prevState => deepMerge(prevState, objectToSaveIntoState));
+			Logger.debug("Saved into state:", objectToSaveIntoState);
+		} else {
+			Logger.debug("Found unknown setting:", path.join("."));
+		}
 	}
 
 	handleFocusWindow = () => {
@@ -104,28 +365,38 @@ export default class App extends React.Component {
 			this.showChat();
 	}
 
-	render() {
-		const title = "Default Chat - EN";
-		const welcomeMessage = "Welcome to our support chat, you can expect a response in ~1 minute.";
+	checkWorkingHours = () => {
+		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
+	}
 
+	render() {
 		return (
-			<>
-				<Launcher onClick={this.handleClick} />
+			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
+				{
+					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
+						&& <Launcher onClick={this.handleClick} />
+				}
 				{
 					this.state.showChat
-					&& <Chat
-						allowEmoji={true}
-						allowFileUpload={true}
-						api={this.Api}
-						onMinimizeClick={this.handleClick}
-						restartPolling={this.restartPolling}
-						title={title}
-						welcomeMessage={welcomeMessage}
-					   />
+						&& <Chat
+							allowEmoji={true}
+							allowFileUpload={true}
+							api={this.Api}
+							closeButton={this.state.closeButton}
+							isMobile={this.state.isMobile}
+							isiOSMobile={this.state.isiOSMobile}
+							onMinimizeClick={this.handleClick}
+							restartPolling={this.restartPolling}
+							title={this.state.interfaceTexts.title}
+							welcomeMessage={this.state.interfaceTexts.welcomeMessage}
+						   />
 				}
-			</>
+			</InterfaceTextsContext.Provider>
 		);
 	}
 }
 
-App.propTypes = {name: PropTypes.string};
+App.propTypes = {
+	debug: PropTypes.bool,
+	name: PropTypes.string,
+};
