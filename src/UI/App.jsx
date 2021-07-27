@@ -87,6 +87,9 @@ export default class App extends React.Component {
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
 
+		// Store library version into window
+		window.parleySettings.version = version;
+
 		// Global functions
 		window.hideParleyMessenger = this.hideChat;
 		window.showParleyMessenger = this.showChat;

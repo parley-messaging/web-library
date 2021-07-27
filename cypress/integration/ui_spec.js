@@ -1,4 +1,5 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
+import {version} from "../../package.json";
 
 function clickOnLauncher() {
 	return cy.get("@app")
@@ -36,7 +37,7 @@ describe("UI", () => {
 		beforeEach(() => {
 			cy.visit("/", {
 				onLoad: (window) => {
-					window.startParleyMessenger();
+					window.initParleyMessenger();
 				},
 			});
 
@@ -678,6 +679,22 @@ describe("UI", () => {
 					// Launcher should appear again because we
 					// are inside working hours
 					clickOnLauncher();
+				});
+			});
+		});
+		describe("version", () => {
+			it("should set the library version on startup", () => {
+				cy.visit("/");
+
+				cy.get("[id=app]").as("app");
+
+				// Make sure app exists
+				cy.get("@app")
+					.get("[class^=launcher__]")
+					.should("exist");
+
+				cy.window().then((win) => {
+					expect(win.parleySettings.version).to.equal(version);
 				});
 			});
 		});
