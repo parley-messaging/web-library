@@ -52,7 +52,7 @@ describe("UI", () => {
 			findMessage(testMessage);
 		});
 
-		it("should show a generic error when the API returns `status = \"ERROR\"`, but without an error", () => {
+		it("should show a generic error when the API returns `status = ERROR`, but without an error", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
 			cy.intercept("POST", "*/**/messages", {
