@@ -1,5 +1,5 @@
 .center {
-	color: var(--info-text-color, #535353);
+	color: var(--parley-info-text-color, #535353);
 	font-size: 14px;
 	font-weight: 200;
 	text-align: center;
