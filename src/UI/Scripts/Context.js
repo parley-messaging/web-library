@@ -11,11 +11,12 @@ export const ApiOptions = {
 export const InterfaceTexts = {
 	english: {
 		// New in v2
-		buttonMenu: "show options menu",
-		buttonMinimize: "hide chat window",
-		buttonClose: "stop chat session",
-		buttonLauncher: "toggle chat window visibility",
-		buttonErrorClose: "hide error",
+		ariaLabelButtonMenu: "show options menu",
+		ariaLabelButtonMinimize: "hide chat window",
+		ariaLabelButtonClose: "stop chat session",
+		ariaLabelButtonLauncher: "toggle chat window visibility",
+		ariaLabelButtonErrorClose: "hide error",
+		ariaLabelTextInput: "message ariaLabelTextInput field",
 		messageRetrieveFailed: "Something went wrong while retrieving your messages, please try again later",
 		deviceRegistrationFailed: "Something went wrong while registering your device, please try again later",
 
@@ -28,11 +29,12 @@ export const InterfaceTexts = {
 	},
 	dutch: {
 		// New from v2
-		buttonMenu: "toon optie menu",
-		buttonMinimize: "verberg chat scherm",
-		buttonClose: "stop chat sessie",
-		buttonLauncher: "chat scherm zichtbaarheid schakelen",
-		buttonErrorClose: "verberg foutmelding",
+		ariaLabelButtonMenu: "toon optie menu",
+		ariaLabelButtonMinimize: "verberg chat scherm",
+		ariaLabelButtonClose: "stop chat sessie",
+		ariaLabelButtonLauncher: "chat scherm zichtbaarheid schakelen",
+		ariaLabelButtonErrorClose: "verberg foutmelding",
+		ariaLabelTextInput: "bericht invoerveld",
 		messageRetrieveFailed: "Er ging iets fout bij het ophalen van je berichten, probeer het later opnieuw",
 		deviceRegistrationFailed: "Er ging iets fout bij het registreren van je apparaat, probeer het later opnieuw",
 

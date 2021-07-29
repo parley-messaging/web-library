@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class ReplyText extends Component {
 	constructor(props) {
@@ -36,18 +37,25 @@ class ReplyText extends Component {
 		const maxRows = 3;
 
 		return (
-			<div className={styles.text}>
-				<TextareaAutosize
-					maxRows={maxRows}
-					onBlur={this.handleBlur}
-					onChange={this.props.onChange}
-					onFocus={this.handleFocus}
-					onKeyDown={this.handleKeyDown}
-					placeholder={this.props.placeholder}
-					ref={this.textArea}
-					value={this.props.value}
-				/>
-			</div>
+			<InterfaceTextsContext.Consumer>
+				{
+					interfaceTexts => (
+						<div className={styles.text}>
+							<TextareaAutosize
+								aria-label={interfaceTexts.ariaLabelTextInput}
+								maxRows={maxRows}
+								onBlur={this.handleBlur}
+								onChange={this.props.onChange}
+								onFocus={this.handleFocus}
+								onKeyDown={this.handleKeyDown}
+								placeholder={this.props.placeholder}
+								ref={this.textArea}
+								value={this.props.value}
+							/>
+						</div>
+					)
+				}
+			</InterfaceTextsContext.Consumer>
 		);
 	}
 }

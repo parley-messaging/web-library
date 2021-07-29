@@ -14,7 +14,7 @@ class Launcher extends Component {
 					interfaceTexts => (
 						<div className={styles.launcher}>
 							<button
-								aria-label={interfaceTexts.buttonLauncher}
+								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
