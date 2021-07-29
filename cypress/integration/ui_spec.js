@@ -351,7 +351,7 @@ describe("UI", () => {
 		describe("roomNumber", () => {
 			it("should register a new device when switching accounts", () => {
 				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
-				const testMessage = `test message before switching room numbers${Date.now()}`;
+				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
 				cy.visit("/", {
 					onBeforeLoad: (win) => {
@@ -378,6 +378,41 @@ describe("UI", () => {
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.roomNumber = newAccountIdentification;
+				});
+
+				cy.wait("@createDevice");
+			});
+		});
+		describe("xIrisIdentification", () => {
+			it("should register a new device when switching identifications", () => {
+				const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
+				const testMessage = `test message before switching udid ${Date.now()}`;
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Test if it changes during runtime
+				const newUdid = "bbbbbbbbbbbb";
+				cy.intercept("POST", "*/**/devices", (req) => {
+					expect(req.headers)
+						.to.have.deep.property("x-iris-identification");
+					expect(req.headers["x-iris-identification"])
+						.to.match(new RegExp(`^.*:${newUdid}`, "u"));
+				}).as("createDevice");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.xIrisIdentification = newUdid;
 				});
 
 				cy.wait("@createDevice");

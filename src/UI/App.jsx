@@ -102,8 +102,12 @@ export default class App extends React.Component {
 			this.toggleLanguage(nextState.interfaceLanguage);
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
-		if(nextState.accountIdentification !== this.state.accountIdentification) {
+		if(nextState.accountIdentification !== this.state.accountIdentification
+			|| nextState.deviceIdentification !== this.state.deviceIdentification
+		) {
 			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
+			this.PollingService.stopPolling(); // Make sure we stop otherwise it will poll for the old device info
+
 			this.Api = new Api(
 				nextState.apiDomain,
 				nextState.accountIdentification,
@@ -121,6 +125,7 @@ export default class App extends React.Component {
 				undefined,
 				nextState.deviceAuthorization,
 			);
+			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
@@ -296,6 +301,8 @@ export default class App extends React.Component {
 			objectToSaveIntoState = {deviceAuthorization: value};
 		} else if(path[layer0] === "weekdays") {
 			objectToSaveIntoState = {workingHours: value};
+		} else if(path[layer0] === "xIrisIdentification") {
+			objectToSaveIntoState = {deviceIdentification: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
 			objectToSaveIntoState = {userAdditionalInformation: {}};
 			objectToSaveIntoState.userAdditionalInformation

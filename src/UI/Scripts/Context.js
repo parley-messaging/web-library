@@ -1,9 +1,10 @@
 import React from "react";
+import {v4 as uuidv4} from "uuid";
 
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
-	deviceIdentification: "bbbbbbbbbb",
+	deviceIdentification: JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification || uuidv4(),
 	apiDomain: "https://api.parley.nu",
 	autHeader: undefined,
 };
