@@ -4,19 +4,38 @@
 	"description": "Front-end solution for Parley",
 	"private": true,
 	"targets": {
-		"ui": {
-			"distDir": "dist/ui"
+		"ui-for-watcher": {
+			"distDir": "dist/",
+			"optimize": false,
+			"sourceMap": false
 		},
-		"cdn-demo": {
-			"distDir": "dist/ui/cdn-demo",
-			"publicUrl": "/demo/v2/"
+		"ui-minimized": {
+			"distDir": "dist/ui/minified",
+			"optimize": true,
+			"sourceMap": false
+		},
+		"ui-sourcemapped": {
+			"distDir": "dist/ui/sourcemapped",
+			"optimize": false,
+			"sourceMap": true
+		},
+		"cdn-demo-live": {
+			"distDir": "dist/ui/cdn-demo-live",
+			"publicUrl": "/demo/v2/",
+			"optimize": true,
+			"sourceMap": false
+		},
+		"cdn-demo-local": {
+			"distDir": "dist/ui/cdn-demo-local",
+			"optimize": false,
+			"sourceMap": true
 		}
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 --target ui index.html",
-		"build": "npx parcel build --target ui index.html",
-		"build-cdn-demo": "npx parcel build --target cdn-demo parleycdn-demo/index.html",
+		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 --target ui-for-watcher index.html",
+		"build": "npx parcel build --target ui-minimized --target ui-sourcemapped index.html",
+		"build-cdn-demo": "npx parcel build --target cdn-demo-live --target cdn-demo-local parleycdn-demo/index.html",
 		"test:open": "./bin/start_cypress.sh",
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
 	},
