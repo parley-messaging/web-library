@@ -37,7 +37,9 @@
 		"build": "npx parcel build --target ui-minimized --target ui-sourcemapped index.html",
 		"build-cdn-demo": "npx parcel build --target cdn-demo-live --target cdn-demo-local parleycdn-demo/index.html",
 		"test:open": "./bin/start_cypress.sh",
-		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
+		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'",
+		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
+		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip"
 	},
 	"repository": {
 		"type": "git",
