@@ -99,7 +99,7 @@ export default class Api {
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
-		const body = JSON.stringify({
+		const body = {
 			pushToken,
 			pushType,
 			pushEnabled,
@@ -108,11 +108,17 @@ export default class Api {
 			version,
 			referer: refererCopy,
 			authorization,
+		};
+
+		const storeIntoLocalStorage = JSON.stringify({
+			...body,
+			accountIdentification: this.accountIdentification,
+			deviceIdentification: this.deviceIdentification,
 		});
 
 		// Check registration in local storage
 		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === body)
+		if(storedDeviceInformation === storeIntoLocalStorage)
 			return false; // No need to call the API if we don't have any new data
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
@@ -121,13 +127,13 @@ export default class Api {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 				Authorization: authorization || "",
 			},
-			body,
+			body: JSON.stringify(body),
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 
 				// Save registration in local storage
-				localStorage.setItem("deviceInformation", body);
+				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
 				return data;
 			})
