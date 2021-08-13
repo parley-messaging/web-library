@@ -15,7 +15,10 @@
 .header button {
 	border: none;
 	background-color: transparent;
-	color: var(--parley-button-label-text-color, #FFF);
+	color: var(--parley-button-label-color, #FFF);
+	font-family: var(--parley-button-label-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-button-label-font-size, 14px);
+	font-weight: var(--parley-button-label-font-weight, 400);
 }
 
 .left {
@@ -27,6 +30,10 @@
 }
 
 .title {
+	color: var(--parley-nav-title-color, #FFF);
+	font-family: var(--parley-nav-title-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-nav-title-font-size, 14px);
+	font-weight: var(--parley-nav-title-font-weight, 400);
 	display: inline-block;
 	padding: 0 9px;
 	grid-column: 2;

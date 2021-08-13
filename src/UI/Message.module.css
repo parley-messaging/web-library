@@ -46,6 +46,9 @@
 .message a {
 	background-color: transparent;
 	color: var(--parley-link-color, #4891F5);
+	font-family: var(--parley-link-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-link-font-size, 14px);
+	font-weight: var(--parley-link-font-weight, 400);
 	text-decoration: none;
 	text-decoration-skip: objects;
 }
@@ -67,7 +70,9 @@
 .name {
 	padding: 0 0 5px;
 	color: var(--parley-agent-name-color, rgba(0, 0, 0, 0.68));
-	font-size: 13px;
+	font-family: var(--parley-agent-name-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-agent-name-font-size, 13px);
+	font-weight: var(--parley-agent-name-font-weight, 400);
 }
 
 /* endregion */
