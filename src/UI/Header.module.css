@@ -20,6 +20,14 @@
 	font-weight: var(--parley-button-label-font-weight, 400);
 }
 
+.left {
+	display: grid;
+	grid-column: 1;
+	grid-row: 1;
+	grid-template-columns: auto;
+	grid-template-rows: 100%;
+}
+
 .title {
 	display: inline-block;
 	padding: 0 9px;
@@ -30,14 +38,6 @@
 	grid-column: 2;
 	grid-row: 1;
 	line-height: 45px;
-}
-
-.left {
-	display: grid;
-	grid-column: 1;
-	grid-row: 1;
-	grid-template-columns: auto;
-	grid-template-rows: 100%;
 }
 
 .right {
