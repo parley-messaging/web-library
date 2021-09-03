@@ -1,3 +1,13 @@
+import {config} from "@fortawesome/fontawesome-svg-core";
+
+// Make sure this is before any other `fontawesome` API calls
+// This will disable the automatic css insertion
+// More info: https://fontawesome.com/v5.15/how-to-use/on-the-web/other-topics/security
+config.autoAddCss = false;
+
+// Next we need to manually import the fontawesome CSS
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
 import React from "react";
 import PropTypes from "prop-types";
 import Launcher from "./Launcher";
@@ -32,7 +42,6 @@ export default class App extends React.Component {
 			version,
 		);
 		this.messageIDs = new Set();
-		this.visibilityChange = "visibilitychange";
 	}
 
 	componentDidMount() {
@@ -40,7 +49,7 @@ export default class App extends React.Component {
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
-			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
+			document.addEventListener("visibilitychange", this.handleVisibilityChange);
 	}
 
 	componentWillUnmount() {
@@ -48,7 +57,7 @@ export default class App extends React.Component {
 		window.removeEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
-			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
+			document.removeEventListener("visibilitychange", this.handleVisibilityChange);
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();

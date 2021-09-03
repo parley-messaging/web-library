@@ -15,7 +15,7 @@
 	border: none;
 	background: var(--messenger-icon-background-color, #4A5E83);
 	border-radius: 50%;
-	box-shadow: var(--shadow);
+	box-shadow: var(--shadow, 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19));
 	cursor: pointer;
 	text-align: center;
 	transform: translateZ(0);

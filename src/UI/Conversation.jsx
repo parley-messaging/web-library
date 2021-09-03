@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Conversation.module.css";
+import * as styles from "./Conversation.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
 import DateGroup from "./DateGroup";
 import Message from "./Message";
