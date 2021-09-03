@@ -59,7 +59,7 @@
 			--parley-button-label: false;
 			--parley-button-label-background-color: #6D83AD;
 			--parley-button-label-color: #FFF;
-			--parley-button-label-font-size: 14px;
+			--parley-button-label-font-size: 24px;
 			--parley-button-label-font-weight: 400;
 			--parley-messenger-icon-background-color: #00006B;
 			--parley-link-color: #4891F5;
@@ -78,6 +78,12 @@
 		}
 	</style>
 	<style>
+		*,
+		::after,
+		::before {
+			box-sizing: border-box;
+		}
+
 		html,
 		body {
 			width: 100%;
@@ -87,6 +93,7 @@
 			margin: 0;
 			background-color: #FFF;
 			color: #212529;
+			font-family: OpenSans, sans-serif;
 			font-size: 1rem;
 			font-weight: 400;
 			line-height: 1.5;
@@ -99,7 +106,7 @@
 		.btn {
 			display: inline-block;
 			padding: 0.375rem 0.75rem;
-			border: 1px solid transparent;
+			border: none !important;
 			background-color: initial;
 			border-radius: 0.25rem;
 			color: #212529;
@@ -199,10 +206,6 @@
 		.btn.btn-primary:hover,
 		.btn.btn-primary:disabled {
 			background-color: var(--parley-nav-background-color);
-		}
-
-		.btn {
-			border: none !important;
 		}
 	</style>
 </head>
