@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./Launcher.module.css";
-import {BUTTONLAUNCHER} from "./tempConfig";
 import LauncherSVG from "./Resources/launcher.svg";
 import {InterfaceTextsContext} from "./Scripts/Context";
 
