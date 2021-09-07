@@ -1,3 +1,13 @@
+import {config} from "@fortawesome/fontawesome-svg-core";
+
+// Make sure this is before any other `fontawesome` API calls
+// This will disable the automatic css insertion
+// More info: https://fontawesome.com/v5.15/how-to-use/on-the-web/other-topics/security
+config.autoAddCss = false;
+
+// Next we need to manually import the fontawesome CSS
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
 import React from "react";
 import PropTypes from "prop-types";
 import Launcher from "./Launcher";

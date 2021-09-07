@@ -101,6 +101,9 @@
 			}
 		],
 		"unused-imports/no-unused-imports": "error",
+		"no-unused-vars": ["error", {
+			"args": "none"
+		}],
 		"no-useless-call": "error",
 		"no-useless-concat": "error",
 		"no-useless-return": "error",

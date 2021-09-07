@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./MobileSubmit.module.css";
+import * as styles from "./MobileSubmit.module.css";
 
 // Requirements
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import styles from "./Chat.module.css";
+import * as styles from "./Chat.module.css";
 import Header from "./Header";
 import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
