@@ -12,6 +12,12 @@
 	<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
 	<!-- END -->
 
+
+	<!-- Strict CSP (for testing CSP support) -->
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
+	<!---->
+
+	<title>Document</title>
 	<style>
 		:root {
 			--mobile-height: 1vh;

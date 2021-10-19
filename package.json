@@ -71,6 +71,8 @@
 		"@babel/eslint-plugin": "^7.13.16",
 		"@babel/preset-react": "^7.13.13",
 		"@cypress/code-coverage": "^3.9.6",
+		"@parcel/babel-plugin-transform-runtime": "^2.0.0-beta.3.1",
+		"@parcel/babel-preset-env": "^2.0.0-beta.3.1",
 		"@parcel/transformer-svg-react": "2.0.0-beta.3.1",
 		"@parcel/transformer-svgo": "2.0.0-beta.3.1",
 		"babel-plugin-istanbul": "^6.0.0",
