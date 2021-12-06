@@ -103,7 +103,7 @@ class Chat extends Component {
 
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	handleMessageSent = (event) => {
@@ -121,7 +121,7 @@ class Chat extends Component {
 	handleSubscribe = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
+			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
 	}
 
 	setErrorNotifications = (event, defaultError) => {

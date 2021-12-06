@@ -1,6 +1,7 @@
 import ow from "ow";
 import ApiEventTarget from "./ApiEventTarget";
 import {messageSent, subscribe} from "./Constants/Events";
+import Logger from "js-logger";
 
 const maxIntervalAmount = 5;
 const secondInMs = 1000;
@@ -127,6 +128,11 @@ export default class PollingService {
 	 * on specific API events) and start with polling.
 	 */
 	startPolling() {
+		if(!this.api.deviceRegistered) {
+			Logger.warn("Polling not started because device is not yet registered!");
+			return;
+		}
+
 		this.isRunning = true;
 
 		// Setup event listeners for events that may be sent
@@ -155,7 +161,7 @@ export default class PollingService {
 	}
 
 	/**
-	 * Returns the amount of times we run a singel interval
+	 * Returns the amount of times we run a single interval
 	 * @return {number}
 	 */
 	static getMaxIntervalAmount() {

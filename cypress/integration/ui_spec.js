@@ -117,6 +117,31 @@ describe("UI", () => {
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 		});
 
+		it("should show the `subscribeDeviceFailedError` error when subscribing fails", () => {
+			cy.intercept("POST", "*/**/devices", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
+		});
+
 		it("should hide the error when clicking the close error button", () => {
 			const testMessage = `Test message ${Date.now()}`;
 

@@ -32,6 +32,7 @@ export default class Api {
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
 		this.eventTarget = apiEventTarget;
+		this.deviceRegistered = false;
 	}
 
 	setDomain(apiDomain) {
@@ -134,6 +135,8 @@ export default class Api {
 
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
+
+				this.deviceRegistered = true;
 
 				return data;
 			})
