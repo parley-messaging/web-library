@@ -23,7 +23,7 @@ export const InterfaceTexts = {
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
-		welcomeMessage: "Welcome to our support chat, you can expect a response in ~1 minute.", // Was `infoText`
+		welcomeMessage: "How can we help you?", // Was `infoText`
 		inputPlaceholder: "Type your message here...", // Was `placeholderMessenger`
 		sendingMessageFailedError: "Something went wrong while sending your message, please try again later", // Was `messageSendFailed`
 		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
@@ -41,7 +41,7 @@ export const InterfaceTexts = {
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
-		welcomeMessage: "Welkom bij de support chat, je kan een reactie verwachten binnen ~1 minuut.", // Was `infoText`
+		welcomeMessage: "Hoe kunnen we u helpen?", // Was `infoText`
 		inputPlaceholder: "Typ hier uw bericht...", // Was `placeholderMessenger`
 		sendingMessageFailedError: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw", // Was `messageSendFailed`
 		serviceUnreachableError: "De service is momenteel niet bereikbaar, probeer het later opnieuw", // Was `serviceUnreachableNotification`
