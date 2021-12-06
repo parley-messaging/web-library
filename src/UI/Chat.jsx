@@ -160,8 +160,8 @@ class Chat extends Component {
 					title={this.props.title}
 				/>
 				<Conversation
+					defaultWelcomeMessage={this.props.welcomeMessage}
 					restartPolling={this.props.restartPolling}
-					welcomeMessage={this.props.welcomeMessage}
 				/>
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0

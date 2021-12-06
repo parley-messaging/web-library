@@ -269,6 +269,24 @@ describe("UI", () => {
 							.first()
 							.should("have.text", welcomeMessage);
 					});
+					it("should only show welcomeMessage after GET /messages call", () => {
+						// Cancel outgoing GET /messages (this works better than a long delay)
+						// This wat we can see what happens while the request is busy
+						cy.intercept("GET", "*/**/messages", (req) => {
+							// never call req.continue();
+						});
+
+						cy.visit("/");
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						// We should not see any announcements while the request is "busy"
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.should("not.exist");
+					});
 				});
 				describe("placeholderMessenger", () => {
 					it("should change the input's placeholder text", () => {
