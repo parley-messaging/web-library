@@ -119,8 +119,10 @@ export default class Api {
 
 		// Check registration in local storage
 		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === storeIntoLocalStorage)
+		if(storedDeviceInformation === storeIntoLocalStorage) {
+			this.deviceRegistered = true;
 			return false; // No need to call the API if we don't have any new data
+		}
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -131,12 +133,12 @@ export default class Api {
 			body: JSON.stringify(body),
 		})
 			.then((data) => {
+				this.deviceRegistered = true; // Important, must be before sending out any events
+
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
-
-				this.deviceRegistered = true;
 
 				return data;
 			})

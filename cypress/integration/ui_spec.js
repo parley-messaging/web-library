@@ -142,6 +142,31 @@ describe("UI", () => {
 				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
 		});
 
+		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
+		});
+
 		it("should hide the error when clicking the close error button", () => {
 			const testMessage = `Test message ${Date.now()}`;
 

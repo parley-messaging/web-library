@@ -28,6 +28,7 @@ export const InterfaceTexts = {
 		sendingMessageFailedError: "Something went wrong while sending your message, please try again later", // Was `messageSendFailed`
 		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
 		subscribeDeviceFailedError: "Something went wrong while registering your device, please re-open the chat to try again", // New in v2
+		retrievingMessagesFailedError: "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening", // New in v2
 	},
 	dutch: {
 		// New from v2
@@ -46,7 +47,8 @@ export const InterfaceTexts = {
 		inputPlaceholder: "Typ hier uw bericht...", // Was `placeholderMessenger`
 		sendingMessageFailedError: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw", // Was `messageSendFailed`
 		serviceUnreachableError: "De service is momenteel niet bereikbaar, probeer het later opnieuw", // Was `serviceUnreachableNotification`
-		subscribeDeviceFailedError: "Er ging iets fout met het registreren van uw device, open de chat opnieuw om het nog een keer te proberen", // New in v2
+		subscribeDeviceFailedError: "Er ging iets fout met het registreren van je apparaat, open de chat opnieuw om het nog een keer te proberen", // New in v2
+		retrievingMessagesFailedError: "Er ging iets fout bij het ophalen van je berichten, open de chat opnieuw als dit zich voor blijft doen", // New in v2
 	},
 };
 
