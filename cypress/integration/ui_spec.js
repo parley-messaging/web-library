@@ -1,6 +1,16 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 
+function visitHome() {
+	cy.visit("/", {
+		onLoad: (window) => {
+			window.initParleyMessenger();
+		},
+	});
+
+	cy.get("[id=app]").as("app");
+}
+
 function clickOnLauncher() {
 	return cy.get("@app")
 		.find("[class^=launcher__]")
@@ -34,19 +44,10 @@ function findMessage(testMessage) {
 
 describe("UI", () => {
 	describe("sending messages", () => {
-		beforeEach(() => {
-			cy.visit("/", {
-				onLoad: (window) => {
-					window.initParleyMessenger();
-				},
-			});
-
-			cy.get("[id=app]").as("app");
-		});
-
 		it("should send a new message with the new message showing up in the conversation", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 			findMessage(testMessage);
@@ -60,6 +61,7 @@ describe("UI", () => {
 				body: {status: "ERROR"},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -77,6 +79,7 @@ describe("UI", () => {
 
 			cy.intercept("POST", "*/**/messages", {forceNetworkError: true});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -105,6 +108,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -131,6 +135,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 
 			// Validate that api error is visible
@@ -156,6 +161,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 
 			// Validate that api error is visible
@@ -183,6 +189,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
