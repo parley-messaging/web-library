@@ -95,6 +95,11 @@ export default class PollingService {
 	}
 
 	async pollInterval() {
+		if(!this.api.deviceRegistered) {
+			Logger.warn("Polling interval canceled because device is not yet registered!");
+			return;
+		}
+
 		// Get messages
 		await this.api.getMessages();
 
@@ -128,11 +133,6 @@ export default class PollingService {
 	 * on specific API events) and start with polling.
 	 */
 	startPolling() {
-		if(!this.api.deviceRegistered) {
-			Logger.warn("Polling not started because device is not yet registered!");
-			return;
-		}
-
 		this.isRunning = true;
 
 		// Setup event listeners for events that may be sent
