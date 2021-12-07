@@ -32,6 +32,7 @@ describe("Polling Service", () => {
 		const collectPollTimings = new Cypress.Promise((resolve) => {
 			// This mock pretends to be the API so we can track when we get a getMessages call
 			const apiMock = {
+				deviceRegistered: true,
 				getMessages: () => {
 					const date = new Date();
 
@@ -102,6 +103,7 @@ describe("Polling Service", () => {
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
+				deviceRegistered: true,
 				getMessages: () => {
 					calls += 1;
 
@@ -150,6 +152,7 @@ describe("Polling Service", () => {
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
+				deviceRegistered: true,
 				getMessages: () => {
 					calls += 1;
 
@@ -196,6 +199,7 @@ describe("Polling Service", () => {
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
+				deviceRegistered: true,
 				getMessages: () => {
 					gotCall = true;
 					pollingService.stopPolling();
@@ -233,6 +237,7 @@ describe("Polling Service", () => {
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
+				deviceRegistered: true,
 				getMessages: () => {
 					if(!gotFirstRestart) {
 						gotFirstRestart = true;
