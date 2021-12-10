@@ -1,3 +1,4 @@
 {
-	"baseUrl": "https://chat-dev.parley.nu:8181"
+	"baseUrl": "https://chat-dev.parley.nu:8181",
+	"projectId": "wwda8d"
 }

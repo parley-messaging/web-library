@@ -339,6 +339,16 @@ export default class App extends React.Component {
 
 	showChat = () => {
 		this.setState(() => ({showChat: true}));
+
+		// Try to re-register the device if it is not yet registered
+		this.Api.subscribeDevice(
+			undefined,
+			undefined,
+			undefined,
+			this.state.userAdditionalInformation,
+			DeviceTypes.Web,
+			this.state.deviceVersion,
+		);
 	}
 
 	hideChat = () => {

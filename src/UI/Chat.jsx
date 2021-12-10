@@ -103,7 +103,7 @@ class Chat extends Component {
 
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	handleMessageSent = (event) => {
@@ -115,13 +115,13 @@ class Chat extends Component {
 	handleMessages = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
+			this.setErrorNotifications(event, this.context.retrievingMessagesFailedError);
 	}
 
 	handleSubscribe = (event) => {
 		// If we have any errors, show then to the client
 		if(event.detail.errorNotifications)
-			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
+			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
 	}
 
 	setErrorNotifications = (event, defaultError) => {
@@ -160,8 +160,8 @@ class Chat extends Component {
 					title={this.props.title}
 				/>
 				<Conversation
+					defaultWelcomeMessage={this.props.welcomeMessage}
 					restartPolling={this.props.restartPolling}
-					welcomeMessage={this.props.welcomeMessage}
 				/>
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0

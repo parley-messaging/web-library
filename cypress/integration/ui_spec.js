@@ -1,6 +1,16 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 
+function visitHome() {
+	cy.visit("/", {
+		onLoad: (window) => {
+			window.initParleyMessenger();
+		},
+	});
+
+	cy.get("[id=app]").as("app");
+}
+
 function clickOnLauncher() {
 	return cy.get("@app")
 		.find("[class^=launcher__]")
@@ -34,19 +44,10 @@ function findMessage(testMessage) {
 
 describe("UI", () => {
 	describe("sending messages", () => {
-		beforeEach(() => {
-			cy.visit("/", {
-				onLoad: (window) => {
-					window.initParleyMessenger();
-				},
-			});
-
-			cy.get("[id=app]").as("app");
-		});
-
 		it("should send a new message with the new message showing up in the conversation", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 			findMessage(testMessage);
@@ -60,6 +61,7 @@ describe("UI", () => {
 				body: {status: "ERROR"},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -77,6 +79,7 @@ describe("UI", () => {
 
 			cy.intercept("POST", "*/**/messages", {forceNetworkError: true});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -105,6 +108,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -115,6 +119,58 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
+		});
+
+		it("should show the `subscribeDeviceFailedError` error when subscribing fails", () => {
+			cy.intercept("POST", "*/**/devices", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
+		});
+
+		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
 		});
 
 		it("should hide the error when clicking the close error button", () => {
@@ -133,6 +189,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -268,6 +325,24 @@ describe("UI", () => {
 							.find("[class*=announcement__]")
 							.first()
 							.should("have.text", welcomeMessage);
+					});
+					it("should only show welcomeMessage after GET /messages call", () => {
+						// Cancel outgoing GET /messages (this works better than a long delay)
+						// This wat we can see what happens while the request is busy
+						cy.intercept("GET", "*/**/messages", (req) => {
+							// never call req.continue();
+						});
+
+						cy.visit("/");
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						// We should not see any announcements while the request is "busy"
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.should("not.exist");
 					});
 				});
 				describe("placeholderMessenger", () => {
