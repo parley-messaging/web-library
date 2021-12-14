@@ -328,7 +328,7 @@ describe("UI", () => {
 					});
 					it("should only show welcomeMessage after GET /messages call", () => {
 						// Cancel outgoing GET /messages (this works better than a long delay)
-						// This wat we can see what happens while the request is busy
+						// This way we can see what happens while the request is busy
 						cy.intercept("GET", "*/**/messages", (req) => {
 							// never call req.continue();
 						});
