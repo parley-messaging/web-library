@@ -1,6 +1,5 @@
 // This file contains all the headers which are blacklisted from the `customHeader` setting
 
-// TODO: Document these in README
 export const CUSTOMHEADER_BLACKLIST = [
 	"x-content-type-options",
 	"x-frame-options",
