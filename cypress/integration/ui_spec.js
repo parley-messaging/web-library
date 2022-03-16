@@ -808,5 +808,54 @@ describe("UI", () => {
 				});
 			});
 		});
+		describe.only("apiCustomHeaders", () => {
+			it("should set the apiCustomHeader setting on window", () => {
+				const parleyConfig = {
+					apiCustomHeaders: {
+						"x-custom-1": "1",
+						"x-custom-2": "2",
+					},
+				};
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				// Check if settings is set
+				cy.window().then((win) => {
+					expect(win.parleySettings.apiCustomHeaders).to.deep.equal(parleyConfig.apiCustomHeaders);
+				});
+			});
+			it("should update the custom headers during runtime", () => {
+				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
+				const newCustomHeader = {"x-custom-3": "2"};
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				cy.waitFor("@app");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = newCustomHeader;
+				});
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+
+				clickOnLauncher();
+
+				cy.wait("@postDevices").then((interception) => {
+					expect(interception.request.headers).to.include(newCustomHeader);
+				});
+			});
+		});
 	});
 });
