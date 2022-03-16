@@ -7,7 +7,7 @@
 import Config from "./Private/Config";
 import ow from "ow";
 import {
-	ApiFetchFailed, ApiGenericError,
+	ApiFetchFailed, ApiGenericError, CustomHeaderBlacklistError,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
@@ -73,7 +73,7 @@ export default class Api {
 			// Headers must not be in blocked list
 			ow(lowerCaseCustomHeader, customHeader, ow.string.validate(header => ({
 				validator: !CUSTOMHEADER_BLACKLIST.includes(header),
-				message: "This is a blacklisted header, please use a different header name",
+				message: CustomHeaderBlacklistError,
 			})));
 		});
 
