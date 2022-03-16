@@ -56,6 +56,10 @@ export default class Api {
 	}
 
 	setCustomHeaders(customHeaders) {
+		// Ignore empty headers
+		if(!customHeaders)
+			return;
+
 		ow(customHeaders, "customHeaders", ow.object);
 
 		Object.keys(customHeaders).forEach((customHeader) => {

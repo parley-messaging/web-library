@@ -59,7 +59,7 @@ export default class App extends React.Component {
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
-			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || {},
+			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 		};
 
 		this.Api = new Api(
