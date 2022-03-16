@@ -154,7 +154,7 @@ describe("Api class", () => {
 		});
 	});
 
-	describe.only("setCustomHeaders()", () => {
+	describe("setCustomHeaders()", () => {
 		it("should change the customHeaders", () => {
 			const newCustomHeaders = {
 				"x-custom-1": "1",
@@ -485,7 +485,7 @@ describe("Api class", () => {
 		});
 	});
 
-	describe.only("fetchWrapper()", () => {
+	describe("fetchWrapper()", () => {
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
 				"x-custom-1": "1",

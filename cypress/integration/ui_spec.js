@@ -808,7 +808,7 @@ describe("UI", () => {
 				});
 			});
 		});
-		describe.only("apiCustomHeaders", () => {
+		describe("apiCustomHeaders", () => {
 			it("should set the apiCustomHeader setting on window", () => {
 				const parleyConfig = {
 					apiCustomHeaders: {
