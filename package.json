@@ -41,7 +41,7 @@
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
 		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip",
 		"ci:server": "npx parcel serve --host 127.0.0.1 --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
-		"ci:tests": "cypress run --record --config 'baseUrl=http://127.0.0.1:8181'"
+		"ci:tests": "cypress run --config 'video=false,baseUrl=http://127.0.0.1:8181' --reporter=json --quiet"
 	},
 	"repository": {
 		"type": "git",
