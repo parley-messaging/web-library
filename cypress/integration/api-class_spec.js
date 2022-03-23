@@ -181,11 +181,17 @@ describe("Api class", () => {
 		});
 
 		it("should throw an error when using a 'reserved' prefix for one of the custom headers", () => {
-			const reservedPrefixKey = "x-parley-test";
-			const newCustomHeaders = {[reservedPrefixKey]: "some value"};
+			let reservedPrefixKey = "x-parley-test";
+			let newCustomHeaders = {[reservedPrefixKey]: "some value"};
 
 			expect(() => config.api.setCustomHeaders(newCustomHeaders))
 				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-parley-\`, got \`${reservedPrefixKey}\``);
+
+			reservedPrefixKey = "x-iris-test";
+			newCustomHeaders = {[reservedPrefixKey]: "some value"};
+
+			expect(() => config.api.setCustomHeaders(newCustomHeaders))
+				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-iris-\`, got \`${reservedPrefixKey}\``);
 		});
 	});
 
