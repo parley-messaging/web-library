@@ -152,10 +152,8 @@ export default class App extends React.Component {
 			this.checkWorkingHours();
 
 		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders)
-		{
-			console.log(nextState.apiCustomHeaders);
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
-		}
+
 
 		return true;
 	}
@@ -313,9 +311,9 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "xIrisIdentification") {
 			objectToSaveIntoState = {deviceIdentification: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
-			objectToSaveIntoState = {
-				userAdditionalInformation: JSON.parse(JSON.stringify(window.parleySettings.userAdditionalInformation))
-			};
+			const userAdditionalInformation
+				= JSON.parse(JSON.stringify(window.parleySettings.userAdditionalInformation));
+			objectToSaveIntoState = {userAdditionalInformation};
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
@@ -324,9 +322,8 @@ export default class App extends React.Component {
 			//  stuff from the setting object..
 			//  merge {} with {"oldProperty": "oldValue"} does not end up as {} in the state ...
 		} else if(path[layer0] === "apiCustomHeaders") {
-			objectToSaveIntoState = {
-				apiCustomHeaders: JSON.parse(JSON.stringify(window.parleySettings.apiCustomHeaders))
-			};
+			const apiCustomHeaders = JSON.parse(JSON.stringify(window.parleySettings.apiCustomHeaders));
+			objectToSaveIntoState = {apiCustomHeaders};
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
