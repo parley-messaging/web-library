@@ -174,12 +174,10 @@ describe("Api class", () => {
 		});
 
 		it("should throw an error when using a blacklisted header as one of the custom headers", () => {
-			const blacklistedHeaderKey = CUSTOMHEADER_BLACKLIST[
-				Math.floor(Math.random() * CUSTOMHEADER_BLACKLIST.length)
-			];
-			const newCustomHeaders = {[blacklistedHeaderKey]: "some value"};
-			expect(() => config.api.setCustomHeaders(newCustomHeaders))
-				.to.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
+			CUSTOMHEADER_BLACKLIST.forEach((blacklistedHeaderKey) => {
+				expect(() => config.api.setCustomHeaders({[blacklistedHeaderKey]: "some value"}))
+					.to.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
+			});
 		});
 
 		it("should throw an error when using a 'reserved' prefix for one of the custom headers", () => {
