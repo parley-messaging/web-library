@@ -166,7 +166,7 @@ describe("Api class", () => {
 		});
 		it("should throw an error when using something other than an Object as customHeaders", () => {
 			filterPrimitives([
-				"Object", "undefined",
+				"Object", "undefined", "null", "boolean",
 			]).forEach((set) => {
 				expect(() => config.api.setCustomHeaders(set.value))
 					.to.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
