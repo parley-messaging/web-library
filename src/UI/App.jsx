@@ -317,20 +317,12 @@ export default class App extends React.Component {
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
-
-			// TODO: When these are `deepMerged` below, it means you can't remove
-			//  stuff from the setting object..
-			//  merge {} with {"oldProperty": "oldValue"} does not end up as {} in the state ...
 		} else if(path[layer0] === "apiCustomHeaders") {
 			const apiCustomHeaders = JSON.parse(JSON.stringify(window.parleySettings.apiCustomHeaders));
 			objectToSaveIntoState = {apiCustomHeaders};
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
-
-			// TODO: When these are `deepMerged` below, it means you can't remove
-			//  stuff from the setting object..
-			//  merge {} with {"oldProperty": "oldValue"} does not end up as {} in the state ...
 		}
 
 		if(objectToSaveIntoState) {
