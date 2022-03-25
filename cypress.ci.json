@@ -1,0 +1,10 @@
+{
+	"baseUrl": "http://127.0.0.1:8181",
+	"video": false,
+	"reporter": "mochawesome",
+	"reporterOptions": {
+		"reportFilename": "[name]-report",
+		"html": false,
+		"json": true
+	}
+}

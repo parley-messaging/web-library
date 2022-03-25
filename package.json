@@ -41,7 +41,8 @@
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
 		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip",
 		"ci:server": "npx parcel serve --host 127.0.0.1 --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
-		"ci:tests": "cypress run --config 'video=false,baseUrl=http://127.0.0.1:8181' --reporter=json --quiet > mocha_output"
+		"ci:tests": "cypress run --config-file cypress.ci.json",
+		"ci:merge-results": "mochawesome-merge ./mochawesome-report/*.json -o ./mochawesome-report/merged.json"
 	},
 	"repository": {
 		"type": "git",
@@ -115,6 +116,8 @@
 		"eslint-plugin-no-only-tests": "^2.6.0",
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-unused-imports": "^1.1.2",
+		"mochawesome": "^7.1.2",
+		"mochawesome-merge": "^4.2.1",
 		"parcel": "^2.3.2",
 		"postcss": "^8.4.12",
 		"postcss-modules": "^4.3.1",
