@@ -59,3 +59,20 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 ```
 npm run cy:open
 ```
+
+## Using the `apiCustomHeaders` setting
+You can add your own headers to the API calls made by the library, by using the `window.parleySettings.apiCustomHeaders` setting.
+This setting expects an Object where each key is the header name and the value is the header value.
+Some headers are not allowed to be overridden:
+- Headers in the `src/Api/Constants/CustomHeaderBlacklist.js`
+- Headers beginning with prefix "x-parley-"
+- Headers beginning with prefix "x-iris-"
+
+This setting is reactive: It automatically merges* any changes, during runtime, with the previous values
+_* = Because it **merges** the previous values with the new values, it is not possible te remove values. This might change in the future_
+
+## Using the `userAdditionalInformation` setting
+TODO: Explain the setting
+
+This setting is reactive: It automatically merges* any changes, during runtime, with the previous values
+_* = Because it **merges** the previous values with the new values, it is not possible te remove values. This might change in the future_

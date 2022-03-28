@@ -7,7 +7,7 @@
 import Config from "./Private/Config";
 import ow from "ow";
 import {
-	ApiFetchFailed, ApiGenericError,
+	ApiFetchFailed, ApiGenericError, CustomHeaderBlacklistError,
 	DeviceVersionMaxLength,
 	DeviceVersionMinLength, DeviceVersionRegex,
 	MinUdidLength,
@@ -21,16 +21,17 @@ import {
 	warning as WarningResponse,
 } from "./Constants/ApiResponseNotificationTypes";
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
-
+import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
 
 export default class Api {
-	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget) {
+	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, customHeaders) {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
 		this.setDomain(apiDomain);
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
+		this.setCustomHeaders(customHeaders);
 		this.eventTarget = apiEventTarget;
 		this.deviceRegistered = false;
 	}
@@ -52,6 +53,35 @@ export default class Api {
 		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
 
 		this.deviceIdentification = deviceIdentification;
+	}
+
+	setCustomHeaders(customHeaders) {
+		// Ignore empty headers
+		if(!customHeaders)
+			return;
+
+		ow(customHeaders, "customHeaders", ow.object);
+
+		Object.keys(customHeaders).forEach((customHeader) => {
+			const lowerCaseCustomHeader = customHeader.toLowerCase();
+
+			ow(lowerCaseCustomHeader, customHeader, ow.string.nonEmpty);
+
+			// Headers must start with a `x-` prefix
+			ow(lowerCaseCustomHeader, customHeader, ow.string.startsWith("x-"));
+
+			// Headers must not start with OUR prefix
+			ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-parley-"));
+			ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-iris-"));
+
+			// Headers must not be in blocked list
+			ow(lowerCaseCustomHeader, customHeader, ow.string.validate(header => ({
+				validator: !CUSTOMHEADER_BLACKLIST.includes(header),
+				message: CustomHeaderBlacklistError,
+			})));
+		});
+
+		this.customHeaders = customHeaders;
 	}
 
 	/**
@@ -124,7 +154,7 @@ export default class Api {
 			return false; // No need to call the API if we don't have any new data
 		}
 
-		return fetchWrapper(`${this.config.apiUrl}/devices`, {
+		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
@@ -160,7 +190,7 @@ export default class Api {
 			refererCopy = window.location.href;
 
 
-		return fetchWrapper(`${this.config.apiUrl}/messages`, {
+		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
@@ -182,7 +212,7 @@ export default class Api {
 	}
 
 	getMessages() {
-		return fetchWrapper(`${this.config.apiUrl}/messages`, {
+		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "GET",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 		})
@@ -198,33 +228,40 @@ export default class Api {
 				}));
 			});
 	}
-}
 
-function fetchWrapper(url, options) {
-	return new Promise((resolve, reject) => {
-		fetch(url, options)
-			.then(response => response.json())
-			.then((json) => {
-				// Check if we have an API error and throw it
-				if(json.status === ErrorStatus) {
-					if(json.notifications) {
-						const errorNotifications = json.notifications
-							.map(notification => notification.type === ErrorResponse && notification.message);
-						const warningNotifications = json.notifications
-							.map(notification => notification.type === WarningResponse && notification.message);
+	fetchWrapper(url, options) {
+		// Merge any custom headers into the already configured headers
+		const extendedOptions = {
+			headers: {}, // Headers must always exist
+			...options,
+		};
+		extendedOptions.headers = Object.assign(extendedOptions.headers, this.customHeaders);
 
-						reject(errorNotifications, warningNotifications);
+		return new Promise((resolve, reject) => {
+			fetch(url, extendedOptions)
+				.then(response => response.json())
+				.then((json) => {
+					// Check if we have an API error and throw it
+					if(json.status === ErrorStatus) {
+						if(json.notifications) {
+							const errorNotifications = json.notifications
+								.map(notification => notification.type === ErrorResponse && notification.message);
+							const warningNotifications = json.notifications
+								.map(notification => notification.type === WarningResponse && notification.message);
+
+							reject(errorNotifications, warningNotifications);
+						} else {
+							// eslint-disable-next-line prefer-promise-reject-errors
+							reject([ApiGenericError], []);
+						}
 					} else {
-						// eslint-disable-next-line prefer-promise-reject-errors
-						reject([ApiGenericError], []);
+						resolve(json);
 					}
-				} else {
-					resolve(json);
-				}
-			})
-			.catch(() => {
-				// eslint-disable-next-line prefer-promise-reject-errors
-				reject([ApiFetchFailed], []);
-			}); // Reject with generic error message
-	});
+				})
+				.catch(() => {
+					// eslint-disable-next-line prefer-promise-reject-errors
+					reject([ApiFetchFailed], []);
+				}); // Reject with generic error message
+		});
+	}
 }

@@ -14,3 +14,5 @@ export const MinUdidLength = 10;
 export const DeviceVersionMinLength = 5;
 export const DeviceVersionMaxLength = 8;
 export const DeviceVersionRegex = /^[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
+
+export const CustomHeaderBlacklistError = "This is a blacklisted header, please use a different header name";

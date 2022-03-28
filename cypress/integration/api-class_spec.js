@@ -5,6 +5,7 @@ import {messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
+import {CUSTOMHEADER_BLACKLIST} from "../../src/Api/Constants/CustomHeaderBlacklist";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -17,6 +18,7 @@ const config = {
 	version: "010000",
 	message: "test message",
 	referer: "weblib-v2_cypress-test",
+	customHeaders: {},
 };
 const primitiveTypes = [
 	{
@@ -60,6 +62,7 @@ describe("Api class", () => {
 			config.accountIdentification,
 			config.deviceIdentification,
 			ApiEventTarget,
+			config.customHeaders,
 		);
 
 		// Intercept api calls and respond with a static response
@@ -148,6 +151,47 @@ describe("Api class", () => {
 			const identification = "aaaaaaaaa";
 			expect(() => config.api.setDeviceIdentification(identification))
 				.to.throw(`Expected string \`deviceIdentification\` to have a minimum length of \`10\`, got \`${identification}\``);
+		});
+	});
+
+	describe("setCustomHeaders()", () => {
+		it("should change the customHeaders", () => {
+			const newCustomHeaders = {
+				"x-custom-1": "1",
+				"x-custom-2": "2",
+			};
+			config.api.setCustomHeaders(newCustomHeaders);
+
+			expect(config.api.customHeaders).to.be.equal(newCustomHeaders);
+		});
+		it("should throw an error when using something other than an Object as customHeaders", () => {
+			filterPrimitives([
+				"Object", "undefined", "null", "boolean",
+			]).forEach((set) => {
+				expect(() => config.api.setCustomHeaders(set.value))
+					.to.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using a blacklisted header as one of the custom headers", () => {
+			CUSTOMHEADER_BLACKLIST.forEach((blacklistedHeaderKey) => {
+				expect(() => config.api.setCustomHeaders({[blacklistedHeaderKey]: "some value"}))
+					.to.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
+			});
+		});
+
+		it("should throw an error when using a 'reserved' prefix for one of the custom headers", () => {
+			let reservedPrefixKey = "x-parley-test";
+			let newCustomHeaders = {[reservedPrefixKey]: "some value"};
+
+			expect(() => config.api.setCustomHeaders(newCustomHeaders))
+				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-parley-\`, got \`${reservedPrefixKey}\``);
+
+			reservedPrefixKey = "x-iris-test";
+			newCustomHeaders = {[reservedPrefixKey]: "some value"};
+
+			expect(() => config.api.setCustomHeaders(newCustomHeaders))
+				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-iris-\`, got \`${reservedPrefixKey}\``);
 		});
 	});
 
@@ -444,6 +488,25 @@ describe("Api class", () => {
 						config.api.sendMessage(config.message);
 					});
 				});
+		});
+	});
+
+	describe("fetchWrapper()", () => {
+		it("should make a request with custom headers", () => {
+			const customHeaders = {
+				"x-custom-1": "1",
+				"x-custom-2": "2",
+			};
+			const url = `${config.apiDomain}/clientApi/vx.x/devices`;
+
+			config.api.setCustomHeaders(customHeaders);
+
+			config.api.fetchWrapper(url, {method: "POST"});
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(customHeaders));
+				expect(Object.values(interception.request.headers)).to.include.members(Object.values(customHeaders));
+			});
 		});
 	});
 });

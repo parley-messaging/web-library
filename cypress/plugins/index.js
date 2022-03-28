@@ -19,6 +19,8 @@
 module.exports = (on, config) => {
 	require('@cypress/code-coverage/task')(on, config)
 
+	on('file:preprocessor', require('@cypress/code-coverage/use-babelrc')) // Needed for unit test code coverage
+
 	// add other tasks to be registered here
 
 	return config

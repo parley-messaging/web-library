@@ -59,6 +59,7 @@ export default class App extends React.Component {
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 		};
 
 		this.Api = new Api(
@@ -66,6 +67,7 @@ export default class App extends React.Component {
 			this.state.accountIdentification,
 			this.state.deviceIdentification,
 			ApiEventTarget,
+			this.state.apiCustomHeaders,
 		);
 		this.PollingService = new PollingService(this.Api);
 		this.Api.subscribeDevice(
@@ -149,6 +151,10 @@ export default class App extends React.Component {
 		if(nextState.workingHours !== this.state.workingHours)
 			this.checkWorkingHours();
 
+		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders)
+			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
+
+
 		return true;
 	}
 
@@ -200,12 +206,13 @@ export default class App extends React.Component {
 				// ALL properties and rename/apply them to the state.
 				// We don't want arrays because we dont want to loop
 				// over them.
-				// We ignore "userAdditionalInformation", because we don't
-				// care about renaming it's keys.
+				// We ignore "userAdditionalInformation" and "customApiHeaders", because we don't
+				// care about renaming their keys (the keys are dynamic).
 				if(typeof change.value === "object"
 					&& change.value !== null
 					&& !Array.isArray(change.value)
 					&& change.path[0] !== "userAdditionalInformation"
+					&& change.path[0] !== "apiCustomHeaders"
 				) {
 					deepForEach(change.value, (value, key) => {
 						// Extend the path with the key
@@ -304,12 +311,16 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "xIrisIdentification") {
 			objectToSaveIntoState = {deviceIdentification: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
-			objectToSaveIntoState = {userAdditionalInformation: {}};
-			objectToSaveIntoState.userAdditionalInformation
+			const userAdditionalInformation
 				= JSON.parse(JSON.stringify(window.parleySettings.userAdditionalInformation));
+			objectToSaveIntoState = {userAdditionalInformation};
 
-			// For `userAdditionalInformation` we don't care about validating
-			// the contents. So we can just directly add it to the state.
+			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
+			// from the object
+		} else if(path[layer0] === "apiCustomHeaders") {
+			const apiCustomHeaders = JSON.parse(JSON.stringify(window.parleySettings.apiCustomHeaders));
+			objectToSaveIntoState = {apiCustomHeaders};
+
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
 		}
