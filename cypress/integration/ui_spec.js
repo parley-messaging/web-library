@@ -1,16 +1,22 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 
-function visitHome() {
+const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
+function visitHome(parleyConfig) {
 	cy.visit("/", {
+		onBeforeLoad: (window) => {
+			// eslint-disable-next-line no-param-reassign
+			window.parleySettings = {
+				...defaultParleyConfig, // Always set default config
+				...parleyConfig,
+			};
+		},
 		onLoad: (window) => {
 			window.initParleyMessenger();
 		},
 	});
-
 	cy.get("[id=app]").as("app");
 }
-
 function clickOnLauncher() {
 	return cy.get("@app")
 		.find("[class^=launcher__]")
@@ -18,7 +24,6 @@ function clickOnLauncher() {
 		.should("be.visible")
 		.click();
 }
-
 function sendMessage(testMessage) {
 	return cy.get("@app")
 		.find("[class^=chat__]")
@@ -31,7 +36,6 @@ function sendMessage(testMessage) {
 		.should("have.focus")
 		.type(`${testMessage}{enter}`);
 }
-
 function findMessage(testMessage) {
 	return cy.get("@app")
 		.find("[class^=wrapper__]")
@@ -41,6 +45,13 @@ function findMessage(testMessage) {
 		.contains(testMessage)
 		.should("be.visible");
 }
+
+afterEach(() => {
+	cy.window()
+		.then((window) => {
+			window.destroyParleyMessenger();
+		});
+});
 
 describe("UI", () => {
 	describe("sending messages", () => {
@@ -229,12 +240,7 @@ describe("UI", () => {
 					it("should change the title text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {desc: "This is the title bar"}}};
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -269,12 +275,7 @@ describe("UI", () => {
 							cy.intercept("GET", "*/**/messages", _json);
 						});
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -310,12 +311,7 @@ describe("UI", () => {
 							cy.intercept("GET", "*/**/messages", _json);
 						});
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -327,13 +323,22 @@ describe("UI", () => {
 							.should("have.text", welcomeMessage);
 					});
 					it("should only show welcomeMessage after GET /messages call", () => {
-						// Cancel outgoing GET /messages (this works better than a long delay)
-						// This way we can see what happens while the request is busy
-						cy.intercept("GET", "*/**/messages", (req) => {
-							// never call req.continue();
+						// Force a long delay on the response to pretend we are "loading"
+						// This delay should have no impact on the test duration, because
+						// the test will end after we've done our assertion which doesn't
+						// have to wait on the response. It's just there to assert the
+						// "loading" state
+						cy.fixture("getMessagesResponse.json").then((json) => {
+							cy.intercept("GET", "*/**/messages", (req) => {
+								req.reply({
+									statusCode: 200,
+									body: {...json},
+									delay: 5000,
+								});
+							});
 						});
 
-						cy.visit("/");
+						visitHome();
 
 						cy.get("[id=app]").as("app");
 
@@ -349,12 +354,7 @@ describe("UI", () => {
 					it("should change the input's placeholder text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {placeholderMessenger: "This is the placeholder"}}};
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -388,12 +388,7 @@ describe("UI", () => {
 						},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (window) => {
-							// eslint-disable-next-line no-param-reassign
-							window.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -425,15 +420,9 @@ describe("UI", () => {
 		});
 		describe("roomNumber", () => {
 			it("should register a new device when switching accounts", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -463,12 +452,7 @@ describe("UI", () => {
 				const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
 				const testMessage = `test message before switching udid ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
 
@@ -495,15 +479,9 @@ describe("UI", () => {
 		});
 		describe("authHeader", () => {
 			it("should re-register the device when it changes", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 				const testMessage = `test message before switching auth header ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -528,18 +506,10 @@ describe("UI", () => {
 		});
 		describe("userAdditionalInformation", () => {
 			it("should re-register the device when it changes", () => {
-				const parleyConfig = {
-					roomNumber: "0W4qcE5aXoKq9OzvHxj2",
-					userAdditionalInformation: {"some-key": "some-value"},
-				};
+				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
 				const testMessage = `test message before switching userAdditionalInformation ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
 
@@ -582,12 +552,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -647,12 +612,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -708,12 +668,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -755,12 +710,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -794,7 +744,7 @@ describe("UI", () => {
 		});
 		describe("version", () => {
 			it("should set the library version on startup", () => {
-				cy.visit("/");
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -817,12 +767,7 @@ describe("UI", () => {
 					},
 				};
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				// Check if settings is set
 				cy.window().then((win) => {
@@ -832,12 +777,7 @@ describe("UI", () => {
 			it("should update the custom headers during runtime", () => {
 				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
 				const newCustomHeader = {"x-custom-3": "2"};
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
 
