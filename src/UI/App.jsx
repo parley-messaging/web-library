@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages} from "../Api/Constants/Events";
+import {messages, subscribe} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -53,13 +53,14 @@ export default class App extends React.Component {
 			},
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
-			deviceIdentification: window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification,
+			deviceIdentification: this.getDeviceIdentification(),
 			deviceAuthorization: window?.parleySettings?.authHeader || undefined,
 			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
+			cookieDomain: window?.parleySettings?.cookieDomain || undefined,
 		};
 
 		this.Api = new Api(
@@ -77,6 +78,8 @@ export default class App extends React.Component {
 			this.state.userAdditionalInformation,
 			DeviceTypes.Web,
 			this.state.deviceVersion,
+			undefined,
+			undefined,
 		);
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
@@ -97,6 +100,19 @@ export default class App extends React.Component {
 		window.showParleyMessenger = this.showChat;
 	}
 
+	getDeviceIdentification() {
+		const cookies = document.cookie.split(";");
+		for(let i = 0; i < cookies.length; i++) {
+			const [
+				name, value,
+			] = cookies[i].split("=");
+			if(name === "deviceIdentification" && value.length > 0)
+				return value;
+		}
+
+		return window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification;
+	}
+
 	// eslint-disable-next-line no-unused-vars
 	shouldComponentUpdate(nextProps, nextState, nextContext) {
 		// Toggle interface language if it has changed
@@ -106,9 +122,16 @@ export default class App extends React.Component {
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification
 			|| nextState.deviceIdentification !== this.state.deviceIdentification
+			|| nextState.cookieDomain !== this.state.cookieDomain
 		) {
-			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
-			this.PollingService.stopPolling(); // Make sure we stop otherwise it will poll for the old device info
+			// Remove old cookie containing the (old) device identification
+			document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${this.state.cookieDomain}`;
+
+			// Remove old device info, otherwise we cannot create a new one with the same info
+			localStorage.removeItem("deviceInformation");
+
+			// Make sure we stop otherwise it will poll for the old device info
+			this.PollingService.stopPolling();
 
 			this.Api = new Api(
 				nextState.apiDomain,
@@ -127,7 +150,6 @@ export default class App extends React.Component {
 				undefined,
 				nextState.deviceAuthorization,
 			);
-			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
@@ -154,7 +176,6 @@ export default class App extends React.Component {
 		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders)
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
 
-
 		return true;
 	}
 
@@ -162,6 +183,7 @@ export default class App extends React.Component {
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -175,6 +197,7 @@ export default class App extends React.Component {
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -323,6 +346,8 @@ export default class App extends React.Component {
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
+		} else if(path[layer0] === "cookieDomain") {
+			objectToSaveIntoState = {cookieDomain: value};
 		}
 
 		if(objectToSaveIntoState) {
@@ -359,6 +384,8 @@ export default class App extends React.Component {
 			this.state.userAdditionalInformation,
 			DeviceTypes.Web,
 			this.state.deviceVersion,
+			undefined,
+			undefined,
 		);
 	}
 
@@ -391,6 +418,13 @@ export default class App extends React.Component {
 		// Show the chat when we received a new message
 		if(!this.state.showChat && foundNewMessages)
 			this.showChat();
+	}
+
+	handleSubscribe = () => {
+		// Create a new cookie containing the (new) device identification
+		document.cookie = `deviceIdentification=${this.state.deviceIdentification}; path=/; Domain=${this.state.cookieDomain}`;
+
+		this.PollingService.restartPolling();
 	}
 
 	checkWorkingHours = () => {

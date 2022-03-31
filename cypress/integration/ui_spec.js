@@ -46,10 +46,20 @@ function findMessage(testMessage) {
 		.should("be.visible");
 }
 
-afterEach(() => {
+beforeEach(() => {
+	console.log("");
+	console.log(`=== ${Cypress.currentTest.title} ===`);
+	console.log("");
+
+	// This should not go in afterEach,
+	// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
 	cy.window()
 		.then((window) => {
-			window.destroyParleyMessenger();
+			if(window.destroyParleyMessenger)
+				window.destroyParleyMessenger();
+		})
+		.then(() => {
+			return cy.clearLocalStorage();
 		});
 });
 
@@ -794,6 +804,124 @@ describe("UI", () => {
 
 				cy.wait("@postDevices").then((interception) => {
 					expect(interception.request.headers).to.include(newCustomHeader);
+				});
+			});
+		});
+		describe.only("cookieDomain", () => {
+			beforeEach(() => {
+				Cypress.Cookies.debug(true);
+			});
+			it.only("should set the cookieDomain setting on window", () => {
+				const parleyConfig = {cookieDomain: "parley.nu"};
+
+				visitHome(parleyConfig);
+
+				cy.window().then((win) => {
+					expect(win.parleySettings.cookieDomain).to.equal(parleyConfig.cookieDomain);
+				});
+			});
+			it.only("should create a cookie, containing the deviceIdentification and with the cookieDomain as domain, upon opening the chat", () => {
+				const parleyConfig = {cookieDomain: "parley.nu"};
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				visitHome(parleyConfig);
+
+				clickOnLauncher();
+
+				// TODO: Sometimes when running this test and the one before
+				//  the POST /devices is never executed (due to localStorage already containing device information)
+				//  but that doesn't make sense because the localStorage is cleared between each test..
+				cy.wait("@postDevices")
+					.then(() => {
+						return cy.wait("@getMessages");
+					})
+					.then(() => {
+						return cy.getCookies()
+							.should("have.length", 1)
+							.then((cookies) => {
+								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.cookieDomain}`);
+							});
+					});
+			});
+			it("should update the cookieDomain during runtime", () => {
+				const parleyConfig = {cookieDomain: "parley.nu"};
+
+				// We can only use valid subdomain(s) here, otherwise the cookie
+				// will not be visible for the domain we are currently running
+				// the chat on...
+				const newCookieDomain = "chat-dev.parley.nu";
+
+				visitHome(parleyConfig);
+
+				clickOnLauncher();
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				cy.window()
+					.then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.cookieDomain = newCookieDomain;
+
+						return cy.wait("@postDevices")
+							.then(() => {
+								return cy.wait("@getMessages");
+							})
+							.then(() => {
+								// TODO: Somehow sometimes the cookie is not yet created at this point
+								//  waiting an additional second prevents this flakiness, but there
+								//  must be a better solution to this..
+								// eslint-disable-next-line cypress/no-unnecessary-waiting
+								return cy.wait(1000);
+							})
+							.then(() => {
+								return cy.getCookies()
+									.should("have.length", 1)
+									.then((cookies) => {
+										expect(cookies[0]).to.have.property("domain", `.${newCookieDomain}`);
+									});
+							});
+					});
+			});
+
+			describe("switching between domains", () => {
+				before(() => {
+					// Set the cookie to be used by the test
+					// We can't let the library do this because somehow that cookie always gets removed
+					// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
+					// I think because the cookie is not created in the `before()` but in an `it()`
+					cy.setCookie("deviceIdentification", "some-device-identification-string", {
+						domain: ".parley.nu",
+						path: "/",
+					});
+				});
+
+				it("should use the value, in the cookie, as it's initial device identification", () => {
+					const parleyConfig = {cookieDomain: "parley.nu"};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]").as("app");
+					cy.waitFor("@app");
+
+					cy.intercept("GET", "*/**/messages").as("getMessages");
+
+					cy.getCookie("deviceIdentification")
+						.then((cookie) => {
+							const deviceIdentificationFromCookie = cookie.value;
+
+							clickOnLauncher(); // Start the device registration
+
+							// We know that if we start retrieving messages,
+							// the device registration is completely finished
+							// meaning that the cookie has been updated
+							cy.wait("@getMessages")
+								.then((interception) => {
+									expect(interception.request.headers).to.have.property("x-iris-identification", `${defaultParleyConfig.roomNumber}:${deviceIdentificationFromCookie}`);
+								});
+						});
 				});
 			});
 		});

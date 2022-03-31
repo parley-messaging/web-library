@@ -22,6 +22,7 @@ import {
 } from "./Constants/ApiResponseNotificationTypes";
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
+import Logger from "js-logger";
 
 export default class Api {
 	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, customHeaders) {
@@ -150,6 +151,7 @@ export default class Api {
 		// Check registration in local storage
 		const storedDeviceInformation = localStorage.getItem("deviceInformation");
 		if(storedDeviceInformation === storeIntoLocalStorage) {
+			Logger.debug("Found device information from localStorage, using that instead of registering a new device");
 			this.deviceRegistered = true;
 			return false; // No need to call the API if we don't have any new data
 		}
@@ -167,6 +169,7 @@ export default class Api {
 
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 
+				// TODO: Ideally this should be done in the UI module and not in the Api
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
