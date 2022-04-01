@@ -48,7 +48,7 @@ function findMessage(testMessage) {
 
 beforeEach(() => {
 	console.log("");
-	console.log(`=== ${Cypress.currentTest.title} ===`);
+	console.log(`=== BEGIN ${Cypress.currentTest.title} ===`);
 	console.log("");
 
 	// This should not go in afterEach,
@@ -61,6 +61,12 @@ beforeEach(() => {
 		.then(() => {
 			return cy.clearLocalStorage();
 		});
+});
+
+afterEach(() => {
+	console.log("");
+	console.log(`=== END ${Cypress.currentTest.title} ===`);
+	console.log("");
 });
 
 describe("UI", () => {
@@ -787,6 +793,7 @@ describe("UI", () => {
 			it("should update the custom headers during runtime", () => {
 				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
 				const newCustomHeader = {"x-custom-3": "2"};
+
 				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
@@ -800,27 +807,23 @@ describe("UI", () => {
 
 				cy.intercept("POST", "*/**/devices").as("postDevices");
 
-				clickOnLauncher();
-
-				cy.wait("@postDevices").then((interception) => {
-					expect(interception.request.headers).to.include(newCustomHeader);
-				});
+				// We have to clear the local storage after the first registration
+				// otherwise there won't be another POST /devices call because
+				// the device information in the storage is the same as current
+				cy.clearLocalStorage()
+					.then(clickOnLauncher)
+					.then(() => {
+						return cy.wait("@postDevices").then((interception) => {
+							expect(interception.request.headers).to.include(newCustomHeader);
+						});
+					});
 			});
 		});
-		describe.only("cookieDomain", () => {
+		describe("cookieDomain", () => {
 			beforeEach(() => {
 				Cypress.Cookies.debug(true);
 			});
-			it.only("should set the cookieDomain setting on window", () => {
-				const parleyConfig = {cookieDomain: "parley.nu"};
-
-				visitHome(parleyConfig);
-
-				cy.window().then((win) => {
-					expect(win.parleySettings.cookieDomain).to.equal(parleyConfig.cookieDomain);
-				});
-			});
-			it.only("should create a cookie, containing the deviceIdentification and with the cookieDomain as domain, upon opening the chat", () => {
+			it("should create a cookie, containing the deviceIdentification and with the cookieDomain as domain, upon opening the chat", () => {
 				const parleyConfig = {cookieDomain: "parley.nu"};
 
 				cy.intercept("POST", "*/**/devices").as("postDevices");
@@ -830,9 +833,6 @@ describe("UI", () => {
 
 				clickOnLauncher();
 
-				// TODO: Sometimes when running this test and the one before
-				//  the POST /devices is never executed (due to localStorage already containing device information)
-				//  but that doesn't make sense because the localStorage is cleared between each test..
 				cy.wait("@postDevices")
 					.then(() => {
 						return cy.wait("@getMessages");
@@ -870,9 +870,6 @@ describe("UI", () => {
 								return cy.wait("@getMessages");
 							})
 							.then(() => {
-								// TODO: Somehow sometimes the cookie is not yet created at this point
-								//  waiting an additional second prevents this flakiness, but there
-								//  must be a better solution to this..
 								// eslint-disable-next-line cypress/no-unnecessary-waiting
 								return cy.wait(1000);
 							})
