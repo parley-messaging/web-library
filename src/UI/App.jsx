@@ -30,6 +30,10 @@ export default class App extends React.Component {
 	constructor(props) {
 		super(props);
 
+		this.messageIDs = new Set();
+		this.visibilityChange = "visibilitychange";
+		this.isRegisteringDevice = false;
+
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
@@ -71,7 +75,10 @@ export default class App extends React.Component {
 			this.state.apiCustomHeaders,
 		);
 		this.PollingService = new PollingService(this.Api);
-		this.Api.subscribeDevice(
+
+		Logger.debug("App started, registering device");
+
+		this.subscribeDeviceWrapper(
 			undefined,
 			undefined,
 			undefined,
@@ -81,8 +88,6 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 		);
-		this.messageIDs = new Set();
-		this.visibilityChange = "visibilitychange";
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -100,7 +105,7 @@ export default class App extends React.Component {
 		window.showParleyMessenger = this.showChat;
 	}
 
-	getDeviceIdentification() {
+	getDeviceIdentification = () => {
 		const cookies = document.cookie.split(";");
 		for(let i = 0; i < cookies.length; i++) {
 			const [
@@ -113,17 +118,94 @@ export default class App extends React.Component {
 		return window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification;
 	}
 
+	// TODO: Better name
+	subscribeDeviceWrapper = (
+		pushToken, pushType, pushEnabled,
+		userAdditionalInformation, type, deviceVersion,
+		referer, authorization,
+	) => {
+		const body = {
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version: deviceVersion,
+			referer,
+			authorization,
+		};
+
+		const storeIntoLocalStorage = JSON.stringify({
+			...body,
+			accountIdentification: this.Api.accountIdentification,
+			deviceIdentification: this.Api.deviceIdentification,
+		});
+
+		// Check registration in local storage
+		const storedDeviceInformation = localStorage.getItem("deviceInformation");
+		if(storedDeviceInformation === storeIntoLocalStorage) {
+			Logger.debug("Found same device information from localStorage, using that instead of registering a new device");
+			this.Api.deviceRegistered = true;
+			return; // No need to call the API if we don't have any new data
+		}
+
+		// TODO: Will this cause problems if we call the first one with INVALID data
+		//  and the second one with VALID data? Because the second one will be ignored..
+		//  Maybe we should queue these, so that if the first one is done
+		//  the second one will have to go through the check above to see if
+		//  it has NEW data or the SAME data?
+		// We don't want to make multiple API calls
+		// if one of them is slow for some reason
+		if(this.isRegisteringDevice) {
+			Logger.debug("Ignoring this device registration call, because another one is still running");
+			return;
+		}
+		this.isRegisteringDevice = true; // Lock this function, so it won't run again while we are registering
+
+		this.Api.subscribeDevice(
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			deviceVersion,
+			referer,
+			authorization,
+		)
+			.then(() => {
+				// Save registration in local storage
+				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
+
+				Logger.debug("Device registered, ", {
+					accountIdentification: this.Api.accountIdentification,
+					deviceIdentification: this.Api.deviceIdentification,
+				});
+			})
+			.finally(() => {
+				this.isRegisteringDevice = false; // Unlock this function, so it can be called again
+			});
+	}
+
 	// eslint-disable-next-line no-unused-vars
 	shouldComponentUpdate(nextProps, nextState, nextContext) {
 		// Toggle interface language if it has changed
-		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
+		if(nextState.interfaceLanguage !== this.state.interfaceLanguage) {
+			Logger.debug("Interface language changed, changing interface texts");
 			this.toggleLanguage(nextState.interfaceLanguage);
+		}
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification
 			|| nextState.deviceIdentification !== this.state.deviceIdentification
 			|| nextState.cookieDomain !== this.state.cookieDomain
 		) {
+			if(nextState.accountIdentification !== this.state.accountIdentification)
+				Logger.debug("Account identification changed, registering new device");
+			if(nextState.deviceIdentification !== this.state.deviceIdentification)
+				Logger.debug("Device identification changed, registering new device");
+			if(nextState.cookieDomain !== this.state.cookieDomain)
+				Logger.debug("Cookie domain changed, registering new device");
+
 			// Remove old cookie containing the (old) device identification
 			document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${this.state.cookieDomain}`;
 
@@ -140,7 +222,7 @@ export default class App extends React.Component {
 				ApiEventTarget,
 			);
 			this.PollingService = new PollingService(this.Api);
-			this.Api.subscribeDevice(
+			this.subscribeDeviceWrapper(
 				undefined,
 				undefined,
 				undefined,
@@ -150,6 +232,7 @@ export default class App extends React.Component {
 				undefined,
 				nextState.deviceAuthorization,
 			);
+			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
@@ -157,7 +240,12 @@ export default class App extends React.Component {
 		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
 			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
 		) {
-			this.Api.subscribeDevice(
+			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
+				Logger.debug("Device authorization changed, registering new device");
+			if(nextState.userAdditionalInformation !== this.state.userAdditionalInformation)
+				Logger.debug("User additional information changed, registering new device");
+
+			this.subscribeDeviceWrapper(
 				undefined,
 				undefined,
 				undefined,
@@ -170,11 +258,15 @@ export default class App extends React.Component {
 		}
 
 		// Check working hours when they changed
-		if(nextState.workingHours !== this.state.workingHours)
+		if(nextState.workingHours !== this.state.workingHours) {
+			Logger.debug("Working hours changed, changing online/offline mode");
 			this.checkWorkingHours();
+		}
 
-		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders)
+		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders) {
+			Logger.debug("Api custom headers changed, setting new custom headers");
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
+		}
 
 		return true;
 	}
@@ -374,10 +466,12 @@ export default class App extends React.Component {
 	}
 
 	showChat = () => {
+		Logger.debug("Show chat, re-registering device");
+
 		this.setState(() => ({showChat: true}));
 
 		// Try to re-register the device if it is not yet registered
-		this.Api.subscribeDevice(
+		this.subscribeDeviceWrapper(
 			undefined,
 			undefined,
 			undefined,
@@ -390,6 +484,8 @@ export default class App extends React.Component {
 	}
 
 	hideChat = () => {
+		Logger.debug("Hide chat");
+
 		this.setState(() => ({showChat: false}));
 	}
 
@@ -404,11 +500,11 @@ export default class App extends React.Component {
 		this.PollingService.restartPolling();
 	}
 
-	handleNewMessage = (eventData) => {
+	handleNewMessage = (event) => {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
-		eventData.detail.data.forEach((message) => {
+		event.detail.data.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
 				foundNewMessages = true;
@@ -420,11 +516,13 @@ export default class App extends React.Component {
 			this.showChat();
 	}
 
-	handleSubscribe = () => {
-		// Create a new cookie containing the (new) device identification
-		document.cookie = `deviceIdentification=${this.state.deviceIdentification}; path=/; Domain=${this.state.cookieDomain}`;
+	handleSubscribe = (event) => {
+		// We don't want to do this the api returned errors
+		if(event.detail.errorNotifications)
+			return;
 
-		this.PollingService.restartPolling();
+		// Create a new cookie (or override existing) containing the (new) device identification
+		document.cookie = `deviceIdentification=${this.state.deviceIdentification}; path=/; Domain=${this.state.cookieDomain}`;
 	}
 
 	checkWorkingHours = () => {

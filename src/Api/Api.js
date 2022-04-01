@@ -22,7 +22,6 @@ import {
 } from "./Constants/ApiResponseNotificationTypes";
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
-import Logger from "js-logger";
 
 export default class Api {
 	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, customHeaders) {
@@ -131,47 +130,27 @@ export default class Api {
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
-		const body = {
-			pushToken,
-			pushType,
-			pushEnabled,
-			userAdditionalInformation,
-			type,
-			version,
-			referer: refererCopy,
-			authorization,
-		};
-
-		const storeIntoLocalStorage = JSON.stringify({
-			...body,
-			accountIdentification: this.accountIdentification,
-			deviceIdentification: this.deviceIdentification,
-		});
-
-		// Check registration in local storage
-		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === storeIntoLocalStorage) {
-			Logger.debug("Found device information from localStorage, using that instead of registering a new device");
-			this.deviceRegistered = true;
-			return false; // No need to call the API if we don't have any new data
-		}
-
 		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 				Authorization: authorization || "",
 			},
-			body: JSON.stringify(body),
+			body: JSON.stringify({
+				pushToken,
+				pushType,
+				pushEnabled,
+				userAdditionalInformation,
+				type,
+				version,
+				referer: refererCopy,
+				authorization,
+			}),
 		})
 			.then((data) => {
 				this.deviceRegistered = true; // Important, must be before sending out any events
 
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
-
-				// TODO: Ideally this should be done in the UI module and not in the Api
-				// Save registration in local storage
-				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
 				return data;
 			})
