@@ -819,12 +819,12 @@ describe("UI", () => {
 					});
 			});
 		});
-		describe("cookieDomain", () => {
+		describe("persistDeviceBetweenDomain", () => {
 			beforeEach(() => {
 				Cypress.Cookies.debug(true);
 			});
-			it("should create a cookie, containing the deviceIdentification and with the cookieDomain as domain, upon opening the chat", () => {
-				const parleyConfig = {cookieDomain: "parley.nu"};
+			it("should create a cookie, containing the deviceIdentification and with the persistDeviceBetweenDomain as domain, upon opening the chat", () => {
+				const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
 
 				cy.intercept("POST", "*/**/devices").as("postDevices");
 				cy.intercept("GET", "*/**/messages").as("getMessages");
@@ -841,17 +841,17 @@ describe("UI", () => {
 						return cy.getCookies()
 							.should("have.length", 1)
 							.then((cookies) => {
-								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.cookieDomain}`);
+								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
 							});
 					});
 			});
-			it("should update the cookieDomain during runtime", () => {
-				const parleyConfig = {cookieDomain: "parley.nu"};
+			it("should update the persistDeviceBetweenDomain during runtime", () => {
+				const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
 
 				// We can only use valid subdomain(s) here, otherwise the cookie
 				// will not be visible for the domain we are currently running
 				// the chat on...
-				const newCookieDomain = "chat-dev.parley.nu";
+				const newpersistDeviceBetweenDomain = "chat-dev.parley.nu";
 
 				visitHome(parleyConfig);
 
@@ -863,7 +863,7 @@ describe("UI", () => {
 				cy.window()
 					.then((win) => {
 						// eslint-disable-next-line no-param-reassign
-						win.parleySettings.cookieDomain = newCookieDomain;
+						win.parleySettings.persistDeviceBetweenDomain = newpersistDeviceBetweenDomain;
 
 						return cy.wait("@postDevices")
 							.then(() => {
@@ -877,7 +877,7 @@ describe("UI", () => {
 								return cy.getCookies()
 									.should("have.length", 1)
 									.then((cookies) => {
-										expect(cookies[0]).to.have.property("domain", `.${newCookieDomain}`);
+										expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
 									});
 							});
 					});
@@ -896,7 +896,7 @@ describe("UI", () => {
 				});
 
 				it("should use the value, in the cookie, as it's initial device identification", () => {
-					const parleyConfig = {cookieDomain: "parley.nu"};
+					const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
 
 					visitHome(parleyConfig);
 

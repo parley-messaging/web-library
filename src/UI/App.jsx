@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages, subscribe} from "../Api/Constants/Events";
+import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -32,7 +32,6 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
-		this.isRegisteringDevice = false;
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -64,7 +63,7 @@ export default class App extends React.Component {
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
-			cookieDomain: window?.parleySettings?.cookieDomain || undefined,
+			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 		};
 
 		this.Api = new Api(
@@ -77,17 +76,6 @@ export default class App extends React.Component {
 		this.PollingService = new PollingService(this.Api);
 
 		Logger.debug("App started, registering device");
-
-		this.subscribeDeviceWrapper(
-			undefined,
-			undefined,
-			undefined,
-			this.state.userAdditionalInformation,
-			DeviceTypes.Web,
-			this.state.deviceVersion,
-			undefined,
-			undefined,
-		);
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -105,7 +93,39 @@ export default class App extends React.Component {
 		window.showParleyMessenger = this.showChat;
 	}
 
-	getDeviceIdentification = () => {
+	/**
+	 * Creates a new cookie with:
+	 * - name: `deviceIdentification`
+	 * - value: the value you provide in `deviceIdentification`
+	 * - domain: the value you provide in `cookieDomain`
+	 * @param deviceIdentification {string}
+	 * @param cookieDomain {string}
+	 */
+	createDeviceIdentificationCookie = (deviceIdentification, cookieDomain) => {
+		// If we don't have a persistDeviceBetweenDomain (maybe because the setting is not enabled)
+		// we don't want to create the cookie
+		if(!cookieDomain)
+			return;
+
+		// Create a new cookie (or override existing) containing the (new) device identification
+		document.cookie = `deviceIdentification=${deviceIdentification}; path=/; Domain=${cookieDomain}`;
+	}
+
+	/**
+	 * Removes the deviceIdentification cookie, that matches the `cookieDomain`, from the storage
+	 * @param cookieDomain {string}
+	 */
+	removeDeviceIdentificationCookie = (cookieDomain) => {
+		// Remove old cookie containing the (old) device identification
+		document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${cookieDomain}`;
+	}
+
+	/**
+	 * Tries to find the device identification cookie and returns its value or `undefined`
+	 * if the cookie is not found
+	 * @return {string|undefined}
+	 */
+	getDeviceIdentificationCookie = () => {
 		const cookies = document.cookie.split(";");
 		for(let i = 0; i < cookies.length; i++) {
 			const [
@@ -115,11 +135,48 @@ export default class App extends React.Component {
 				return value;
 		}
 
-		return window?.parleySettings?.xIrisIdentification || ApiOptions.deviceIdentification;
+		return undefined;
 	}
 
-	// TODO: Better name
-	subscribeDeviceWrapper = (
+	/**
+	 * Because we keep the device identification in multiple places we need to decide which ones
+	 * have priority over the other locations. This function returns the device identification
+	 * from the place with the highest priority first and goes down in the list if needed
+	 * @return {string|*|string}
+	 */
+	getDeviceIdentification = () => {
+		// First; If parleySettings has an identification, always use that
+		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
+		if(parleySettingsIdentification)
+			return parleySettingsIdentification;
+
+		// Second; Get identification from cookie
+		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
+		if(cookieDeviceIdentification)
+			return cookieDeviceIdentification;
+
+		// Third; Get identification from localStorage
+		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
+		if(localStorageIdentification)
+			return localStorageIdentification;
+
+		// Last; Create a new identification
+		return ApiOptions.deviceIdentification;
+	}
+
+	/**
+	 * A wrapper for Api.subscribeDevice which will only register a device if
+	 * the current device is not yet registered.
+	 * @param pushToken
+	 * @param pushType
+	 * @param pushEnabled
+	 * @param userAdditionalInformation
+	 * @param type
+	 * @param deviceVersion
+	 * @param referer
+	 * @param authorization
+	 */
+	subscribeDevice = (
 		pushToken, pushType, pushEnabled,
 		userAdditionalInformation, type, deviceVersion,
 		referer, authorization,
@@ -144,23 +201,18 @@ export default class App extends React.Component {
 		// Check registration in local storage
 		const storedDeviceInformation = localStorage.getItem("deviceInformation");
 		if(storedDeviceInformation === storeIntoLocalStorage) {
+			// Create cookie if it doesn't exist already (and the persistDeviceBetweenDomain setting is used)
+			if(this.state.persistDeviceBetweenDomain && !this.getDeviceIdentificationCookie()) {
+				this.createDeviceIdentificationCookie(
+					this.state.deviceIdentification,
+					this.state.persistDeviceBetweenDomain,
+				);
+			}
+
 			Logger.debug("Found same device information from localStorage, using that instead of registering a new device");
 			this.Api.deviceRegistered = true;
 			return; // No need to call the API if we don't have any new data
 		}
-
-		// TODO: Will this cause problems if we call the first one with INVALID data
-		//  and the second one with VALID data? Because the second one will be ignored..
-		//  Maybe we should queue these, so that if the first one is done
-		//  the second one will have to go through the check above to see if
-		//  it has NEW data or the SAME data?
-		// We don't want to make multiple API calls
-		// if one of them is slow for some reason
-		if(this.isRegisteringDevice) {
-			Logger.debug("Ignoring this device registration call, because another one is still running");
-			return;
-		}
-		this.isRegisteringDevice = true; // Lock this function, so it won't run again while we are registering
 
 		this.Api.subscribeDevice(
 			pushToken,
@@ -176,13 +228,19 @@ export default class App extends React.Component {
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
+				// Also save registration in the device identification cookie
+				// (if the persistDeviceBetweenDomain setting is used)
+				if(this.state.persistDeviceBetweenDomain) {
+					this.createDeviceIdentificationCookie(
+						this.state.deviceIdentification,
+						this.state.persistDeviceBetweenDomain,
+					);
+				}
+
 				Logger.debug("Device registered, ", {
 					accountIdentification: this.Api.accountIdentification,
 					deviceIdentification: this.Api.deviceIdentification,
 				});
-			})
-			.finally(() => {
-				this.isRegisteringDevice = false; // Unlock this function, so it can be called again
 			});
 	}
 
@@ -197,17 +255,16 @@ export default class App extends React.Component {
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification
 			|| nextState.deviceIdentification !== this.state.deviceIdentification
-			|| nextState.cookieDomain !== this.state.cookieDomain
+			|| nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain
 		) {
 			if(nextState.accountIdentification !== this.state.accountIdentification)
 				Logger.debug("Account identification changed, registering new device");
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, registering new device");
-			if(nextState.cookieDomain !== this.state.cookieDomain)
+			if(nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain)
 				Logger.debug("Cookie domain changed, registering new device");
 
-			// Remove old cookie containing the (old) device identification
-			document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${this.state.cookieDomain}`;
+			this.removeDeviceIdentificationCookie(this.state.persistDeviceBetweenDomain);
 
 			// Remove old device info, otherwise we cannot create a new one with the same info
 			localStorage.removeItem("deviceInformation");
@@ -222,7 +279,7 @@ export default class App extends React.Component {
 				ApiEventTarget,
 			);
 			this.PollingService = new PollingService(this.Api);
-			this.subscribeDeviceWrapper(
+			this.subscribeDevice(
 				undefined,
 				undefined,
 				undefined,
@@ -245,7 +302,7 @@ export default class App extends React.Component {
 			if(nextState.userAdditionalInformation !== this.state.userAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
 
-			this.subscribeDeviceWrapper(
+			this.subscribeDevice(
 				undefined,
 				undefined,
 				undefined,
@@ -275,7 +332,6 @@ export default class App extends React.Component {
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -289,7 +345,6 @@ export default class App extends React.Component {
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
-		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -438,8 +493,8 @@ export default class App extends React.Component {
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
-		} else if(path[layer0] === "cookieDomain") {
-			objectToSaveIntoState = {cookieDomain: value};
+		} else if(path[layer0] === "persistDeviceBetweenDomain") {
+			objectToSaveIntoState = {persistDeviceBetweenDomain: value};
 		}
 
 		if(objectToSaveIntoState) {
@@ -471,7 +526,7 @@ export default class App extends React.Component {
 		this.setState(() => ({showChat: true}));
 
 		// Try to re-register the device if it is not yet registered
-		this.subscribeDeviceWrapper(
+		this.subscribeDevice(
 			undefined,
 			undefined,
 			undefined,
@@ -514,15 +569,6 @@ export default class App extends React.Component {
 		// Show the chat when we received a new message
 		if(!this.state.showChat && foundNewMessages)
 			this.showChat();
-	}
-
-	handleSubscribe = (event) => {
-		// We don't want to do this the api returned errors
-		if(event.detail.errorNotifications)
-			return;
-
-		// Create a new cookie (or override existing) containing the (new) device identification
-		document.cookie = `deviceIdentification=${this.state.deviceIdentification}; path=/; Domain=${this.state.cookieDomain}`;
 	}
 
 	checkWorkingHours = () => {
