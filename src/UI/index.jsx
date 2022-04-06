@@ -5,4 +5,10 @@ import App from "./App";
 const mountNode = document.getElementById("app");
 const app = <App />;
 
-ReactDOM.render(app, mountNode);
+window.startParleyMessenger = () => {
+	ReactDOM.render(app, mountNode);
+};
+
+window.removeParleyMessenger = () => {
+	ReactDOM.unmountComponentAtNode(mountNode);
+};

@@ -1,7 +1,10 @@
 {
 	"plugins": {
 		"postcss-modules": {
-			"generateScopedName": "_[name]__[local]"
+			"generateScopedName": "_parleyMessenger__[local]",
+			"globalModulePaths": [
+				"index.html"
+			]
 		},
 		"autoprefixer": {},
 		"postcss-reporter": {

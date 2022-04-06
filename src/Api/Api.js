@@ -24,15 +24,15 @@ import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 
 
 export default class Api {
-	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget) {
+	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, storagePrefix) {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
-
 		this.setDomain(apiDomain);
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
 		this.eventTarget = apiEventTarget;
+		this.storagePrefix = storagePrefix || "parley_";
 	}
 
 	setDomain(apiDomain) {
@@ -54,6 +54,20 @@ export default class Api {
 		this.deviceIdentification = deviceIdentification;
 	}
 
+	/**
+	 * Subscribes this device in the API so it is allowed to send/receive messages
+	 * If the device is already subscribed, it returns `false`
+	 * Otherwise it will return a `Promise` which will contain the API response
+	 *
+	 * @param pushToken
+	 * @param pushType
+	 * @param pushEnabled
+	 * @param userAdditionalInformation
+	 * @param type
+	 * @param version
+	 * @param referer
+	 * @return {Promise<unknown>|boolean}
+	 */
 	subscribeDevice(
 		pushToken,
 		pushType,
@@ -68,7 +82,7 @@ export default class Api {
 		ow(pushType, "pushType", ow.optional.number.oneOf(Object.values(PushTypes)));
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		if(pushEnabled === true) {
-			// Somehow `message()` doesn't work with `nonEmpty`
+			// Somehow `.message()` doesn't work with `nonEmpty`
 			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
@@ -78,26 +92,37 @@ export default class Api {
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
+		// If the referer isn't set, set it to the window's url
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
+		const body = JSON.stringify({
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version,
+			referer: refererCopy,
+		});
+
+		// Check registration in local storage
+		const storedDeviceInformation = localStorage.getItem(`${this.storagePrefix}deviceInformation`);
+		if(storedDeviceInformation === body)
+			return false; // No need to call the API if we don't have any new data
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
-			body: JSON.stringify({
-				pushToken,
-				pushType,
-				pushEnabled,
-				userAdditionalInformation,
-				type,
-				version,
-				referer: refererCopy,
-			}),
+			body,
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
+
+				// Save registration in local storage
+				localStorage.setItem(`${this.storagePrefix}deviceInformation`, body);
+
 				return data;
 			});
 	}

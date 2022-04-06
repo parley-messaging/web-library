@@ -26,18 +26,25 @@ export default class App extends React.Component {
 
 		this.state = {showChat: false};
 
+		const apiDomain = window?.parleySettings?.apiDomain || API_DOMAIN;
+		const accountIdentification = window?.parleySettings?.roomNumber || API_ACCOUNT_IDENTIFICATION;
+		const deviceIdentification = window?.parleySettings?.xIrisIdentification || API_DEVICE_IDENTIFICATION;
+		const userAdditionalInformation = window?.parleySettings?.userAdditionalInformation || undefined;
+		const storagePrefix = window?.parleySettings?.storagePrefix || undefined;
+
 		this.Api = new Api(
-			API_DOMAIN,
-			API_ACCOUNT_IDENTIFICATION,
-			API_DEVICE_IDENTIFICATION,
+			apiDomain,
+			accountIdentification,
+			deviceIdentification,
 			ApiEventTarget,
+			storagePrefix,
 		);
 		this.PollingService = new PollingService(this.Api);
 		this.Api.subscribeDevice(
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			userAdditionalInformation,
 			DeviceTypes.Web,
 			version,
 		);

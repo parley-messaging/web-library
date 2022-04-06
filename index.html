@@ -3,14 +3,16 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport"
-			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<!-- Strict CSP (for testing CSP support) -->
-	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
-	<!---->
+	<title>Messenger Demo</title>
 
-	<title>Document</title>
+	<!-- Load external libraries first -->
+	<link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- END -->
+
+	<title>Parley messenger</title>
 	<style>
 		:root {
 			--mobile-height: 1vh;
@@ -48,9 +50,147 @@
 			--shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 		}
 	</style>
+	<style>
+		html,
+		body {
+			width: 100%;
+			height: 100%;
+			min-height: 100%;
+			padding: 0;
+			margin: 0;
+		}
+
+		.hide-untill-start {
+			display: none;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		#loginContainer {
+			width: 20em;
+			padding: 1em;
+		}
+
+		#loginContainer > div {
+			margin-bottom: 1em;
+		}
+
+		#loginContainer * > button {
+			margin-top: 0.5em;
+		}
+
+		#startChatOptions *,
+		#loginOptions * {
+			margin-bottom: 0;
+		}
+
+		#loginOptions > form {
+			display: inline;
+		}
+
+		#toggleOptions.right {
+			position: fixed;
+			top: 8em;
+			left: 20em;
+		}
+
+		#toggleOptions.left {
+			position: fixed;
+			top: 8em;
+			left: 0;
+		}
+
+		#toggleOptionsButton {
+			width: 1em;
+			height: 8em;
+			padding: 0.15em 0;
+			border-radius: 0 0.25em 0.25em 0;
+		}
+
+		#userAdditionalInformationError {
+			color: red;
+		}
+
+		.btn.btn-primary,
+		.btn.btn-primary:hover,
+		.btn.btn-primary:disabled {
+			background-color: var(--nav-background-color);
+		}
+
+		.btn {
+			border: none !important;
+		}
+	</style>
 </head>
 <body>
+<iframe width="0" height="0" class="hidden" name="dummyframe" id="dummyframe"></iframe>
+
+<section id="loginContainer">
+	<div id="startChatOptions">
+		<form id="startChatOptionsForm" action="#" target="dummyframe" autocomplete="on">
+			<div class="form-group">
+				<label for="accountId">Account Identification</label>
+				<input type="text" id="accountId" class="form-control" placeholder="identification" required/>
+			</div>
+			<div class="form-group">
+				<label for="deviceId">Device Identification</label>
+				<input type="text" id="deviceId" class="form-control" placeholder="device identification" required/>
+			</div>
+			<div class="form-group">
+				<label for="apiDomain">Api Domain</label>
+				<input type="text" id="apiDomain" class="form-control" placeholder="api domain"
+				       value="https://api.parley.nu" required/>
+			</div>
+			<div class="form-group">
+				<label for="background">Background</label>
+				<input type="text" id="background" class="form-control" placeholder="background url"
+				       value=""/>
+			</div>
+			<div class="form-group">
+				<label for="language">Language</label>
+				<select id="language" class="custom-select">
+					<option selected value="nl">Nederlands</option>
+					<option value="en">English</option>
+				</select>
+			</div>
+			<button id="startChatOptionsFormSubmitButton" type="submit" class="btn btn-primary">Create chat</button>
+		</form>
+	</div>
+
+	<div id="loginOptions" class="hide-untill-start">
+		<form id="loginOptionsForm" action="#" target="dummyframe" autocomplete="on">
+			<div class="form-group">
+				<label for="authHeader">Auth header</label>
+				<input type="text" id="authHeader" class="form-control" placeholder="auth header" required/>
+			</div>
+			<button id="login" type="submit" class="btn btn-primary">Log in</button>
+		</form>
+		<button id="logout" class="btn btn-danger">Log out</button>
+	</div>
+
+	<div id="additionalInformation" class="hide-untill-start">
+		<form id="additionalInformationForm" action="#" target="dummyframe" autocomplete="off">
+			<div class="form-group">
+				<label for="userAdditionalInformation">User additional information</label>
+				<textarea id="userAdditionalInformation" class="form-control" required rows="3">{"key": "data"}</textarea>
+				<small id="userAdditionalInformationError" class="hidden"></small>
+			</div>
+			<button id="setUserAdditionalInformation" type="submit" class="btn btn-primary">Synchronize data</button>
+		</form>
+	</div>
+</section>
+
+<div id="toggleOptions" class="right">
+	<button  class="btn btn-primary" id="toggleOptionsButton"><</button>
+</div>
+
+<!-- Load the actual chat widget -->
 <div id="app"></div>
 <script src="src/UI/index.jsx" type="module"></script>
+<!-- END -->
+
+<script src="index.js" type="module"></script>
 </body>
 </html>
