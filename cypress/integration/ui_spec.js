@@ -860,32 +860,34 @@ describe("UI", () => {
 
 				visitHome(parleyConfig);
 
-				clickOnLauncher();
-
 				cy.intercept("POST", "*/**/devices").as("postDevices");
 				cy.intercept("GET", "*/**/messages").as("getMessages");
 
-				cy.window()
+				clickOnLauncher();
+
+				// Check if the cookie is set after registration
+				cy.wait("@postDevices")
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+					})
+
+					// Update the parleySettings and check if the cookie updated as well (after new registration)
+					.then(cy.window)
 					.then((win) => {
 						// eslint-disable-next-line no-param-reassign
 						win.parleySettings.persistDeviceBetweenDomain = newpersistDeviceBetweenDomain;
-
-						return cy.wait("@postDevices")
-							.then(() => {
-								return cy.wait("@getMessages");
-							})
-							.then(() => {
-								// eslint-disable-next-line cypress/no-unnecessary-waiting
-								return cy.wait(1000);
-							})
-							.then(() => {
-								return cy.getCookies()
-									.should("have.length", 1)
-									.then((cookies) => {
-										expect(cookies[0]).to.have.property("name", `deviceIdentification`);
-										expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
-									});
-							});
+					})
+					.then(() => cy.wait("@postDevices"))
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
 					});
 			});
 
