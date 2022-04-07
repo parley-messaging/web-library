@@ -75,8 +75,6 @@ export default class App extends React.Component {
 		);
 		this.PollingService = new PollingService(this.Api);
 
-		Logger.debug("App started, registering device");
-
 		// Make sure layers to proxy exist
 		window.parleySettings
 			= window.parleySettings ? window.parleySettings : {};
@@ -91,6 +89,8 @@ export default class App extends React.Component {
 		// Global functions
 		window.hideParleyMessenger = this.hideChat;
 		window.showParleyMessenger = this.showChat;
+
+		Logger.debug("App initialized");
 	}
 
 	/**
@@ -521,7 +521,7 @@ export default class App extends React.Component {
 	}
 
 	showChat = () => {
-		Logger.debug("Show chat, re-registering device");
+		Logger.debug("Show chat, registering device");
 
 		this.setState(() => ({showChat: true}));
 
