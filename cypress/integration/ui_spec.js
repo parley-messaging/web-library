@@ -824,7 +824,10 @@ describe("UI", () => {
 				Cypress.Cookies.debug(true);
 			});
 			it("should create a cookie, containing the deviceIdentification and with the persistDeviceBetweenDomain as domain, upon opening the chat", () => {
-				const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
+				const parleyConfig = {
+					persistDeviceBetweenDomain: "parley.nu",
+					xIrisIdentification: "12345678910",
+				};
 
 				cy.intercept("POST", "*/**/devices").as("postDevices");
 				cy.intercept("GET", "*/**/messages").as("getMessages");
@@ -841,7 +844,9 @@ describe("UI", () => {
 						return cy.getCookies()
 							.should("have.length", 1)
 							.then((cookies) => {
+								expect(cookies[0]).to.have.property("name", `deviceIdentification`);
 								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+								expect(cookies[0]).to.have.property("value", `${parleyConfig.xIrisIdentification}`);
 							});
 					});
 			});
@@ -877,6 +882,7 @@ describe("UI", () => {
 								return cy.getCookies()
 									.should("have.length", 1)
 									.then((cookies) => {
+										expect(cookies[0]).to.have.property("name", `deviceIdentification`);
 										expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
 									});
 							});
