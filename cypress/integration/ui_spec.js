@@ -897,10 +897,14 @@ describe("UI", () => {
 					// We can't let the library do this because somehow that cookie always gets removed
 					// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
 					// I think because the cookie is not created in the `before()` but in an `it()`
-					cy.setCookie("deviceIdentification", "some-device-identification-string", {
+					const deviceIdentification = "some-device-identification-string";
+					cy.setCookie("deviceIdentification", deviceIdentification, {
 						domain: ".parley.nu",
 						path: "/",
 					});
+
+					// Make the device identification accessible by the tests
+					cy.wrap(deviceIdentification).as("deviceIdentification");
 				});
 
 				it("should use the value, in the cookie, as it's initial device identification", () => {
@@ -913,17 +917,15 @@ describe("UI", () => {
 
 					cy.intercept("GET", "*/**/messages").as("getMessages");
 
-					cy.getCookie("deviceIdentification")
-						.then((cookie) => {
-							const deviceIdentificationFromCookie = cookie.value;
+					clickOnLauncher(); // Start the device registration
 
-							clickOnLauncher(); // Start the device registration
-
-							// We know that if we start retrieving messages,
-							// the device registration is completely finished
-							// meaning that the cookie has been updated
-							cy.wait("@getMessages")
-								.then((interception) => {
+					// We know that if we start retrieving messages,
+					// the device registration is completely finished
+					// meaning that the cookie has been updated
+					cy.wait("@getMessages")
+						.then((interception) => {
+							return cy.get("@deviceIdentification")
+								.then((deviceIdentificationFromCookie) => {
 									expect(interception.request.headers).to.have.property("x-iris-identification", `${defaultParleyConfig.roomNumber}:${deviceIdentificationFromCookie}`);
 								});
 						});
