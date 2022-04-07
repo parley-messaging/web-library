@@ -16,7 +16,7 @@ const config = {
 	type: Web,
 	version: "010000",
 	message: "test message",
-	referer: "weblib-v2_cypress-test",
+	referrer: "weblib-v2_cypress-test",
 };
 const primitiveTypes = [
 	{
@@ -289,7 +289,7 @@ describe("Api class", () => {
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -303,7 +303,7 @@ describe("Api class", () => {
 					config.version,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
@@ -319,7 +319,7 @@ describe("Api class", () => {
 					config.userAdditionalInformation,
 					config.type,
 					config.version,
-					config.referer,
+					config.referrer,
 					set.value,
 				))
 					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
@@ -389,7 +389,7 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -398,7 +398,7 @@ describe("Api class", () => {
 					config.message,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 

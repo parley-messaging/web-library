@@ -87,7 +87,7 @@
 		"eslint-plugin-no-only-tests": "^2.6.0",
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-unused-imports": "^1.1.2",
-		"parcel": "2.0.0-nightly.776",
+		"parcel": "^2.0.0-nightly.776",
 		"postcss": "^8.3.5",
 		"postcss-reporter": "^7.0.2",
 		"stylelint": "^13.13.1",

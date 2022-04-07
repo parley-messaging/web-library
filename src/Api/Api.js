@@ -61,7 +61,7 @@ export default class Api {
 		userAdditionalInformation,
 		type,
 		version,
-		referer,
+		referrer,
 		authorization,
 	) {
 		// Validate params
@@ -77,12 +77,12 @@ export default class Api {
 		ow(version, "version", ow.string.minLength(DeviceVersionMinLength));
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
-		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(referrer, "referrer", ow.optional.string.nonEmpty);
 		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
-		let refererCopy = referer;
-		if(!refererCopy)
-			refererCopy = window.location.href;
+		let referrerCopy = referrer;
+		if(!referrerCopy)
+			referrerCopy = window.location.href;
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -97,7 +97,7 @@ export default class Api {
 				userAdditionalInformation,
 				type,
 				version,
-				referer: refererCopy,
+				referer: referrerCopy,
 			}),
 		})
 			.then((data) => {
@@ -113,13 +113,13 @@ export default class Api {
 			});
 	}
 
-	sendMessage(message, referer) {
+	sendMessage(message, referrer) {
 		ow(message, "message", ow.string.nonEmpty);
-		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(referrer, "referrer", ow.optional.string.nonEmpty);
 
-		let refererCopy = referer;
-		if(!refererCopy)
-			refererCopy = window.location.href;
+		let referrerCopy = referrer;
+		if(!referrerCopy)
+			referrerCopy = window.location.href;
 
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
@@ -127,7 +127,7 @@ export default class Api {
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
 				message,
-				referer: refererCopy,
+				referer: referrerCopy,
 			}),
 		})
 			.then((data) => {
