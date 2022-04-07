@@ -75,7 +75,7 @@ export default class PollingService {
 	}
 
 	handleSubscribe = (event) => {
-		// We don't want to do this the api returned errors
+		// We don't want to start polling for messages when the subscribe-call returned errors
 		if(event.detail.errorNotifications)
 			return;
 
