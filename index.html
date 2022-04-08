@@ -7,7 +7,7 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<!-- Strict CSP (for testing CSP support) -->
-<!--	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">-->
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
 	<!---->
 
 	<title>Document</title>
@@ -53,6 +53,10 @@
 </head>
 <body>
 <div id="app"></div>
-<script onload="window.initParleyMessenger()" src="src/UI/index.jsx" type="module"></script>
+<script src="src/UI/index.jsx" type="module"></script>
+
+<!-- We need a separate startup script (to initialize the chat once the code is loaded)
+     because the CSP blocks any inline scripts -->
+<script src="index.js"></script>
 </body>
 </html>
