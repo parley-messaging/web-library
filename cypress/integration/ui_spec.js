@@ -68,7 +68,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.find("[class^=error__]")
 				.should("be.visible")
-				.should("have.text", "The API request failed but the API did not return an error notification");
+				.should("have.text", "Something went wrong, please try again later");
 		});
 
 		it("should show the `serviceUnreachableNotification` error when the fetch request fails", () => {
