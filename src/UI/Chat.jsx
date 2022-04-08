@@ -103,7 +103,7 @@ class Chat extends Component {
 
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	handleMessageSent = (event) => {
