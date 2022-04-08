@@ -177,7 +177,6 @@ function fetchWrapper(url, options) {
 
 						reject(errorNotifications, warningNotifications);
 					} else {
-						// eslint-disable-next-line prefer-promise-reject-errors
 						reject([ApiGenericError], []);
 					}
 				} else {
@@ -185,7 +184,6 @@ function fetchWrapper(url, options) {
 				}
 			})
 			.catch(() => {
-				// eslint-disable-next-line prefer-promise-reject-errors
 				reject([ApiFetchFailed], []);
 			}); // Reject with generic error message
 	});
