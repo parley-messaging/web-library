@@ -46,11 +46,27 @@ function findMessage(testMessage) {
 		.should("be.visible");
 }
 
-afterEach(() => {
+beforeEach(() => {
+	console.log("");
+	console.log(`=== BEGIN ${Cypress.currentTest.title} ===`);
+	console.log("");
+
+	// This should not go in afterEach,
+	// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
 	cy.window()
 		.then((window) => {
-			window.destroyParleyMessenger();
+			if(window.destroyParleyMessenger)
+				window.destroyParleyMessenger();
+		})
+		.then(() => {
+			return cy.clearLocalStorage();
 		});
+});
+
+afterEach(() => {
+	console.log("");
+	console.log(`=== END ${Cypress.currentTest.title} ===`);
+	console.log("");
 });
 
 describe("UI", () => {
@@ -777,6 +793,7 @@ describe("UI", () => {
 			it("should update the custom headers during runtime", () => {
 				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
 				const newCustomHeader = {"x-custom-3": "2"};
+
 				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
@@ -790,10 +807,128 @@ describe("UI", () => {
 
 				cy.intercept("POST", "*/**/devices").as("postDevices");
 
+				// We have to clear the local storage after the first registration
+				// otherwise there won't be another POST /devices call because
+				// the device information in the storage is the same as current
+				cy.clearLocalStorage()
+					.then(clickOnLauncher)
+					.then(() => {
+						return cy.wait("@postDevices").then((interception) => {
+							expect(interception.request.headers).to.include(newCustomHeader);
+						});
+					});
+			});
+		});
+		describe("persistDeviceBetweenDomain", () => {
+			beforeEach(() => {
+				Cypress.Cookies.debug(true);
+			});
+			it("should create a cookie, containing the deviceIdentification and with the persistDeviceBetweenDomain as domain, upon opening the chat", () => {
+				const parleyConfig = {
+					persistDeviceBetweenDomain: "parley.nu",
+					xIrisIdentification: "12345678910",
+				};
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				visitHome(parleyConfig);
+
 				clickOnLauncher();
 
-				cy.wait("@postDevices").then((interception) => {
-					expect(interception.request.headers).to.include(newCustomHeader);
+				cy.wait("@postDevices")
+					.then(() => {
+						return cy.wait("@getMessages");
+					})
+					.then(() => {
+						return cy.getCookies()
+							.should("have.length", 1)
+							.then((cookies) => {
+								expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+								expect(cookies[0]).to.have.property("value", `${parleyConfig.xIrisIdentification}`);
+							});
+					});
+			});
+			it("should update the persistDeviceBetweenDomain during runtime", () => {
+				const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
+
+				// We can only use valid subdomain(s) here, otherwise the cookie
+				// will not be visible for the domain we are currently running
+				// the chat on...
+				const newpersistDeviceBetweenDomain = "chat-dev.parley.nu";
+
+				visitHome(parleyConfig);
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				clickOnLauncher();
+
+				// Check if the cookie is set after registration
+				cy.wait("@postDevices")
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+					})
+
+					// Update the parleySettings and check if the cookie updated as well (after new registration)
+					.then(cy.window)
+					.then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.persistDeviceBetweenDomain = newpersistDeviceBetweenDomain;
+					})
+					.then(() => cy.wait("@postDevices"))
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
+					});
+			});
+
+			describe("switching between domains", () => {
+				before(() => {
+					// Set the cookie to be used by the test
+					// We can't let the library do this because somehow that cookie always gets removed
+					// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
+					// I think because the cookie is not created in the `before()` but in an `it()`
+					const deviceIdentification = "some-device-identification-string";
+					cy.setCookie("deviceIdentification", deviceIdentification, {
+						domain: ".parley.nu",
+						path: "/",
+					});
+
+					// Make the device identification accessible by the tests
+					cy.wrap(deviceIdentification).as("deviceIdentification");
+				});
+
+				it("should use the value, in the cookie, as it's initial device identification", () => {
+					const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]").as("app");
+					cy.waitFor("@app");
+
+					cy.intercept("GET", "*/**/messages").as("getMessages");
+
+					clickOnLauncher(); // Start the device registration
+
+					// We know that if we start retrieving messages,
+					// the device registration is completely finished
+					// meaning that the cookie has been updated
+					cy.wait("@getMessages")
+						.then((interception) => {
+							return cy.get("@deviceIdentification")
+								.then((deviceIdentificationFromCookie) => {
+									expect(interception.request.headers).to.have.property("x-iris-identification", `${defaultParleyConfig.roomNumber}:${deviceIdentificationFromCookie}`);
+								});
+						});
 				});
 			});
 		});

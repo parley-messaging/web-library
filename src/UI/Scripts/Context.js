@@ -1,14 +1,20 @@
 import React from "react";
 import {v4 as uuidv4} from "uuid";
 
+/**
+ * Default options for the Api module
+ */
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
-	deviceIdentification: JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification || uuidv4(),
+	deviceIdentification: uuidv4(),
 	apiDomain: "https://api.parley.nu",
 	autHeader: undefined,
 };
 
+/**
+ * Default texts for the UI
+ */
 export const InterfaceTexts = {
 	english: {
 		// New in v2

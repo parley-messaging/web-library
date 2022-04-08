@@ -68,11 +68,28 @@ Some headers are not allowed to be overridden:
 - Headers beginning with prefix "x-parley-"
 - Headers beginning with prefix "x-iris-"
 
-This setting is reactive: It automatically merges* any changes, during runtime, with the previous values
+⚡ This setting is reactive: It automatically merges* any changes, during runtime, with the previous values  
 _* = Because it **merges** the previous values with the new values, it is not possible te remove values. This might change in the future_
 
 ## Using the `userAdditionalInformation` setting
 TODO: Explain the setting
 
-This setting is reactive: It automatically merges* any changes, during runtime, with the previous values
+⚡ This setting is reactive: It automatically merges* any changes, during runtime, with the previous values  
 _* = Because it **merges** the previous values with the new values, it is not possible te remove values. This might change in the future_
+
+## Using the `persistDeviceBetweenDomain` setting
+When this setting is enabled, the library will create a cookie upon successfully registering the device.
+This cookie will have the current `deviceIdentification` as it's value and the `persistDeviceBetweenDomain` as it's `domain`.
+This way you can deploy the library on 2 different subdomains, but keep the same (anonymous) chat on both 
+(instead of having a new device registration, and thus a new chat, on the second subdomain).
+
+Here is an example:
+Let's say we have 2 domains: `domainA.example.com` and `domainB.example.com`
+We want our anonymous users to be able to start a chat on `domainA` and continue their chat on `domainB`.
+Currently, this won't work because the device information is stored in the localStorage which does not get shared between subdomains.
+If you set the `persistDeviceBetweenDomain` to `example.com`, and start a chat, your `deviceIdentification` will now be saved in a cookie
+that is readable by all subdomains. After starting a chat on `domainA`, you can navigate to `domainB` and the chat will
+recognize that there is a cookie and use the `deviceIdentification` stored in there.
+
+⚡ This setting is reactive: After changing this during runtime, a new device registration is created and the existing
+cookie will be overridden with the new `deviceIdentification` (if there is a new one)
