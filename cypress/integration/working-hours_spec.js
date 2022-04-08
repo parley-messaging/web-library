@@ -104,6 +104,60 @@ describe("Working hours script", () => {
 					],
 				])).to.be.equal(true);
 			});
+			it("should return false when office hours are not numbers", () => {
+				const startDate = new Date();
+
+				expect(areWeOnline([
+					[
+						weekdays[startDate.getDay()],
+						"a.aa",
+						"b.bb",
+					],
+				])).to.be.equal(false);
+			});
+			describe("format 2x [\"DayOfTheWeek\", startTime, endTime]", () => {
+				it("should return false while outside office hours", () => {
+					const startDate1 = getTimeInPast(60);
+					const endDate1 = getTimeInPast(10);
+					const [
+						startTimeFormatted1, endTimeFormatted1,
+					] = createFormattedWeekday(startDate1, endDate1);
+
+					const startDate2 = getTimeInPast(60);
+					const endDate2 = getTimeInPast(10);
+					const [
+						startTimeFormatted2, endTimeFormatted2,
+					] = createFormattedWeekday(startDate2, endDate2);
+
+					expect(areWeOnline([
+						[
+							weekdays[startDate1.getDay()],
+							startTimeFormatted1,
+							endTimeFormatted1,
+						],
+						[
+							weekdays[startDate2.getDay() + 1],
+							startTimeFormatted2,
+							endTimeFormatted2,
+						],
+					])).to.be.equal(false);
+				});
+				it("should return true while inside office hours", () => {
+					const startDate = getTimeInPast(60);
+					const endDate = getTimeInFuture(10);
+					const [
+						startTimeFormatted, endTimeFormatted,
+					] = createFormattedWeekday(startDate, endDate);
+
+					expect(areWeOnline([
+						[
+							weekdays[startDate.getDay()],
+							startTimeFormatted,
+							endTimeFormatted,
+						],
+					])).to.be.equal(true);
+				});
+			});
 		});
 		describe("format [\"DayOfTheWeek\", startTime, endTime, openOrClosed]", () => {
 			it("should return false while outside OPEN office hours", () => {
