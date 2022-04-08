@@ -345,7 +345,7 @@ export default class App extends React.Component {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
-		eventData.detail.data.forEach((message) => {
+		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
 				foundNewMessages = true;
