@@ -13,7 +13,8 @@
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 index.html",
 		"build": "npx parcel build --target ui index.html",
 		"test:open": "./bin/start_cypress.sh",
-		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'"
+		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'",
+		"test:coverage:host": "npx light-server -s ./coverage/lcov-report/ -w \"./coverage/lcov-report/**\" -b 127.0.0.1 -o"
 	},
 	"repository": {
 		"type": "git",
@@ -87,6 +88,7 @@
 		"eslint-plugin-no-only-tests": "^2.6.0",
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-unused-imports": "^1.1.2",
+		"light-server": "^2.9.1",
 		"parcel": "^2.0.0-nightly.776",
 		"postcss": "^8.3.5",
 		"postcss-reporter": "^7.0.2",
