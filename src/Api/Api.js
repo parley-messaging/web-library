@@ -156,7 +156,7 @@ export default class Api {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
 					errorNotifications,
 					warningNotifications,
-					data: [],
+					data: null,
 				}));
 			});
 	}
