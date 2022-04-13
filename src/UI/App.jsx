@@ -59,6 +59,7 @@ export default class App extends React.Component {
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 		};
 
 		this.Api = new Api(
@@ -66,7 +67,7 @@ export default class App extends React.Component {
 			this.state.accountIdentification,
 			this.state.deviceIdentification,
 			ApiEventTarget,
-			storagePrefix,
+			this.state.storagePrefix,
 		);
 		this.PollingService = new PollingService(this.Api);
 		this.Api.subscribeDevice(
