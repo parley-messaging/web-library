@@ -91,17 +91,16 @@ function handleDays(days, currentDate) {
 	if(currentDate.getMinutes() < ten)
 		currentTimeFormatted = parseFloat(`${currentDate.getHours()}.0${currentDate.getMinutes()}`);
 
-	const indexForDayStartTime = 1;
-	const indexForDayEndTime = 2;
-	const indexForDayBool = 3;
-
 	let isOnline = null;
 	for(let i = 0; i < days.length; i++) {
 		const dayInfo = days[i];
-		const day = dayInfo[0];
-		const startTime = parseFloat(dayInfo[indexForDayStartTime]);
-		const endTime = parseFloat(dayInfo[indexForDayEndTime]);
-		const isOpen = dayInfo[indexForDayBool] === undefined ? true : dayInfo[indexForDayBool]; // Whether we are open (true) or closed (false) in this period
+
+		let [
+			day, startTime, endTime, isOpen,
+		] = dayInfo;
+		startTime = parseFloat(startTime);
+		endTime = parseFloat(endTime);
+		isOpen = isOpen === undefined ? true : isOpen; // Whether we are open (true) or closed (false) in this period
 
 		if(day.toLowerCase() !== currentDay) { // Ignore days which are not today
 			continue;
