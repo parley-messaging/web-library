@@ -16,6 +16,7 @@ const config = {
 	type: Web,
 	version: "010000",
 	message: "test message",
+	storagePrefix: "customPrefix_",
 };
 const primitiveTypes = [
 	{
@@ -59,6 +60,7 @@ describe("Api class", () => {
 			config.accountIdentification,
 			config.deviceIdentification,
 			ApiEventTarget,
+			config.storagePrefix,
 		);
 
 		// Intercept api calls and respond with a static response
@@ -80,10 +82,22 @@ describe("Api class", () => {
 			expect(config.api.accountIdentification).to.be.equal(config.accountIdentification);
 			expect(config.api.deviceIdentification).to.be.equal(config.deviceIdentification);
 			expect(config.api.eventTarget).to.be.equal(ApiEventTarget);
+			expect(config.api.storagePrefix).to.be.equal(config.storagePrefix);
 		});
 		it("should throw an error when using something other than a EventTarget as apiEventTarget", () => {
 			expect(() => new Api(config.apiDomain, config.accountIdentification, config.deviceIdentification, {}))
 				.to.throw("Expected object `apiEventTarget` `{}` to be of type `EventTarget`");
+		});
+		describe("storagePrefix", () => {
+			it("should default to 'parley_'", () => {
+				const api = new Api(
+					config.apiDomain,
+					config.accountIdentification,
+					config.deviceIdentification,
+					ApiEventTarget,
+				);
+				expect(api.storagePrefix).to.be.equal("parley_");
+			});
 		});
 	});
 

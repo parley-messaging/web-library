@@ -66,6 +66,7 @@ export default class App extends React.Component {
 			this.state.accountIdentification,
 			this.state.deviceIdentification,
 			ApiEventTarget,
+			storagePrefix,
 		);
 		this.PollingService = new PollingService(this.Api);
 		this.Api.subscribeDevice(
