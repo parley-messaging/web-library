@@ -489,25 +489,25 @@ describe("UI", () => {
 					// Test if it changes during runtime
 					const newWeekdays = [
 						[
-							"Monday", 8.00, 23.30,
+							"Monday", 0.00, 23.59,
 						],
 						[
-							"Tuesday", 8.00, 23.30,
+							"Tuesday", 0.00, 23.59,
 						],
 						[
-							"Wednesday", 8.00, 23.30,
+							"Wednesday", 0.00, 23.59,
 						],
 						[
-							"Thursday", 8.00, 23.30,
+							"Thursday", 0.00, 23.59,
 						],
 						[
-							"Friday", 8.00, 23.30,
+							"Friday", 0.00, 23.59,
 						],
 						[
-							"Saturday", 8.00, 23.30,
+							"Saturday", 0.00, 23.59,
 						],
 						[
-							"Sunday", 8.00, 23.30,
+							"Sunday", 0.00, 23.59,
 						],
 					];
 
@@ -554,25 +554,25 @@ describe("UI", () => {
 					// Test if it changes during runtime
 					const newWeekdays = [
 						[
-							"Monday", 8.00, 23.30, true,
+							"Monday", 0.00, 23.59, true,
 						],
 						[
-							"Tuesday", 8.00, 23.30, true,
+							"Tuesday", 0.00, 23.59, true,
 						],
 						[
-							"Wednesday", 8.00, 23.30, true,
+							"Wednesday", 0.00, 23.59, true,
 						],
 						[
-							"Thursday", 8.00, 23.30, true,
+							"Thursday", 0.00, 23.59, true,
 						],
 						[
-							"Friday", 8.00, 23.30, true,
+							"Friday", 0.00, 23.59, true,
 						],
 						[
-							"Saturday", 8.00, 23.30, true,
+							"Saturday", 0.00, 23.59, true,
 						],
 						[
-							"Sunday", 8.00, 23.30, true,
+							"Sunday", 0.00, 23.59, true,
 						],
 					];
 
