@@ -90,18 +90,17 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
 	}
 
-	// eslint-disable-next-line no-unused-vars
-	shouldComponentUpdate(nextProps, nextState, nextContext) {
+	componentDidUpdate(prevProps, prevState, snapshot) {
 		// Toggle interface language if it has changed
-		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
-			this.toggleLanguage(nextState.interfaceLanguage);
+		if(prevState.interfaceLanguage !== this.state.interfaceLanguage)
+			this.toggleLanguage(this.state.interfaceLanguage);
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
-		if(nextState.accountIdentification !== this.state.accountIdentification) {
+		if(prevState.accountIdentification !== this.state.accountIdentification) {
 			this.Api = new Api(
-				nextState.apiDomain,
-				nextState.accountIdentification,
-				nextState.deviceIdentification,
+				this.state.apiDomain,
+				this.state.accountIdentification,
+				this.state.deviceIdentification,
 				ApiEventTarget,
 			);
 			this.PollingService = new PollingService(this.Api);
@@ -109,36 +108,34 @@ export default class App extends React.Component {
 				undefined,
 				undefined,
 				undefined,
-				nextState.userAdditionalInformation,
+				this.state.userAdditionalInformation,
 				DeviceTypes.Web,
 				this.state.deviceVersion,
 				undefined,
-				nextState.deviceAuthorization,
+				this.state.deviceAuthorization,
 			);
 		}
 
 		// Re-register device when deviceAuthorization changes
 		// and when userAdditionalInformation changes
-		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
-			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+		if(prevState.deviceAuthorization !== this.state.deviceAuthorization
+			|| prevState.userAdditionalInformation !== this.state.userAdditionalInformation
 		) {
 			this.Api.subscribeDevice(
 				undefined,
 				undefined,
 				undefined,
-				nextState.userAdditionalInformation || undefined,
+				this.state.userAdditionalInformation || undefined,
 				DeviceTypes.Web,
 				this.state.deviceVersion,
 				undefined,
-				nextState.deviceAuthorization || undefined,
+				this.state.deviceAuthorization || undefined,
 			);
 		}
 
 		// Check working hours when they changed
-		if(nextState.workingHours !== this.state.workingHours)
+		if(prevState.workingHours !== this.state.workingHours)
 			this.checkWorkingHours();
-
-		return true;
 	}
 
 	componentDidMount() {
