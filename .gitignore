@@ -4,9 +4,12 @@
 /.idea/shelf
 # Datasource local storage ignored files
 /.idea/dataSources/
+/.idea/dataSources.xml
 /.idea/dataSources.local.xml
 # Editor-based HTTP Client requests
 /.idea/httpRequests/
+# Phpstorm files for php
+/.idea/php.xml
 
 dist
 lib
