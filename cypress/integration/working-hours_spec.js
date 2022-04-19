@@ -57,6 +57,15 @@ function getTimeInPast(minutes) {
 	return date;
 }
 
+/**
+ * Returns the next day for a specific date object
+ * @param date {Date}
+ * @returns {string}
+ */
+function getNextDay(date) {
+	return weekdays[date.getDay() === (weekdays.length - 1) ? 0 : date.getDay() + 1];
+}
+
 describe("Working hours script", () => {
 	describe("areWeOnline()", () => {
 		it("should return true if office hours are not set", () => {
@@ -136,24 +145,35 @@ describe("Working hours script", () => {
 							endTimeFormatted1,
 						],
 						[
-							weekdays[startDate2.getDay() + 1],
+							getNextDay(startDate2),
 							startTimeFormatted2,
 							endTimeFormatted2,
 						],
 					])).to.be.equal(false);
 				});
 				it("should return true while inside office hours", () => {
-					const startDate = getTimeInPast(60);
-					const endDate = getTimeInFuture(10);
+					const startDate1 = getTimeInPast(60);
+					const endDate1 = getTimeInFuture(10);
 					const [
-						startTimeFormatted, endTimeFormatted,
-					] = createFormattedWeekday(startDate, endDate);
+						startTimeFormatted1, endTimeFormatted1,
+					] = createFormattedWeekday(startDate1, endDate1);
+
+					const startDate2 = getTimeInPast(60);
+					const endDate2 = getTimeInFuture(10);
+					const [
+						startTimeFormatted2, endTimeFormatted2,
+					] = createFormattedWeekday(startDate2, endDate2);
 
 					expect(areWeOnline([
 						[
-							weekdays[startDate.getDay()],
-							startTimeFormatted,
-							endTimeFormatted,
+							weekdays[startDate1.getDay()],
+							startTimeFormatted1,
+							endTimeFormatted1,
+						],
+						[
+							getNextDay(startDate2),
+							startTimeFormatted2,
+							endTimeFormatted2,
 						],
 					])).to.be.equal(true);
 				});

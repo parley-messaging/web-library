@@ -10,6 +10,8 @@
 /.idea/httpRequests/
 # Phpstorm files for php
 /.idea/php.xml
+# Plugins
+/.idea/GitLink.xml
 
 dist
 lib
