@@ -1,7 +1,7 @@
 {
 	"plugins": {
 		"postcss-modules": {
-			"generateScopedName": "_parleyMessenger__[local]",
+			"generateScopedName": "[local]__[contenthash]",
 			"globalModulePaths": [
 				"index.html"
 			]

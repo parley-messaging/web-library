@@ -41,3 +41,23 @@
 	width: calc(var(--mobile-width, 1vw) * 100);
 	height: calc(var(--mobile-height, 1vh) * 100);
 }
+
+.error {
+	width: 100%;
+	padding: 0.25em;
+	background-color: var(--error-background-color, #4A5E83);
+	color: var(--error-text-color, #FFF);
+	text-align: center;
+}
+
+.closeButton {
+	display: block;
+	width: 36px;
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	color: var(--button-label-text-color, #FFF);
+	cursor: pointer;
+	float: right;
+	font-size: 24px;
+}

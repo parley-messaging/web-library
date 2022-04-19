@@ -302,7 +302,7 @@ describe("Api class", () => {
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -316,7 +316,26 @@ describe("Api class", () => {
 					config.version,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as authorization", () => {
+			filterPrimitives([
+				"string",
+				"undefined", // Don't test for undefined, because authorization is optional and if we give undefined it will test for other params next
+			]).forEach((set) => {
+				expect(() => config.api.subscribeDevice(
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					config.version,
+					undefined,
+					set.value,
+				))
+					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
@@ -383,7 +402,7 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -392,7 +411,7 @@ describe("Api class", () => {
 					config.message,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 

@@ -22,7 +22,8 @@
 		"react",
 		"jsx-a11y",
 		"@babel",
-		"cypress"
+		"cypress",
+		"unused-imports"
 	],
 	"rules": {
 		//Possible errors
@@ -99,6 +100,7 @@
 				"enforceForJSX": true
 			}
 		],
+		"unused-imports/no-unused-imports": "error",
 		"no-unused-vars": ["error", {
 			"args": "none"
 		}],
@@ -108,7 +110,6 @@
 		"no-void": "error",
 		"no-warning-comments": "warn",
 		"prefer-named-capture-group": "error",
-		"prefer-promise-reject-errors": "error",
 		"prefer-regex-literals": ["error", {"disallowRedundantWrapping": true}],
 		"radix": ["error", "as-needed"],
 		"require-unicode-regexp": "error",

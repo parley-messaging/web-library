@@ -1,17 +1,19 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./HeaderButton.module.css";
-import {BUTTONMENU, BUTTONMINIMIZE, BUTTONCLOSE} from "../tempConfig.js";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars} from "@fortawesome/free-solid-svg-icons/faBars";
 import {faWindowMinimize} from "@fortawesome/free-regular-svg-icons/faWindowMinimize";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
+import {InterfaceTextsContext} from "../Scripts/Context";
 
 export const menuType = "menu";
 export const minimizeType = "minimize";
 export const closeType = "close";
 
 class HeaderButton extends Component {
+	static contextType = InterfaceTextsContext;
+
 	render() {
 		let icon;
 		let classNames = `${styles.button}`;
@@ -20,15 +22,15 @@ class HeaderButton extends Component {
 		if(this.props.type === menuType) {
 			icon = faBars;
 			classNames += ` ${styles.menu}`;
-			ariaLabel = BUTTONMENU;
+			ariaLabel = this.context.buttonMenu;
 		} else if(this.props.type === minimizeType) {
 			icon = faWindowMinimize;
 			classNames += ` ${styles.minimize}`;
-			ariaLabel = BUTTONMINIMIZE;
+			ariaLabel = this.context.buttonMinimize;
 		} else if(this.props.type === closeType) {
 			icon = faTimes;
 			classNames += ` ${styles.close}`;
-			ariaLabel = BUTTONCLOSE;
+			ariaLabel = this.context.buttonClose;
 		}
 
 		return (

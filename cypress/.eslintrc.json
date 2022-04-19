@@ -1,10 +1,14 @@
 {
 	"extends": "../.eslintrc.json",
+	"plugins": [
+		"no-only-tests"
+	],
 	"rules": {
 		"no-console": "off",
 		"no-magic-numbers": "off",
 		"arrow-body-style": "off",
-		"max-nested-callbacks": "off"
+		"max-nested-callbacks": "off",
+		"no-only-tests/no-only-tests": "error"
 	},
 	"ignorePatterns": ["plugins/index.js", "support/index.js"]
 }
