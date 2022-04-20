@@ -47,7 +47,6 @@
 	background-color: transparent;
 	color: var(--parley-link-color, #4891F5);
 	text-decoration: none;
-	text-decoration-skip: objects;
 }
 
 .user .message {

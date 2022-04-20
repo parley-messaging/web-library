@@ -24,7 +24,7 @@ import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 
 
 export default class Api {
-	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget) {
+	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, storagePrefix) {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
@@ -32,6 +32,7 @@ export default class Api {
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
 		this.eventTarget = apiEventTarget;
+		this.storagePrefix = storagePrefix || "parley_";
 	}
 
 	setDomain(apiDomain) {
@@ -64,7 +65,7 @@ export default class Api {
 	 * @param userAdditionalInformation
 	 * @param type
 	 * @param version
-	 * @param referer
+	 * @param referrer
 	 * @param authorization
 	 * @return {Promise<unknown>|boolean}
 	 */
@@ -75,7 +76,7 @@ export default class Api {
 		userAdditionalInformation,
 		type,
 		version,
-		referer,
+		referrer,
 		authorization,
 	) {
 		// Validate params
@@ -91,35 +92,13 @@ export default class Api {
 		ow(version, "version", ow.string.minLength(DeviceVersionMinLength));
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
-		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(referrer, "referrer", ow.optional.string.nonEmpty);
 		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
 		// If the referer isn't set, set it to the window's url
-		let refererCopy = referer;
-		if(!refererCopy)
-			refererCopy = window.location.href;
-
-		const body = {
-			pushToken,
-			pushType,
-			pushEnabled,
-			userAdditionalInformation,
-			type,
-			version,
-			referer: refererCopy,
-			authorization,
-		};
-
-		const storeIntoLocalStorage = JSON.stringify({
-			...body,
-			accountIdentification: this.accountIdentification,
-			deviceIdentification: this.deviceIdentification,
-		});
-
-		// Check registration in local storage
-		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === storeIntoLocalStorage)
-			return false; // No need to call the API if we don't have any new data
+		let referrerCopy = referrer;
+		if(!referrerCopy)
+			referrerCopy = window.location.href;
 
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
@@ -127,14 +106,18 @@ export default class Api {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 				Authorization: authorization || "",
 			},
-			body: JSON.stringify(body),
+			body: JSON.stringify({
+				pushToken,
+				pushType,
+				pushEnabled,
+				userAdditionalInformation,
+				type,
+				version,
+				referer: referrerCopy,
+			}),
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
-
-				// Save registration in local storage
-				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
-
 				return data;
 			})
 			.catch((errorNotifications, warningNotifications) => {
@@ -146,13 +129,13 @@ export default class Api {
 			});
 	}
 
-	sendMessage(message, referer) {
+	sendMessage(message, referrer) {
 		ow(message, "message", ow.string.nonEmpty);
-		ow(referer, "referer", ow.optional.string.nonEmpty);
+		ow(referrer, "referrer", ow.optional.string.nonEmpty);
 
-		let refererCopy = referer;
-		if(!refererCopy)
-			refererCopy = window.location.href;
+		let referrerCopy = referrer;
+		if(!referrerCopy)
+			referrerCopy = window.location.href;
 
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
@@ -160,7 +143,7 @@ export default class Api {
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
 				message,
-				referer: refererCopy,
+				referer: referrerCopy,
 			}),
 		})
 			.then((data) => {
@@ -189,7 +172,7 @@ export default class Api {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
 					errorNotifications,
 					warningNotifications,
-					data: [],
+					data: null,
 				}));
 			});
 	}
@@ -210,7 +193,6 @@ function fetchWrapper(url, options) {
 
 						reject(errorNotifications, warningNotifications);
 					} else {
-						// eslint-disable-next-line prefer-promise-reject-errors
 						reject([ApiGenericError], []);
 					}
 				} else {
@@ -218,7 +200,6 @@ function fetchWrapper(url, options) {
 				}
 			})
 			.catch(() => {
-				// eslint-disable-next-line prefer-promise-reject-errors
 				reject([ApiFetchFailed], []);
 			}); // Reject with generic error message
 	});

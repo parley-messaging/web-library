@@ -3,11 +3,14 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport"
-			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<title>Messenger</title>
+	<!-- Strict CSP (for testing CSP support) -->
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self';font-src 'self'; script-src 'self'; default-src 'self'">
+	<!---->
 
+	<title>Parley messenger</title>
 	<style>
 		:root {
 			--parley-mobile-height: 1vh;
@@ -45,9 +48,11 @@
 	</style>
 </head>
 <body>
-<!-- Load the actual chat widget -->
 <div id="app"></div>
-<script onload="window.initParleyMessenger()" src="src/UI/index.jsx" type="module"></script>
-<!-- END -->
+<script src="src/UI/index.jsx" type="module"></script>
+
+<!-- We need a separate startup script (to initialize the chat once the code is loaded)
+     because the CSP blocks any inline scripts -->
+<script src="index.js"></script>
 </body>
 </html>

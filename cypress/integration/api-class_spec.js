@@ -16,7 +16,7 @@ const config = {
 	type: Web,
 	version: "010000",
 	message: "test message",
-	referer: "weblib-v2_cypress-test",
+	storagePrefix: "customPrefix_",
 };
 const primitiveTypes = [
 	{
@@ -60,6 +60,7 @@ describe("Api class", () => {
 			config.accountIdentification,
 			config.deviceIdentification,
 			ApiEventTarget,
+			config.storagePrefix,
 		);
 
 		// Intercept api calls and respond with a static response
@@ -81,10 +82,22 @@ describe("Api class", () => {
 			expect(config.api.accountIdentification).to.be.equal(config.accountIdentification);
 			expect(config.api.deviceIdentification).to.be.equal(config.deviceIdentification);
 			expect(config.api.eventTarget).to.be.equal(ApiEventTarget);
+			expect(config.api.storagePrefix).to.be.equal(config.storagePrefix);
 		});
 		it("should throw an error when using something other than a EventTarget as apiEventTarget", () => {
 			expect(() => new Api(config.apiDomain, config.accountIdentification, config.deviceIdentification, {}))
 				.to.throw("Expected object `apiEventTarget` `{}` to be of type `EventTarget`");
+		});
+		describe("storagePrefix", () => {
+			it("should default to 'parley_'", () => {
+				const api = new Api(
+					config.apiDomain,
+					config.accountIdentification,
+					config.deviceIdentification,
+					ApiEventTarget,
+				);
+				expect(api.storagePrefix).to.be.equal("parley_");
+			});
 		});
 	});
 
@@ -289,7 +302,7 @@ describe("Api class", () => {
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -303,23 +316,23 @@ describe("Api class", () => {
 					config.version,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
 		it("should throw an error when using something other than a String as authorization", () => {
 			filterPrimitives([
 				"string",
-				"undefined", // Dont test for undefined, because authorization is optional and if we give undefined it will test for other params next
+				"undefined", // Don't test for undefined, because authorization is optional and if we give undefined it will test for other params next
 			]).forEach((set) => {
 				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					config.userAdditionalInformation,
-					config.type,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
 					config.version,
-					config.referer,
+					undefined,
 					set.value,
 				))
 					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
@@ -400,7 +413,7 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
+		it("should throw an error when using something other than a String as referrer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -409,7 +422,7 @@ describe("Api class", () => {
 					config.message,
 					set.value,
 				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 

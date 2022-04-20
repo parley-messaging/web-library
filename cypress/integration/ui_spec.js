@@ -525,25 +525,25 @@ describe("UI", () => {
 					// Test if it changes during runtime
 					const newWeekdays = [
 						[
-							"Monday", 8.00, 23.30,
+							"Monday", 0.00, 23.59,
 						],
 						[
-							"Tuesday", 8.00, 23.30,
+							"Tuesday", 0.00, 23.59,
 						],
 						[
-							"Wednesday", 8.00, 23.30,
+							"Wednesday", 0.00, 23.59,
 						],
 						[
-							"Thursday", 8.00, 23.30,
+							"Thursday", 0.00, 23.59,
 						],
 						[
-							"Friday", 8.00, 23.30,
+							"Friday", 0.00, 23.59,
 						],
 						[
-							"Saturday", 8.00, 23.30,
+							"Saturday", 0.00, 23.59,
 						],
 						[
-							"Sunday", 8.00, 23.30,
+							"Sunday", 0.00, 23.59,
 						],
 					];
 
@@ -557,7 +557,7 @@ describe("UI", () => {
 					clickOnLauncher();
 				});
 			});
-			describe("format [day, start, end, bool]", () => {
+			describe("format [day, start, end, true]", () => {
 				it("should show we are offline/online outside/inside working hours", () => {
 					const parleyConfig = {
 						weekdays: [ // closed every day
@@ -590,25 +590,90 @@ describe("UI", () => {
 					// Test if it changes during runtime
 					const newWeekdays = [
 						[
-							"Monday", 8.00, 23.30, true,
+							"Monday", 0.00, 23.59, true,
 						],
 						[
-							"Tuesday", 8.00, 23.30, true,
+							"Tuesday", 0.00, 23.59, true,
 						],
 						[
-							"Wednesday", 8.00, 23.30, true,
+							"Wednesday", 0.00, 23.59, true,
 						],
 						[
-							"Thursday", 8.00, 23.30, true,
+							"Thursday", 0.00, 23.59, true,
 						],
 						[
-							"Friday", 8.00, 23.30, true,
+							"Friday", 0.00, 23.59, true,
 						],
 						[
-							"Saturday", 8.00, 23.30, true,
+							"Saturday", 0.00, 23.59, true,
 						],
 						[
-							"Sunday", 8.00, 23.30, true,
+							"Sunday", 0.00, 23.59, true,
+						],
+					];
+
+					cy.window().then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.weekdays = newWeekdays;
+					});
+
+					// Launcher should appear again because we
+					// are inside working hours
+					clickOnLauncher();
+				});
+			});
+			describe("format [day, start, end, false]", () => {
+				it("should show we are offline/online outside/inside working hours", () => {
+					const parleyConfig = {
+						weekdays: [ // closed every day
+							["Monday"],
+							["Tuesday"],
+							["Wednesday"],
+							["Thursday"],
+							["Friday"],
+							["Saturday"],
+							["Sunday"],
+						],
+						interface: {hideChatAfterBusinessHours: true},
+					};
+
+					cy.visit("/", {
+						onBeforeLoad: (win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings = parleyConfig;
+						},
+					});
+
+					cy.get("[id=app]").as("app");
+
+					// Launcher is not rendered because we are offline
+					// and outside working hours
+					cy.get("@app")
+						.get("[class^=launcher__]")
+						.should("not.exist");
+
+					// Test if it changes during runtime
+					const newWeekdays = [
+						[
+							"Monday", 0.00, 0.00, false,
+						],
+						[
+							"Tuesday", 0.00, 0.00, false,
+						],
+						[
+							"Wednesday", 0.00, 0.00, false,
+						],
+						[
+							"Thursday", 0.00, 0.00, false,
+						],
+						[
+							"Friday", 0.00, 0.00, false,
+						],
+						[
+							"Saturday", 0.00, 0.00, false,
+						],
+						[
+							"Sunday", 0.00, 0.00, false,
 						],
 					];
 
