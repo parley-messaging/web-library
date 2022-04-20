@@ -382,40 +382,37 @@ describe("UI", () => {
 
 				cy.wait("@createDevice");
 			});
+			it("should clear the messages when switching accounts", () => {
+				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
-			// TODO: Not sure if we want this or not..
-			// it.only("should clear the messages when switching accounts", () => {
-			// 	const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
-			// 	const testMessage = `test message before switching room numbers ${Date.now()}`;
-			//
-			// 	cy.visit("/", {
-			// 		onBeforeLoad: (win) => {
-			// 			// eslint-disable-next-line no-param-reassign
-			// 			win.parleySettings = parleyConfig;
-			// 		},
-			// 	});
-			//
-			// 	cy.get("[id=app]").as("app");
-			//
-			// 	clickOnLauncher();
-			// 	sendMessage(testMessage);
-			// 	findMessage(testMessage); // Wait until the server received the new message
-			//
-			// 	// Test if it changes during runtime
-			// 	const newAccountIdentification = "1234";
-			//
-			// 	cy.window().then((win) => {
-			// 		// eslint-disable-next-line no-param-reassign
-			// 		win.parleySettings.roomNumber = newAccountIdentification;
-			// 	});
-			//
-			// 	cy.get("@app")
-			// 		.find("[class^=wrapper__]")
-			// 		.should("be.visible")
-			// 		.find("[class^=body__]")
-			// 		.should("be.visible")
-			// 		.should("not.contain", testMessage);
-			// });
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Change the account identification
+				const newAccountIdentification = "0cce5bfcdbf07978b269";
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.roomNumber = newAccountIdentification;
+				});
+
+				cy.get("@app")
+					.find("[class^=wrapper__]")
+					.should("be.visible")
+					.find("[class^=body__]")
+					.should("be.visible")
+					.should("not.contain", testMessage);
+			});
 		});
 		describe("xIrisIdentification", () => {
 			it("should register a new device when switching identifications", () => {

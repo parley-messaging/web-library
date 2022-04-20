@@ -8,6 +8,7 @@ import QuickReplies from "./QuickReplies";
 import Announcement from "./Announcement";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {messages as messagesEvent} from "../Api/Constants/Events";
+import Logger from "js-logger";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -54,9 +55,15 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
+		let messages = eventData.detail.data;
+		if(eventData.detail.errorNotifications?.filter(x => x === "api_key_not_valid" || x === "device_not_registered")) {
+			Logger.debug("Clearing message because the API doesn't allow this device access to the messages");
+			messages = [];
+		}
+
 		this.setState(prevState => ({
 			welcomeMessage: eventData.detail.welcomeMessage,
-			messages: eventData.detail.data || prevState.messages, // Don't allow falsy values to be set as messages
+			messages: messages || prevState.messages, // Don't allow falsy values to be set as messages
 			stickyMessage: eventData.detail.stickyMessage,
 		}));
 	}
