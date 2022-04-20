@@ -54,9 +54,9 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
-		this.setState(() => ({
+		this.setState(prevState => ({
 			welcomeMessage: eventData.detail.welcomeMessage,
-			messages: eventData.detail.data,
+			messages: eventData.detail.data || prevState.messages, // Don't allow falsy values to be set as messages
 			stickyMessage: eventData.detail.stickyMessage,
 		}));
 	}
