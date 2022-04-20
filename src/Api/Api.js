@@ -100,24 +100,42 @@ export default class Api {
 		if(!referrerCopy)
 			referrerCopy = window.location.href;
 
+		const body = {
+			pushToken,
+			pushType,
+			pushEnabled,
+			userAdditionalInformation,
+			type,
+			version,
+			referer: referrerCopy,
+			authorization,
+		};
+
+		const storeIntoLocalStorage = JSON.stringify({
+			...body,
+			accountIdentification: this.accountIdentification,
+			deviceIdentification: this.deviceIdentification,
+		});
+
+		// Check registration in local storage
+		const storedDeviceInformation = localStorage.getItem("deviceInformation");
+		if(storedDeviceInformation === storeIntoLocalStorage)
+			return false; // No need to call the API if we don't have any new data
+
 		return fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {
 				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 				Authorization: authorization || "",
 			},
-			body: JSON.stringify({
-				pushToken,
-				pushType,
-				pushEnabled,
-				userAdditionalInformation,
-				type,
-				version,
-				referer: referrerCopy,
-			}),
+			body: JSON.stringify(body),
 		})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
+
+				// Save registration in local storage
+				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
+
 				return data;
 			})
 			.catch((errorNotifications, warningNotifications) => {
@@ -136,7 +154,6 @@ export default class Api {
 		let referrerCopy = referrer;
 		if(!referrerCopy)
 			referrerCopy = window.location.href;
-
 
 		return fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",

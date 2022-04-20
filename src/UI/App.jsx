@@ -106,10 +106,8 @@ export default class App extends React.Component {
 		if(prevState.accountIdentification !== this.state.accountIdentification
 			|| prevState.deviceIdentification !== this.state.deviceIdentification
 		) {
-			// TODO: Is this still necessary? Taken from release/2.0.0-alpha.1
 			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
 			this.PollingService.stopPolling(); // Make sure we stop otherwise it will poll for the old device info
-			// TODO: End todo above
 
 			this.Api = new Api(
 				this.state.apiDomain,
@@ -129,7 +127,6 @@ export default class App extends React.Component {
 				this.state.deviceAuthorization,
 			);
 
-			// TODO: Is this still necessary? Taken from release/2.0.0-alpha.1
 			this.PollingService.restartPolling();
 		}
 

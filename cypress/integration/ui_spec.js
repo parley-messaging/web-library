@@ -69,7 +69,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.find("[class^=error__]")
 				.should("be.visible")
-				.should("have.text", "The API request failed but the API did not return an error notification");
+				.should("have.text", "Something went wrong, please try again later");
 		});
 
 		it("should show the `serviceUnreachableNotification` error when the fetch request fails", () => {
@@ -382,6 +382,40 @@ describe("UI", () => {
 
 				cy.wait("@createDevice");
 			});
+
+			// TODO: Not sure if we want this or not..
+			// it.only("should clear the messages when switching accounts", () => {
+			// 	const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+			// 	const testMessage = `test message before switching room numbers ${Date.now()}`;
+			//
+			// 	cy.visit("/", {
+			// 		onBeforeLoad: (win) => {
+			// 			// eslint-disable-next-line no-param-reassign
+			// 			win.parleySettings = parleyConfig;
+			// 		},
+			// 	});
+			//
+			// 	cy.get("[id=app]").as("app");
+			//
+			// 	clickOnLauncher();
+			// 	sendMessage(testMessage);
+			// 	findMessage(testMessage); // Wait until the server received the new message
+			//
+			// 	// Test if it changes during runtime
+			// 	const newAccountIdentification = "1234";
+			//
+			// 	cy.window().then((win) => {
+			// 		// eslint-disable-next-line no-param-reassign
+			// 		win.parleySettings.roomNumber = newAccountIdentification;
+			// 	});
+			//
+			// 	cy.get("@app")
+			// 		.find("[class^=wrapper__]")
+			// 		.should("be.visible")
+			// 		.find("[class^=body__]")
+			// 		.should("be.visible")
+			// 		.should("not.contain", testMessage);
+			// });
 		});
 		describe("xIrisIdentification", () => {
 			it("should register a new device when switching identifications", () => {

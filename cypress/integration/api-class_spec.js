@@ -427,11 +427,22 @@ describe("Api class", () => {
 		});
 
 		it("should default referer to window.location.href", () => {
+			cy.visit("/");
+
 			config.api.sendMessage(config.message);
 
 			cy.wait("@postMessages").then((interception) => {
-				expect(JSON.parse(interception.request.body).referer)
-					.to.be.equal(window.location.href);
+				cy.location("href").then((href) => {
+					expect(JSON.parse(interception.request.body).referer)
+						.to.contain(href);
+
+					// There is an issue where the window.location.href will contain "iframe/xxx"
+					// due to how Cypress loads the chat, so we cannot check if the
+					// href equals the href we get here
+					// Instead we can only check if it begins with the href
+					// Error when using `.equal(href)`
+					// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+				});
 			});
 		});
 
