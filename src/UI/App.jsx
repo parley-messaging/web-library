@@ -59,6 +59,7 @@ export default class App extends React.Component {
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 		};
 
 		this.Api = new Api(
@@ -66,6 +67,7 @@ export default class App extends React.Component {
 			this.state.accountIdentification,
 			this.state.deviceIdentification,
 			ApiEventTarget,
+			this.state.storagePrefix,
 		);
 		this.PollingService = new PollingService(this.Api);
 		this.Api.subscribeDevice(
@@ -95,23 +97,22 @@ export default class App extends React.Component {
 		window.showParleyMessenger = this.showChat;
 	}
 
-	// eslint-disable-next-line no-unused-vars
-	shouldComponentUpdate(nextProps, nextState, nextContext) {
+	componentDidUpdate(prevProps, prevState, snapshot) {
 		// Toggle interface language if it has changed
-		if(nextState.interfaceLanguage !== this.state.interfaceLanguage)
-			this.toggleLanguage(nextState.interfaceLanguage);
+		if(prevState.interfaceLanguage !== this.state.interfaceLanguage)
+			this.toggleLanguage(this.state.interfaceLanguage);
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
-		if(nextState.accountIdentification !== this.state.accountIdentification
-			|| nextState.deviceIdentification !== this.state.deviceIdentification
+		if(prevState.accountIdentification !== this.state.accountIdentification
+			|| prevState.deviceIdentification !== this.state.deviceIdentification
 		) {
 			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
 			this.PollingService.stopPolling(); // Make sure we stop otherwise it will poll for the old device info
 
 			this.Api = new Api(
-				nextState.apiDomain,
-				nextState.accountIdentification,
-				nextState.deviceIdentification,
+				this.state.apiDomain,
+				this.state.accountIdentification,
+				this.state.deviceIdentification,
 				ApiEventTarget,
 			);
 			this.PollingService = new PollingService(this.Api);
@@ -119,37 +120,36 @@ export default class App extends React.Component {
 				undefined,
 				undefined,
 				undefined,
-				nextState.userAdditionalInformation,
+				this.state.userAdditionalInformation,
 				DeviceTypes.Web,
 				this.state.deviceVersion,
 				undefined,
-				nextState.deviceAuthorization,
+				this.state.deviceAuthorization,
 			);
+
 			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
 		// and when userAdditionalInformation changes
-		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
-			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+		if(prevState.deviceAuthorization !== this.state.deviceAuthorization
+			|| prevState.userAdditionalInformation !== this.state.userAdditionalInformation
 		) {
 			this.Api.subscribeDevice(
 				undefined,
 				undefined,
 				undefined,
-				nextState.userAdditionalInformation || undefined,
+				this.state.userAdditionalInformation || undefined,
 				DeviceTypes.Web,
 				this.state.deviceVersion,
 				undefined,
-				nextState.deviceAuthorization || undefined,
+				this.state.deviceAuthorization || undefined,
 			);
 		}
 
 		// Check working hours when they changed
-		if(nextState.workingHours !== this.state.workingHours)
+		if(prevState.workingHours !== this.state.workingHours)
 			this.checkWorkingHours();
-
-		return true;
 	}
 
 	componentDidMount() {
@@ -360,7 +360,7 @@ export default class App extends React.Component {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
-		eventData.detail.data.forEach((message) => {
+		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
 				foundNewMessages = true;
