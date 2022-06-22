@@ -103,23 +103,23 @@ class Chat extends Component {
 
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	handleMessageSent = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	handleMessages = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	handleSubscribe = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
@@ -131,7 +131,7 @@ class Chat extends Component {
 
 		// Check if this is a generic error
 		if(event.detail.errorNotifications[0] === ApiGenericError)
-			error = ApiGenericError;
+			error = this.context.serviceGenericError;
 
 		// Check if this is an error due to the service being unreachable
 		else if(event.detail.errorNotifications[0] === ApiFetchFailed)

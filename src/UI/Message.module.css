@@ -50,7 +50,6 @@
 	font-size: var(--parley-link-font-size, 14px);
 	font-weight: var(--parley-link-font-weight, 400);
 	text-decoration: none;
-	text-decoration-skip: objects;
 }
 
 .user .message {
