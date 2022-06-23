@@ -1,6 +1,6 @@
 {
 	"name": "parley-web-library",
-	"version": "2.0.0-alpha.5",
+	"version": "2.0.0-alpha.6",
 	"description": "Front-end solution for Parley",
 	"private": true,
 	"targets": {
