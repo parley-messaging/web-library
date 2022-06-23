@@ -933,4 +933,25 @@ describe("UI", () => {
 			});
 		});
 	});
+
+	describe("component structure", () => {
+		beforeEach(() => {
+			cy.visit("/", {
+				onLoad: (window) => {
+					window.initParleyMessenger();
+				},
+			});
+
+			cy.get("[id=app]").as("app");
+		});
+
+		describe("launcher", () => {
+			it("should have an id", () => {
+				cy.get("@app")
+					.find("[class^=launcher__]")
+					.find("button")
+					.should("have.id", "launcher");
+			});
+		});
+	});
 });

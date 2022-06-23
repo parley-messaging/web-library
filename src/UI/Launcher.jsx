@@ -7,6 +7,7 @@ import {InterfaceTextsContext} from "./Scripts/Context";
 class Launcher extends Component {
 	render() {
 		const buttonType = "button";
+		const buttonId = "launcher";
 
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -15,6 +16,7 @@ class Launcher extends Component {
 						<div className={styles.launcher}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
+								id={buttonId}
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
