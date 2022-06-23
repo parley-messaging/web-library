@@ -5,6 +5,7 @@
 # Datasource local storage ignored files
 /.idea/dataSources/
 /.idea/dataSources.local.xml
+/.idea/dataSources.xml
 # Editor-based HTTP Client requests
 /.idea/httpRequests/
 
@@ -21,3 +22,6 @@ ssl
 /coverage/
 /cypress/videos
 /cypress.local.json
+
+# Gitlink plugin
+/.idea/GitLink.xml
