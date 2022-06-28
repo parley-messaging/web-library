@@ -43,7 +43,7 @@ export function areWeOnline(workingHours) {
  * Multiple ranges can be set for the same day.
  * Check the return rules for exact rules used in the check.
  *
- * @param {Array<Number>} timestamps Format `[[openHoursTimestamp, closeHoursTimestamp],[..., ...]]`
+ * @param {Array<Array<Number>>} timestamps Format `[[openHoursTimestamp, closeHoursTimestamp],[..., ...]]`
  * @param {Date} currentDate
  * @return {Boolean|null}
  * `TRUE` if current time is in between one of the start/end timestamps
