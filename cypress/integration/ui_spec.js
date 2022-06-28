@@ -1,4 +1,5 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
+import {version} from "../../package.json";
 
 function clickOnLauncher() {
 	return cy.get("@app")
@@ -51,7 +52,7 @@ describe("UI", () => {
 			findMessage(testMessage);
 		});
 
-		it("should show a generic error when the API returns `status = \"ERROR\"`, but without an error", () => {
+		it("should show a generic error when the API returns `status = ERROR`, but without an error", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
 			cy.intercept("POST", "*/**/messages", {
@@ -350,7 +351,7 @@ describe("UI", () => {
 		describe("roomNumber", () => {
 			it("should register a new device when switching accounts", () => {
 				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
-				const testMessage = `test message before switching room numbers${Date.now()}`;
+				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
 				cy.visit("/", {
 					onBeforeLoad: (win) => {
@@ -377,6 +378,72 @@ describe("UI", () => {
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.roomNumber = newAccountIdentification;
+				});
+
+				cy.wait("@createDevice");
+			});
+			it("should clear the messages when switching accounts", () => {
+				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const testMessage = `test message before switching room numbers ${Date.now()}`;
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Change the account identification
+				const newAccountIdentification = "0cce5bfcdbf07978b269";
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.roomNumber = newAccountIdentification;
+				});
+
+				cy.get("@app")
+					.find("[class^=wrapper__]")
+					.should("be.visible")
+					.find("[class^=body__]")
+					.should("be.visible")
+					.should("not.contain", testMessage);
+			});
+		});
+		describe("xIrisIdentification", () => {
+			it("should register a new device when switching identifications", () => {
+				const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
+				const testMessage = `test message before switching udid ${Date.now()}`;
+
+				cy.visit("/", {
+					onBeforeLoad: (win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings = parleyConfig;
+					},
+				});
+
+				cy.get("[id=app]").as("app");
+
+				clickOnLauncher();
+				sendMessage(testMessage);
+				findMessage(testMessage); // Wait until the server received the new message
+
+				// Test if it changes during runtime
+				const newUdid = "bbbbbbbbbbbb";
+				cy.intercept("POST", "*/**/devices", (req) => {
+					expect(req.headers)
+						.to.have.deep.property("x-iris-identification");
+					expect(req.headers["x-iris-identification"])
+						.to.match(new RegExp(`^.*:${newUdid}`, "u"));
+				}).as("createDevice");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.xIrisIdentification = newUdid;
 				});
 
 				cy.wait("@createDevice");
@@ -743,6 +810,22 @@ describe("UI", () => {
 					// Launcher should appear again because we
 					// are inside working hours
 					clickOnLauncher();
+				});
+			});
+		});
+		describe("version", () => {
+			it("should set the library version on startup", () => {
+				cy.visit("/");
+
+				cy.get("[id=app]").as("app");
+
+				// Make sure app exists
+				cy.get("@app")
+					.get("[class^=launcher__]")
+					.should("exist");
+
+				cy.window().then((win) => {
+					expect(win.parleySettings.version).to.equal(version);
 				});
 			});
 		});

@@ -69,7 +69,7 @@ class Chat extends Component {
 			}
 
 			inner = getCurrentInner();
-			chatNode.style.setProperty(`--mobile-${correction}`, `${inner * oneHundredth}px`);
+			chatNode.style.setProperty(`--parley-mobile-${correction}`, `${inner * oneHundredth}px`);
 		}, intervalTime);
 	}
 
@@ -167,7 +167,7 @@ class Chat extends Component {
 					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
 						<button
-							aria-label={this.context.buttonErrorClose}
+							aria-label={this.context.ariaLabelButtonErrorClose}
 							className={styles.closeButton}
 							onClick={this.handleErrorCloseButtonClick}
 							type={typeButton}

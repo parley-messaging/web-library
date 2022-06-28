@@ -1,20 +1,46 @@
 {
 	"name": "parley-web-library",
-	"version": "2.0.0",
+	"version": "2.0.0-alpha.2",
 	"description": "Front-end solution for Parley",
 	"private": true,
 	"targets": {
-		"ui": {
-			"distDir": "dist/ui"
+		"ui-for-watcher": {
+			"distDir": "dist/",
+			"optimize": false,
+			"sourceMap": false
+		},
+		"ui-minimized": {
+			"distDir": "dist/ui/minified",
+			"optimize": true,
+			"sourceMap": false
+		},
+		"ui-sourcemapped": {
+			"distDir": "dist/ui/sourcemapped",
+			"optimize": false,
+			"sourceMap": true
+		},
+		"cdn-demo-live": {
+			"distDir": "dist/ui/cdn-demo-live",
+			"publicUrl": "/demo/v2/",
+			"optimize": true,
+			"sourceMap": false
+		},
+		"cdn-demo-local": {
+			"distDir": "dist/ui/cdn-demo-local",
+			"optimize": false,
+			"sourceMap": true
 		}
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 index.html",
-		"build": "npx parcel build --target ui index.html",
+		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 --target ui-for-watcher index.html",
+		"build": "npx parcel build --target ui-minimized --target ui-sourcemapped index.html",
+		"build-cdn-demo": "npx parcel build --target cdn-demo-live --target cdn-demo-local parleycdn-demo/index.html",
 		"test:open": "./bin/start_cypress.sh",
-		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'",
-		"test:coverage:host": "npx light-server -s ./coverage/lcov-report/ -w \"./coverage/lcov-report/**\" -b 127.0.0.1 -o"
+		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary",
+		"test:coverage:host": "npx light-server -s ./coverage/lcov-report/ -w \"./coverage/lcov-report/**\" -b 127.0.0.1 -o",
+		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
+		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip"
 	},
 	"repository": {
 		"type": "git",
@@ -64,7 +90,8 @@
 		"react-dom": "^17.0.2",
 		"react-markdown": "^6.0.2",
 		"react-textarea-autosize": "^8.3.2",
-		"remark-gfm": "^1.0.0"
+		"remark-gfm": "^1.0.0",
+		"uuid": "^3.4.0"
 	},
 	"devDependencies": {
 		"@axe-core/react": "^4.2.2",
@@ -72,7 +99,6 @@
 		"@babel/core": "^7.13.16",
 		"@babel/eslint-parser": "^7.13.14",
 		"@babel/eslint-plugin": "^7.13.16",
-		"@babel/preset-env": "^7.13.15",
 		"@babel/preset-react": "^7.13.13",
 		"@cypress/code-coverage": "^3.9.12",
 		"@parcel/babel-plugin-transform-runtime": "^2.0.0-beta.3.1",
@@ -89,6 +115,7 @@
 		"eslint-plugin-react": "^7.23.2",
 		"eslint-plugin-unused-imports": "^1.1.2",
 		"light-server": "^2.9.1",
+		"npm-merge-driver": "^2.3.6",
 		"parcel": "^2.0.0-nightly.776",
 		"postcss": "^8.3.5",
 		"postcss-reporter": "^7.0.2",

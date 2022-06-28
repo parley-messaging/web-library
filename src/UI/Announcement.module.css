@@ -1,7 +1,8 @@
 .center {
-	color: var(--info-text-color, #535353);
-	font-size: 14px;
-	font-weight: 200;
+	color: var(--parley-info-color, #535353);
+	font-family: var(--parley-info-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-info-font-size, 14px);
+	font-weight: var(--parley-info-font-weight, 200);
 	text-align: center;
 }
 

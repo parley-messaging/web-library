@@ -14,7 +14,7 @@
 	/*grid-row-start: 2;*/
 	/*-ms-grid-row-span: 0;*/
 	/*grid-row-end: 2;*/
-	color: var(--messenger-icon-background-color, #4A5E83);
+	color: var(--parley-messenger-icon-background-color, #4A5E83);
 	cursor: pointer;
 	font-size: 25px;
 }

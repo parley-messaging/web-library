@@ -74,7 +74,7 @@ export default class App extends React.Component {
 			undefined,
 			undefined,
 			undefined,
-			undefined,
+			this.state.userAdditionalInformation,
 			DeviceTypes.Web,
 			this.state.deviceVersion,
 		);
@@ -88,6 +88,13 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
+
+		// Store library version into window
+		window.parleySettings.version = version;
+
+		// Global functions
+		window.hideParleyMessenger = this.hideChat;
+		window.showParleyMessenger = this.showChat;
 	}
 
 	componentDidUpdate(prevProps, prevState, snapshot) {
@@ -96,7 +103,12 @@ export default class App extends React.Component {
 			this.toggleLanguage(this.state.interfaceLanguage);
 
 		// Create a new Api instance and register a new device when accountIdentification has changed
-		if(prevState.accountIdentification !== this.state.accountIdentification) {
+		if(prevState.accountIdentification !== this.state.accountIdentification
+			|| prevState.deviceIdentification !== this.state.deviceIdentification
+		) {
+			localStorage.removeItem("deviceInformation"); // Remove old device info, otherwise we cannot create a new one with the same info
+			this.PollingService.stopPolling(); // Make sure we stop otherwise it will poll for the old device info
+
 			this.Api = new Api(
 				this.state.apiDomain,
 				this.state.accountIdentification,
@@ -114,6 +126,8 @@ export default class App extends React.Component {
 				undefined,
 				this.state.deviceAuthorization,
 			);
+
+			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
@@ -287,6 +301,8 @@ export default class App extends React.Component {
 			objectToSaveIntoState = {deviceAuthorization: value};
 		} else if(path[layer0] === "weekdays") {
 			objectToSaveIntoState = {workingHours: value};
+		} else if(path[layer0] === "xIrisIdentification") {
+			objectToSaveIntoState = {deviceIdentification: value};
 		} else if(path[layer0] === "userAdditionalInformation") {
 			objectToSaveIntoState = {userAdditionalInformation: {}};
 			objectToSaveIntoState.userAdditionalInformation

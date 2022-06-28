@@ -7,8 +7,10 @@
 	display: inline-block;
 	height: 15px;
 	padding: 0 5px;
-	border-bottom: 1px solid var(--date-color, #404040);
-	color: var(--date-color, #404040);
-	font-size: 11px;
+	border-bottom: 1px solid var(--parley-date-color-border, #404040);
+	color: var(--parley-date-color, #404040);
+	font-family: var(--parley-date-font, --parley-font, 'OpenSans', sans-serif);
+	font-size: var(--parley-date-font-size, 11px);
+	font-weight: var(--parley-date-font-weight, 400);
 	line-height: 15px;
 }

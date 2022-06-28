@@ -22,15 +22,15 @@ class HeaderButton extends Component {
 		if(this.props.type === menuType) {
 			icon = faBars;
 			classNames += ` ${styles.menu}`;
-			ariaLabel = this.context.buttonMenu;
+			ariaLabel = this.context.ariaLabelButtonMenu;
 		} else if(this.props.type === minimizeType) {
 			icon = faWindowMinimize;
 			classNames += ` ${styles.minimize}`;
-			ariaLabel = this.context.buttonMinimize;
+			ariaLabel = this.context.ariaLabelButtonMinimize;
 		} else if(this.props.type === closeType) {
 			icon = faTimes;
 			classNames += ` ${styles.close}`;
-			ariaLabel = this.context.buttonClose;
+			ariaLabel = this.context.ariaLabelButtonClose;
 		}
 
 		return (
