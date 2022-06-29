@@ -1,6 +1,6 @@
 {
 	"name": "parley-web-library",
-	"version": "2.0.0-alpha.3",
+	"version": "2.0.0-alpha.6",
 	"description": "Front-end solution for Parley",
 	"private": true,
 	"targets": {
@@ -40,7 +40,7 @@
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'",
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
 		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip",
-		"ci:server": "npx parcel serve --host 127.0.0.1 --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
+		"ci:server": "npx parcel serve --host chat-dev.parley.nu --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
 		"ci:tests": "cypress run --config-file cypress.ci.json",
 		"ci:merge-results": "mochawesome-merge ./mochawesome-report/*.json -o ./mochawesome-report/merged.json"
 	},
@@ -86,7 +86,7 @@
 		"deepmerge": "^4.2.2",
 		"js-logger": "^1.6.1",
 		"object-observer": "^4.3.2",
-		"ow": "^0.24.1",
+		"ow": "^0.28.1",
 		"prop-types": "^15.7.2",
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",

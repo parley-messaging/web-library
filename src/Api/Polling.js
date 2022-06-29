@@ -74,7 +74,11 @@ export default class PollingService {
 		this.restartPolling();
 	}
 
-	handleSubscribe = () => {
+	handleSubscribe = (event) => {
+		// We don't want to start polling for messages when the subscribe-call returned errors
+		if(event.detail.errorNotifications)
+			return;
+
 		this.startPolling();
 	}
 

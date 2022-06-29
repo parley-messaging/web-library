@@ -57,6 +57,10 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 
 describe("Api class", () => {
 	beforeEach(() => {
+		console.log("");
+		console.log(`=== ${Cypress.currentTest.title} ===`);
+		console.log("");
+
 		config.api = new Api(
 			config.apiDomain,
 			config.accountIdentification,
@@ -75,6 +79,17 @@ describe("Api class", () => {
 		cy.get("@postMessagesResponse").then((json) => {
 			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
 		});
+
+		// This should not go in afterEach,
+		// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
+		cy.window()
+			.then((window) => {
+				if(window.destroyParleyMessenger)
+					window.destroyParleyMessenger();
+			})
+			.then(() => {
+				return cy.clearLocalStorage();
+			});
 	});
 
 	describe("constructor", () => {
