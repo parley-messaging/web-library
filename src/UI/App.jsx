@@ -556,7 +556,7 @@ export default class App extends React.Component {
 		this.PollingService.restartPolling();
 	}
 
-	handleNewMessage = (event) => {
+	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
@@ -574,6 +574,7 @@ export default class App extends React.Component {
 
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
+		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
 	}
 
 	render() {
