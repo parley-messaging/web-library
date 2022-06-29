@@ -61,11 +61,19 @@ class Conversation extends Component {
 			messages = [];
 		}
 
-		this.setState(prevState => ({
-			welcomeMessage: eventData.detail.welcomeMessage,
-			messages: messages || prevState.messages, // Don't allow falsy values to be set as messages
+		const newState = {
+			messages,
 			stickyMessage: eventData.detail.stickyMessage,
-		}));
+		};
+
+		// Set welcome message if we got one from the api
+		// otherwise use the default set by props
+		if(eventData.detail.welcomeMessage)
+			newState.welcomeMessage = eventData.detail.welcomeMessage;
+		else
+			newState.welcomeMessage = this.props.defaultWelcomeMessage;
+
+		this.setState(() => newState);
 	}
 
 	setRenderedDate = (date) => {
@@ -114,14 +122,13 @@ class Conversation extends Component {
 
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
-		const welcomeMessage = this.state.welcomeMessage || this.props.defaultWelcomeMessage;
 
 		return (
 			<div className={styles.wrapper}>
 				<div className={styles.body}>
 					{
-						welcomeMessage
-							&& <Announcement message={welcomeMessage} />
+						this.state.welcomeMessage
+							&& <Announcement message={this.state.welcomeMessage} />
 					}
 					{
 						this.state.messages.map((message, index, array) => (
