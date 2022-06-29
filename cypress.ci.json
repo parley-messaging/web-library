@@ -1,5 +1,5 @@
 {
-	"baseUrl": "http://127.0.0.1:8181",
+	"baseUrl": "http://chat-dev.parley.nu:8181",
 	"video": false,
 	"reporter": "mochawesome",
 	"reporterOptions": {
