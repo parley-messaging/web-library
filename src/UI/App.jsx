@@ -64,7 +64,6 @@ export default class App extends React.Component {
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
-			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 		};
 
 		this.Api = new Api(
