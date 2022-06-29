@@ -1,15 +1,5 @@
-const weekdays = [
-	"sunday",
-	"monday",
-	"tuesday",
-	"wednesday",
-	"thursday",
-	"friday",
-	"saturday",
-];
-
-// Matches the current Day and Time to the weekdays setting <br>
-// If you are outside the specified time, FALSE is returned <br>
+// Matches the current Day and Time to the weekdays setting
+// If you are outside the specified time, FALSE is returned
 // If you are inside the specified time, TRUE is returned
 export function areWeOnline(workingHours) {
 	if(!workingHours || workingHours.length === 0) { // If weekdays aren't set, we just say we are online
@@ -53,7 +43,7 @@ export function areWeOnline(workingHours) {
  * Multiple ranges can be set for the same day.
  * Check the return rules for exact rules used in the check.
  *
- * @param {Array<Number>} timestamps Format `[[openHoursTimestamp, closeHoursTimestamp],[..., ...]]`
+ * @param {Array<Array<Number>>} timestamps Format `[[openHoursTimestamp, closeHoursTimestamp],[..., ...]]`
  * @param {Date} currentDate
  * @return {Boolean|null}
  * `TRUE` if current time is in between one of the start/end timestamps
@@ -83,25 +73,31 @@ function handleTimestamps(timestamps, currentDate) {
 	return isOnline;
 }
 
+/**
+ * Checks if the current time is within one of the open/close hours.
+ *
+ * @param {Array<Array<string>>} days Format `[["DayOfTheWeek", HH.MM, HH.MM]]`
+ * @param {Date} currentDate
+ * @return {Boolean|null}
+ */
 function handleDays(days, currentDate) {
 	const ten = 10;
 
-	const currentDay = weekdays[currentDate.getDay()];
+	const currentDay = currentDate.toLocaleString("en-GB", {weekday: "long"}).toLowerCase();
 	let currentTimeFormatted = parseFloat(`${currentDate.getHours()}.${currentDate.getMinutes()}`);
 	if(currentDate.getMinutes() < ten)
 		currentTimeFormatted = parseFloat(`${currentDate.getHours()}.0${currentDate.getMinutes()}`);
 
-	const indexForDayStartTime = 1;
-	const indexForDayEndTime = 2;
-	const indexForDayBool = 3;
-
 	let isOnline = null;
 	for(let i = 0; i < days.length; i++) {
 		const dayInfo = days[i];
-		const day = dayInfo[0];
-		const startTime = parseFloat(dayInfo[indexForDayStartTime]);
-		const endTime = parseFloat(dayInfo[indexForDayEndTime]);
-		const isOpen = dayInfo[indexForDayBool] === undefined ? true : dayInfo[indexForDayBool]; // Whether we are open (true) or closed (false) in this period
+
+		let [
+			day, startTime, endTime, isOpen,
+		] = dayInfo;
+		startTime = parseFloat(startTime);
+		endTime = parseFloat(endTime);
+		isOpen = isOpen === undefined ? true : isOpen; // Whether we are open (true) or closed (false) in this period
 
 		if(day.toLowerCase() !== currentDay) { // Ignore days which are not today
 			continue;

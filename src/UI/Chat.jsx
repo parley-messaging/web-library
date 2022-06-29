@@ -107,19 +107,19 @@ class Chat extends Component {
 	}
 
 	handleMessageSent = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
 	}
 
 	handleMessages = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.retrievingMessagesFailedError);
 	}
 
 	handleSubscribe = (event) => {
-		// If we have any errors, show then to the client
+		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
 	}

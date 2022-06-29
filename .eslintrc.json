@@ -110,7 +110,6 @@
 		"no-void": "error",
 		"no-warning-comments": "warn",
 		"prefer-named-capture-group": "error",
-		"prefer-promise-reject-errors": "error",
 		"prefer-regex-literals": ["error", {"disallowRedundantWrapping": true}],
 		"radix": ["error", "as-needed"],
 		"require-unicode-regexp": "error",
