@@ -34,6 +34,6 @@
 		"method": "get",
 		"duration": 0.01
 	},
-	"stickyMessage": "Sorry we are closed right know. We will be open next day from 09:00 - 17:55",
+	"stickyMessage": "Some sticky message",
 	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
 }

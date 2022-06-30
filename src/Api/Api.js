@@ -206,7 +206,7 @@ export default class Api {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
 					errorNotifications,
 					warningNotifications,
-					data: [],
+					data: null,
 				}));
 			});
 	}
@@ -233,7 +233,6 @@ export default class Api {
 
 							reject(errorNotifications, warningNotifications);
 						} else {
-							// eslint-disable-next-line prefer-promise-reject-errors
 							reject([ApiGenericError], []);
 						}
 					} else {
@@ -241,7 +240,6 @@ export default class Api {
 					}
 				})
 				.catch(() => {
-					// eslint-disable-next-line prefer-promise-reject-errors
 					reject([ApiFetchFailed], []);
 				}); // Reject with generic error message
 		});

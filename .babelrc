@@ -7,7 +7,11 @@
 	],
 	"env": {
 		"development": {
-			"plugins": ["istanbul"]
+			"plugins": [
+				["istanbul", {
+					"coverageGlobalScopeFunc": false
+				}]
+			]
 		}
 	}
 }

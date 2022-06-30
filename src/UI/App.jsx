@@ -374,7 +374,7 @@ export default class App extends React.Component {
 			changes.forEach((change) => {
 				// If the new value is an object, we need to go through
 				// ALL properties and rename/apply them to the state.
-				// We don't want arrays because we dont want to loop
+				// We don't want arrays because we don't want to loop
 				// over them.
 				// We ignore "userAdditionalInformation" and "customApiHeaders", because we don't
 				// care about renaming their keys (the keys are dynamic).
@@ -555,11 +555,11 @@ export default class App extends React.Component {
 		this.PollingService.restartPolling();
 	}
 
-	handleNewMessage = (event) => {
+	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
-		event.detail.data.forEach((message) => {
+		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
 				foundNewMessages = true;
@@ -573,6 +573,7 @@ export default class App extends React.Component {
 
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
+		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
 	}
 
 	render() {

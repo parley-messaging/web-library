@@ -8,6 +8,8 @@
 /.idea/dataSources.xml
 # Editor-based HTTP Client requests
 /.idea/httpRequests/
+# Phpstorm files for php
+/.idea/php.xml
 
 dist
 lib
