@@ -71,7 +71,7 @@ describe("Working hours script", () => {
 		it("should return true if office hours are not set", () => {
 			expect(areWeOnline()).to.be.equal(true);
 		});
-		describe("format [\"DayOfTheWeek\", startTime, endTime]", () => {
+		describe("format [DayOfTheWeek, startTime, endTime]", () => {
 			it("should return false while outside office hours", () => {
 				const startDate = getTimeInPast(60);
 				const endDate = getTimeInPast(10);
@@ -124,7 +124,7 @@ describe("Working hours script", () => {
 					],
 				])).to.be.equal(false);
 			});
-			describe("format 2x [\"DayOfTheWeek\", startTime, endTime]", () => {
+			describe("format 2x [DayOfTheWeek, startTime, endTime]", () => {
 				it("should return false while outside office hours", () => {
 					const startDate1 = getTimeInPast(60);
 					const endDate1 = getTimeInPast(10);
@@ -179,7 +179,7 @@ describe("Working hours script", () => {
 				});
 			});
 		});
-		describe("format [\"DayOfTheWeek\", startTime, endTime, openOrClosed]", () => {
+		describe("format [DayOfTheWeek, startTime, endTime, openOrClosed]", () => {
 			it("should return false while outside OPEN office hours", () => {
 				const startDate = getTimeInFuture(10);
 				const endDate = getTimeInFuture(60);

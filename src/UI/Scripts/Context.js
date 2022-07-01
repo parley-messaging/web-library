@@ -9,6 +9,9 @@ export const ApiOptions = {
 	autHeader: undefined,
 };
 
+/**
+ * Default texts for the UI
+ */
 export const InterfaceTexts = {
 	english: {
 		// New in v2
@@ -24,10 +27,12 @@ export const InterfaceTexts = {
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
-		welcomeMessage: "Welcome to our support chat, you can expect a response in ~1 minute.", // Was `infoText`
+		welcomeMessage: "How can we help you?", // Was `infoText`
 		inputPlaceholder: "Type your message here...", // Was `placeholderMessenger`
 		sendingMessageFailedError: "Something went wrong while sending your message, please try again later", // Was `messageSendFailed`
 		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
+		subscribeDeviceFailedError: "Something went wrong while registering your device, please re-open the chat to try again", // New in v2
+		retrievingMessagesFailedError: "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening", // New in v2
 	},
 	dutch: {
 		// New from v2
@@ -43,10 +48,12 @@ export const InterfaceTexts = {
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
-		welcomeMessage: "Welkom bij de support chat, je kan een reactie verwachten binnen ~1 minuut.", // Was `infoText`
+		welcomeMessage: "Hoe kunnen we u helpen?", // Was `infoText`
 		inputPlaceholder: "Typ hier uw bericht...", // Was `placeholderMessenger`
 		sendingMessageFailedError: "Er ging iets fout bij het versturen van je bericht, probeer het later opnieuw", // Was `messageSendFailed`
 		serviceUnreachableError: "De service is momenteel niet bereikbaar, probeer het later opnieuw", // Was `serviceUnreachableNotification`
+		subscribeDeviceFailedError: "Er ging iets fout met het registreren van je apparaat, open de chat opnieuw om het nog een keer te proberen", // New in v2
+		retrievingMessagesFailedError: "Er ging iets fout bij het ophalen van je berichten, open de chat opnieuw als dit zich voor blijft doen", // New in v2
 	},
 };
 

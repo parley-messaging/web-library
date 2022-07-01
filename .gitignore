@@ -4,14 +4,12 @@
 /.idea/shelf
 # Datasource local storage ignored files
 /.idea/dataSources/
-/.idea/dataSources.xml
 /.idea/dataSources.local.xml
+/.idea/dataSources.xml
 # Editor-based HTTP Client requests
 /.idea/httpRequests/
 # Phpstorm files for php
 /.idea/php.xml
-# Plugins
-/.idea/GitLink.xml
 
 dist
 lib
@@ -26,3 +24,6 @@ ssl
 /coverage/
 /cypress/videos
 /cypress.local.json
+
+# Gitlink plugin
+/.idea/GitLink.xml

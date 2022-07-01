@@ -5,6 +5,7 @@ import {messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
+import {CUSTOMHEADER_BLACKLIST} from "../../src/Api/Constants/CustomHeaderBlacklist";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -16,7 +17,8 @@ const config = {
 	type: Web,
 	version: "010000",
 	message: "test message",
-	storagePrefix: "customPrefix_",
+	referer: "weblib-v2_cypress-test",
+	customHeaders: {},
 };
 const primitiveTypes = [
 	{
@@ -55,12 +57,16 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 
 describe("Api class", () => {
 	beforeEach(() => {
+		console.log("");
+		console.log(`=== ${Cypress.currentTest.title} ===`);
+		console.log("");
+
 		config.api = new Api(
 			config.apiDomain,
 			config.accountIdentification,
 			config.deviceIdentification,
 			ApiEventTarget,
-			config.storagePrefix,
+			config.customHeaders,
 		);
 
 		// Intercept api calls and respond with a static response
@@ -73,6 +79,17 @@ describe("Api class", () => {
 		cy.get("@postMessagesResponse").then((json) => {
 			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
 		});
+
+		// This should not go in afterEach,
+		// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
+		cy.window()
+			.then((window) => {
+				if(window.destroyParleyMessenger)
+					window.destroyParleyMessenger();
+			})
+			.then(() => {
+				return cy.clearLocalStorage();
+			});
 	});
 
 	describe("constructor", () => {
@@ -82,22 +99,10 @@ describe("Api class", () => {
 			expect(config.api.accountIdentification).to.be.equal(config.accountIdentification);
 			expect(config.api.deviceIdentification).to.be.equal(config.deviceIdentification);
 			expect(config.api.eventTarget).to.be.equal(ApiEventTarget);
-			expect(config.api.storagePrefix).to.be.equal(config.storagePrefix);
 		});
 		it("should throw an error when using something other than a EventTarget as apiEventTarget", () => {
 			expect(() => new Api(config.apiDomain, config.accountIdentification, config.deviceIdentification, {}))
 				.to.throw("Expected object `apiEventTarget` `{}` to be of type `EventTarget`");
-		});
-		describe("storagePrefix", () => {
-			it("should default to 'parley_'", () => {
-				const api = new Api(
-					config.apiDomain,
-					config.accountIdentification,
-					config.deviceIdentification,
-					ApiEventTarget,
-				);
-				expect(api.storagePrefix).to.be.equal("parley_");
-			});
 		});
 	});
 
@@ -161,6 +166,47 @@ describe("Api class", () => {
 			const identification = "aaaaaaaaa";
 			expect(() => config.api.setDeviceIdentification(identification))
 				.to.throw(`Expected string \`deviceIdentification\` to have a minimum length of \`10\`, got \`${identification}\``);
+		});
+	});
+
+	describe("setCustomHeaders()", () => {
+		it("should change the customHeaders", () => {
+			const newCustomHeaders = {
+				"x-custom-1": "1",
+				"x-custom-2": "2",
+			};
+			config.api.setCustomHeaders(newCustomHeaders);
+
+			expect(config.api.customHeaders).to.be.equal(newCustomHeaders);
+		});
+		it("should throw an error when using something other than an Object as customHeaders", () => {
+			filterPrimitives([
+				"Object", "undefined", "null", "boolean",
+			]).forEach((set) => {
+				expect(() => config.api.setCustomHeaders(set.value))
+					.to.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using a blacklisted header as one of the custom headers", () => {
+			CUSTOMHEADER_BLACKLIST.forEach((blacklistedHeaderKey) => {
+				expect(() => config.api.setCustomHeaders({[blacklistedHeaderKey]: "some value"}))
+					.to.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
+			});
+		});
+
+		it("should throw an error when using a 'reserved' prefix for one of the custom headers", () => {
+			let reservedPrefixKey = "x-parley-test";
+			let newCustomHeaders = {[reservedPrefixKey]: "some value"};
+
+			expect(() => config.api.setCustomHeaders(newCustomHeaders))
+				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-parley-\`, got \`${reservedPrefixKey}\``);
+
+			reservedPrefixKey = "x-iris-test";
+			newCustomHeaders = {[reservedPrefixKey]: "some value"};
+
+			expect(() => config.api.setCustomHeaders(newCustomHeaders))
+				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-iris-\`, got \`${reservedPrefixKey}\``);
 		});
 	});
 
@@ -302,7 +348,7 @@ describe("Api class", () => {
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
-		it("should throw an error when using something other than a String as referrer", () => {
+		it("should throw an error when using something other than a String as referer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -316,7 +362,7 @@ describe("Api class", () => {
 					config.version,
 					set.value,
 				))
-					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
@@ -326,13 +372,13 @@ describe("Api class", () => {
 				"undefined", // Don't test for undefined, because authorization is optional and if we give undefined it will test for other params next
 			]).forEach((set) => {
 				expect(() => config.api.subscribeDevice(
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
+					config.pushToken,
+					config.pushType,
+					true,
+					config.userAdditionalInformation,
+					config.type,
 					config.version,
-					undefined,
+					config.referer,
 					set.value,
 				))
 					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
@@ -413,7 +459,7 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a String as referrer", () => {
+		it("should throw an error when using something other than a String as referer", () => {
 			filterPrimitives([
 				"string",
 				"undefined",
@@ -422,7 +468,7 @@ describe("Api class", () => {
 					config.message,
 					set.value,
 				))
-					.to.throw(`Expected \`referrer\` to be of type \`string\` but received type \`${set.type}\``);
+					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
@@ -468,6 +514,25 @@ describe("Api class", () => {
 						config.api.sendMessage(config.message);
 					});
 				});
+		});
+	});
+
+	describe("fetchWrapper()", () => {
+		it("should make a request with custom headers", () => {
+			const customHeaders = {
+				"x-custom-1": "1",
+				"x-custom-2": "2",
+			};
+			const url = `${config.apiDomain}/clientApi/vx.x/devices`;
+
+			config.api.setCustomHeaders(customHeaders);
+
+			config.api.fetchWrapper(url, {method: "POST"});
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(customHeaders));
+				expect(Object.values(interception.request.headers)).to.include.members(Object.values(customHeaders));
+			});
 		});
 	});
 });

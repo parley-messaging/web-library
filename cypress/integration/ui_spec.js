@@ -1,6 +1,22 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 
+const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
+function visitHome(parleyConfig) {
+	cy.visit("/", {
+		onBeforeLoad: (window) => {
+			// eslint-disable-next-line no-param-reassign
+			window.parleySettings = {
+				...defaultParleyConfig, // Always set default config
+				...parleyConfig,
+			};
+		},
+		onLoad: (window) => {
+			window.initParleyMessenger();
+		},
+	});
+	cy.get("[id=app]").as("app");
+}
 function clickOnLauncher() {
 	return cy.get("@app")
 		.find("[class^=launcher__]")
@@ -8,7 +24,6 @@ function clickOnLauncher() {
 		.should("be.visible")
 		.click();
 }
-
 function sendMessage(testMessage) {
 	return cy.get("@app")
 		.find("[class^=chat__]")
@@ -21,7 +36,6 @@ function sendMessage(testMessage) {
 		.should("have.focus")
 		.type(`${testMessage}{enter}`);
 }
-
 function findMessage(testMessage) {
 	return cy.get("@app")
 		.find("[class^=wrapper__]")
@@ -32,21 +46,35 @@ function findMessage(testMessage) {
 		.should("be.visible");
 }
 
+beforeEach(() => {
+	console.log("");
+	console.log(`=== BEGIN ${Cypress.currentTest.title} ===`);
+	console.log("");
+
+	// This should not go in afterEach,
+	// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
+	cy.window()
+		.then((window) => {
+			if(window.destroyParleyMessenger)
+				window.destroyParleyMessenger();
+		})
+		.then(() => {
+			return cy.clearLocalStorage();
+		});
+});
+
+afterEach(() => {
+	console.log("");
+	console.log(`=== END ${Cypress.currentTest.title} ===`);
+	console.log("");
+});
+
 describe("UI", () => {
 	describe("sending messages", () => {
-		beforeEach(() => {
-			cy.visit("/", {
-				onLoad: (window) => {
-					window.initParleyMessenger();
-				},
-			});
-
-			cy.get("[id=app]").as("app");
-		});
-
 		it("should send a new message with the new message showing up in the conversation", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 			findMessage(testMessage);
@@ -60,6 +88,7 @@ describe("UI", () => {
 				body: {status: "ERROR"},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -77,6 +106,7 @@ describe("UI", () => {
 
 			cy.intercept("POST", "*/**/messages", {forceNetworkError: true});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -105,6 +135,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -115,6 +146,58 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
+		});
+
+		it("should show the `subscribeDeviceFailedError` error when subscribing fails", () => {
+			cy.intercept("POST", "*/**/devices", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
+		});
+
+		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
 		});
 
 		it("should hide the error when clicking the close error button", () => {
@@ -133,6 +216,7 @@ describe("UI", () => {
 				},
 			});
 
+			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
 
@@ -172,12 +256,7 @@ describe("UI", () => {
 					it("should change the title text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {desc: "This is the title bar"}}};
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -212,12 +291,7 @@ describe("UI", () => {
 							cy.intercept("GET", "*/**/messages", _json);
 						});
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -253,12 +327,7 @@ describe("UI", () => {
 							cy.intercept("GET", "*/**/messages", _json);
 						});
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -269,17 +338,39 @@ describe("UI", () => {
 							.first()
 							.should("have.text", welcomeMessage);
 					});
+					it("should only show welcomeMessage after GET /messages call", () => {
+						// Force a long delay on the response to pretend we are "loading"
+						// This delay should have no impact on the test duration, because
+						// the test will end after we've done our assertion which doesn't
+						// have to wait on the response. It's just there to assert the
+						// "loading" state
+						cy.fixture("getMessagesResponse.json").then((json) => {
+							cy.intercept("GET", "*/**/messages", (req) => {
+								req.reply({
+									statusCode: 200,
+									body: {...json},
+									delay: 5000,
+								});
+							});
+						});
+
+						visitHome();
+
+						cy.get("[id=app]").as("app");
+
+						clickOnLauncher();
+
+						// We should not see any announcements while the request is "busy"
+						cy.get("@app")
+							.find("[class*=announcement__]")
+							.should("not.exist");
+					});
 				});
 				describe("placeholderMessenger", () => {
 					it("should change the input's placeholder text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {placeholderMessenger: "This is the placeholder"}}};
 
-						cy.visit("/", {
-							onBeforeLoad: (win) => {
-								// eslint-disable-next-line no-param-reassign
-								win.parleySettings = parleyConfig;
-							},
-						});
+						visitHome(parleyConfig);
 
 						cy.get("[id=app]").as("app");
 
@@ -313,12 +404,7 @@ describe("UI", () => {
 						},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (window) => {
-							// eslint-disable-next-line no-param-reassign
-							window.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -350,15 +436,9 @@ describe("UI", () => {
 		});
 		describe("roomNumber", () => {
 			it("should register a new device when switching accounts", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -419,12 +499,7 @@ describe("UI", () => {
 				const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
 				const testMessage = `test message before switching udid ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
 
@@ -451,15 +526,9 @@ describe("UI", () => {
 		});
 		describe("authHeader", () => {
 			it("should re-register the device when it changes", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
 				const testMessage = `test message before switching auth header ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -484,18 +553,10 @@ describe("UI", () => {
 		});
 		describe("userAdditionalInformation", () => {
 			it("should re-register the device when it changes", () => {
-				const parleyConfig = {
-					roomNumber: "0W4qcE5aXoKq9OzvHxj2",
-					userAdditionalInformation: {"some-key": "some-value"},
-				};
+				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
 				const testMessage = `test message before switching userAdditionalInformation ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]").as("app");
 
@@ -538,12 +599,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -603,12 +659,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -729,12 +780,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -776,12 +822,7 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]").as("app");
 
@@ -815,7 +856,7 @@ describe("UI", () => {
 		});
 		describe("version", () => {
 			it("should set the library version on startup", () => {
-				cy.visit("/");
+				visitHome();
 
 				cy.get("[id=app]").as("app");
 
@@ -827,6 +868,185 @@ describe("UI", () => {
 				cy.window().then((win) => {
 					expect(win.parleySettings.version).to.equal(version);
 				});
+			});
+		});
+		describe("apiCustomHeaders", () => {
+			it("should set the apiCustomHeader setting on window", () => {
+				const parleyConfig = {
+					apiCustomHeaders: {
+						"x-custom-1": "1",
+						"x-custom-2": "2",
+					},
+				};
+
+				visitHome(parleyConfig);
+
+				// Check if settings is set
+				cy.window().then((win) => {
+					expect(win.parleySettings.apiCustomHeaders).to.deep.equal(parleyConfig.apiCustomHeaders);
+				});
+			});
+			it("should update the custom headers during runtime", () => {
+				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
+				const newCustomHeader = {"x-custom-3": "2"};
+
+				visitHome(parleyConfig);
+
+				cy.get("[id=app]").as("app");
+
+				cy.waitFor("@app");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = newCustomHeader;
+				});
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+
+				// We have to clear the local storage after the first registration
+				// otherwise there won't be another POST /devices call because
+				// the device information in the storage is the same as current
+				cy.clearLocalStorage()
+					.then(clickOnLauncher)
+					.then(() => {
+						return cy.wait("@postDevices").then((interception) => {
+							expect(interception.request.headers).to.include(newCustomHeader);
+						});
+					});
+			});
+		});
+		describe("persistDeviceBetweenDomain", () => {
+			beforeEach(() => {
+				Cypress.Cookies.debug(true);
+			});
+			it("should create a cookie, containing the deviceIdentification and with the persistDeviceBetweenDomain as domain, upon opening the chat", () => {
+				const parleyConfig = {
+					persistDeviceBetweenDomain: "parley.nu",
+					xIrisIdentification: "12345678910",
+				};
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				visitHome(parleyConfig);
+
+				clickOnLauncher();
+
+				cy.wait("@postDevices")
+					.then(() => {
+						return cy.wait("@getMessages");
+					})
+					.then(() => {
+						return cy.getCookies()
+							.should("have.length", 1)
+							.then((cookies) => {
+								expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+								expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+								expect(cookies[0]).to.have.property("value", `${parleyConfig.xIrisIdentification}`);
+							});
+					});
+			});
+			it("should update the persistDeviceBetweenDomain during runtime", () => {
+				const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
+
+				// We can only use valid subdomain(s) here, otherwise the cookie
+				// will not be visible for the domain we are currently running
+				// the chat on...
+				const newpersistDeviceBetweenDomain = "chat-dev.parley.nu";
+
+				visitHome(parleyConfig);
+
+				cy.intercept("POST", "*/**/devices").as("postDevices");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
+
+				clickOnLauncher();
+
+				// Check if the cookie is set after registration
+				cy.wait("@postDevices")
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${parleyConfig.persistDeviceBetweenDomain}`);
+					})
+
+					// Update the parleySettings and check if the cookie updated as well (after new registration)
+					.then(cy.window)
+					.then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.persistDeviceBetweenDomain = newpersistDeviceBetweenDomain;
+					})
+					.then(() => cy.wait("@postDevices"))
+					.then(() => cy.wait("@getMessages"))
+					.then(() => cy.getCookies())
+					.should("have.length", 1)
+					.then((cookies) => {
+						expect(cookies[0]).to.have.property("name", `deviceIdentification`);
+						expect(cookies[0]).to.have.property("domain", `.${newpersistDeviceBetweenDomain}`);
+					});
+			});
+
+			describe("switching between domains", () => {
+				before(() => {
+					// Set the cookie to be used by the test
+					// We can't let the library do this because somehow that cookie always gets removed
+					// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
+					// I think because the cookie is not created in the `before()` but in an `it()`
+					const deviceIdentification = "some-device-identification-string";
+					cy.setCookie("deviceIdentification", deviceIdentification, {
+						domain: ".parley.nu",
+						path: "/",
+					});
+
+					// Make the device identification accessible by the tests
+					cy.wrap(deviceIdentification).as("deviceIdentification");
+				});
+
+				it("should use the value, in the cookie, as it's initial device identification", () => {
+					const parleyConfig = {persistDeviceBetweenDomain: "parley.nu"};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]").as("app");
+					cy.waitFor("@app");
+
+					cy.intercept("GET", "*/**/messages").as("getMessages");
+
+					clickOnLauncher(); // Start the device registration
+
+					// We know that if we start retrieving messages,
+					// the device registration is completely finished
+					// meaning that the cookie has been updated
+					cy.wait("@getMessages")
+						.then((interception) => {
+							return cy.get("@deviceIdentification")
+								.then((deviceIdentificationFromCookie) => {
+									expect(interception.request.headers).to.have.property("x-iris-identification", `${defaultParleyConfig.roomNumber}:${deviceIdentificationFromCookie}`);
+								});
+						});
+				});
+			});
+		});
+	});
+
+	describe("component structure", () => {
+		beforeEach(() => {
+			cy.visit("/", {
+				onLoad: (window) => {
+					window.initParleyMessenger();
+				},
+			});
+
+			cy.get("[id=app]").as("app");
+		});
+
+		describe("launcher", () => {
+			it("should have an id", () => {
+				cy.get("@app")
+					.find("[class^=launcher__]")
+					.find("button")
+					.should("have.id", "launcher");
 			});
 		});
 	});
