@@ -5,7 +5,7 @@ export const ApiFetchFailed = "Network request failed";
 
 // Error message when the Api's `status` is "ERROR",
 // but there is not `notification` with type "error"
-export const ApiGenericError = "The API request failed but the API did not return an error notification";
+export const ApiGenericError = "Something went wrong, please try again later";
 
 // Minimum length of the unique device identifier allowed in the Api
 export const MinUdidLength = 10;

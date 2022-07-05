@@ -1,13 +1,10 @@
 import React from "react";
 import {v4 as uuidv4} from "uuid";
 
-/**
- * Default options for the Api module
- */
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
-	deviceIdentification: uuidv4(),
+	deviceIdentification: JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification || uuidv4(),
 	apiDomain: "https://api.parley.nu",
 	autHeader: undefined,
 };
@@ -26,6 +23,7 @@ export const InterfaceTexts = {
 		ariaLabelTextInput: "message ariaLabelTextInput field",
 		messageRetrieveFailed: "Something went wrong while retrieving your messages, please try again later",
 		deviceRegistrationFailed: "Something went wrong while registering your device, please try again later",
+		serviceGenericError: "Something went wrong, please try again later",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
@@ -46,6 +44,7 @@ export const InterfaceTexts = {
 		ariaLabelTextInput: "bericht invoerveld",
 		messageRetrieveFailed: "Er ging iets fout bij het ophalen van je berichten, probeer het later opnieuw",
 		deviceRegistrationFailed: "Er ging iets fout bij het registreren van je apparaat, probeer het later opnieuw",
+		serviceGenericError: "Er ging iets fout, probeer het later opnieuw",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`

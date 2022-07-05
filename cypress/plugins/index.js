@@ -19,7 +19,16 @@
 module.exports = (on, config) => {
 	require('@cypress/code-coverage/task')(on, config)
 
-	on('file:preprocessor', require('@cypress/code-coverage/use-babelrc')) // Needed for unit test code coverage
+	// This is needed to have code coverage over our unit tests
+	// We have to use `use-browserify-istanbul` instead of `use-babelrc`
+	// because we use the `coverageGlobalScopeFunc: false` setting
+	// for istanbul in .babelrc to be compliant for our CSP
+	// If we use `use-babelrc` we get an error in Cypress
+	// telling us it can't find `coverage on undefined`
+	on(
+		'file:preprocessor',
+		require('@cypress/code-coverage/use-browserify-istanbul')
+	)
 
 	// add other tasks to be registered here
 
