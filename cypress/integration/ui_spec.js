@@ -247,6 +247,81 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("not.exist");
 		});
+
+		it("should re-enable the input field after sending the message is successful", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+			findMessage(testMessage);
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
+
+		it("should re-enable the input field after sending the message is unsuccessful", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			// Make sure that posting the message fails
+			cy.intercept("POST", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "Some specific error",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
+
+		it("should re-enable the input field after trying to send an empty message", () => {
+			const testMessage = "";
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
 	});
 
 	describe("parley config settings", () => {
