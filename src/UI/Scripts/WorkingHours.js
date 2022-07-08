@@ -59,13 +59,25 @@ function handleTimestamps(timestamps, currentDate) {
 		const timestampInfo = timestamps[i];
 		const startDate = new Date(timestampInfo[0] * thousand);
 		const endDate = new Date(timestampInfo[1] * thousand);
-		const isOpen = timestampInfo[indexForTimestampBool] === undefined ? true : timestampInfo[indexForTimestampBool]; // Whether we are open (true) or closed (false) in this period
 
-		if(currentDate.getTime() > endDate.getTime() && currentDate.getDate() === endDate.getDate()) { // Return true if current time is between start and end
-			isOnline = !isOpen;
+		// Whether we are open (true) or closed (false) in this period
+		const shouldBeOpen = timestampInfo[indexForTimestampBool] === undefined
+			? true
+			: timestampInfo[indexForTimestampBool];
+
+		if(currentDate.getTime() > endDate.getTime() && currentDate.toDateString() === endDate.toDateString()) {
+			// We surpassed the end time AND we are on the same exact date
+			// which means that the inverse of shouldBeOpen decides if we are online
+			// If we should be open around that time - we are now closed
+			// If we should be closed around that time - we are now open
+			isOnline = !shouldBeOpen;
 			continue; // If there is another timestamp after this one, we give it the possibility to set us back to `online`
-		} else if(currentDate.getTime() >= startDate.getTime() && currentDate.getTime() <= endDate.getTime()) { // Return false if current time is after end, BUT only when current day is the same day as end
-			isOnline = Boolean(isOpen);
+		} else if(currentDate.getTime() >= startDate.getTime() && currentDate.getTime() <= endDate.getTime()) {
+			// We did not surpass the end time AND we did surpass the beginning time
+			// which means that shouldBeOpen decides if we are online
+			// If we should be open around that time - we are now open
+			// If we should be closed around that time - we are now closed
+			isOnline = Boolean(shouldBeOpen);
 			break; // We don't want another timestamp to set us back to `offline`
 		}
 	}
