@@ -34,27 +34,52 @@ function createFormattedWeekday(startDate, endDate) {
 }
 
 /**
- * Returns the time x minutes into the future
+ * Returns the time in the future
  * @param minutes
+ * @param hours
+ * @param days
+ * @param months
+ * @param years
  * @return {Date}
  */
-function getTimeInFuture(minutes) {
+function getTimeInFuture(minutes, hours = 0, days = 0, months = 0, years = 0) {
 	const date = new Date();
 	date.setMinutes(date.getMinutes() + minutes);
+	date.setHours(date.getHours() + hours);
+	date.setDate(date.getDate() + days);
+	date.setMonth(date.getMonth() + months);
+	date.setFullYear(date.getFullYear() + years);
 
 	return date;
 }
 
 /**
- * Returns the time x minutes into the past
+ * Returns the time in the past
  * @param minutes
+ * @param hours
+ * @param days
+ * @param months
+ * @param years
  * @return {Date}
  */
-function getTimeInPast(minutes) {
+function getTimeInPast(minutes, hours = 0, days = 0, months = 0, years = 0) {
 	const date = new Date();
 	date.setMinutes(date.getMinutes() - minutes);
+	date.setHours(date.getHours() - hours);
+	date.setDate(date.getDate() - days);
+	date.setMonth(date.getMonth() - months);
+	date.setFullYear(date.getFullYear() - years);
 
 	return date;
+}
+
+/**
+ * Returns the name of the day as a lowercase string
+ * @param {Date} date
+ * @returns {string}
+ */
+function getDayNameFromDate(date) {
+	return date.toLocaleString("en-GB", {weekday: "long"}).toLowerCase();
 }
 
 /**
@@ -81,7 +106,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 					],
@@ -96,7 +121,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 					],
@@ -107,7 +132,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						"0.00",
 						"23.59",
 					],
@@ -118,7 +143,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						"a.aa",
 						"b.bb",
 					],
@@ -140,7 +165,7 @@ describe("Working hours script", () => {
 
 					expect(areWeOnline([
 						[
-							weekdays[startDate1.getDay()],
+							getDayNameFromDate(startDate1),
 							startTimeFormatted1,
 							endTimeFormatted1,
 						],
@@ -166,7 +191,7 @@ describe("Working hours script", () => {
 
 					expect(areWeOnline([
 						[
-							weekdays[startDate1.getDay()],
+							getDayNameFromDate(startDate1),
 							startTimeFormatted1,
 							endTimeFormatted1,
 						],
@@ -189,7 +214,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 						true,
@@ -205,7 +230,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 						true,
@@ -221,7 +246,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 						false,
@@ -237,7 +262,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate.getDay()],
+						getDayNameFromDate(startDate),
 						startTimeFormatted,
 						endTimeFormatted,
 						false,
@@ -368,7 +393,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate1.getDay()],
+						getDayNameFromDate(startDate1),
 						startTimeFormatted,
 						endTimeFormatted,
 					],
@@ -390,7 +415,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate1.getDay()],
+						getDayNameFromDate(startDate1),
 						startTimeFormatted,
 						endTimeFormatted,
 					],
@@ -412,7 +437,7 @@ describe("Working hours script", () => {
 
 				expect(areWeOnline([
 					[
-						weekdays[startDate1.getDay()],
+						getDayNameFromDate(startDate1),
 						startTimeFormatted,
 						endTimeFormatted,
 					],
@@ -421,6 +446,50 @@ describe("Working hours script", () => {
 						endDate2.getTime() / 1000,
 					],
 				])).to.be.equal(false);
+			});
+			it("should return true while outside office hours (timestamp format), but inside office hours (day format) and timestamp format is exactly 1 month ago (so day numbers are the same)", () => {
+				const startDate1 = getTimeInPast(60);
+				const endDate1 = getTimeInFuture(60);
+				const [
+					startTimeFormatted, endTimeFormatted,
+				] = createFormattedWeekday(startDate1, endDate1);
+
+				const startDate2 = getTimeInPast(0, 3, 0, 1);
+				const endDate2 = getTimeInPast(0, 1, 0, 1);
+
+				expect(areWeOnline([
+					[
+						getDayNameFromDate(startDate1),
+						startTimeFormatted,
+						endTimeFormatted,
+					],
+					[
+						startDate2.getTime() / 1000,
+						endDate2.getTime() / 1000,
+					],
+				])).to.be.equal(true);
+			});
+			it("should return true while outside office hours (timestamp format), but inside office hours (day format) and timestamp format is exactly 1 year ago (so day/month numbers are the same)", () => {
+				const startDate1 = getTimeInPast(60);
+				const endDate1 = getTimeInFuture(60);
+				const [
+					startTimeFormatted, endTimeFormatted,
+				] = createFormattedWeekday(startDate1, endDate1);
+
+				const startDate2 = getTimeInPast(0, 3, 0, 0, 1);
+				const endDate2 = getTimeInPast(0, 1, 0, 0, 1);
+
+				expect(areWeOnline([
+					[
+						getDayNameFromDate(startDate1),
+						startTimeFormatted,
+						endTimeFormatted,
+					],
+					[
+						startDate2.getTime() / 1000,
+						endDate2.getTime() / 1000,
+					],
+				])).to.be.equal(true);
 			});
 		});
 	});
