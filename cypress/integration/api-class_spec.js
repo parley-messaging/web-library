@@ -9,7 +9,7 @@ import {CUSTOMHEADER_BLACKLIST} from "../../src/Api/Constants/CustomHeaderBlackl
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
-	accountIdentification: "0W4qcE5aXoKq9OzvHxj2",
+	accountIdentification: "0cce5bfcdbf07978b269",
 	deviceIdentification: "weblib-v2_cypress-test",
 	pushToken: "weblib-v2_cypress-test+pushToken",
 	pushType: FCMWeb,
@@ -214,9 +214,18 @@ describe("Api class", () => {
 		it("should throw an error when using something other than a String as pushToken", () => {
 			filterPrimitives([
 				"string",
-				"undefined", // Dont test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
+				"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(set.value))
+				expect(() => config.api.subscribeDevice(
+					set.value,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				))
 					.to.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
@@ -224,25 +233,52 @@ describe("Api class", () => {
 		it("should throw an error when using something other than a Number as pushType", () => {
 			filterPrimitives([
 				"number",
-				"undefined", // Dont test for undefined, because pushType is optional and if we give undefined it will test for `version` next
+				"undefined", // Don't test for undefined, because pushType is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(config.pushToken, set.value))
+				expect(() => config.api.subscribeDevice(
+					config.pushToken,
+					set.value,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				))
 					.to.throw(`Expected \`pushType\` to be of type \`number\` but received type \`${set.type}\``);
 			});
 		});
 
 		it("should throw an error when using invalid pushType", () => {
 			const pushType = 9999;
-			expect(() => config.api.subscribeDevice(config.pushToken, pushType))
+			expect(() => config.api.subscribeDevice(
+				config.pushToken,
+				pushType,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+			))
 				.to.throw(`Expected number \`pushType\` to be one of \`[1,2,3,4,5,6]\`, got ${pushType}`);
 		});
 
 		it("should throw an error when using something other than a Boolean as pushEnabled", () => {
 			filterPrimitives([
 				"boolean",
-				"undefined", // Dont test for undefined, because pushEnabled is optional and if we give undefined it will test for `verison` next
+				"undefined", // Don't test for undefined, because pushEnabled is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(config.pushToken, config.pushType, set.value))
+				expect(() => config.api.subscribeDevice(
+					config.pushToken,
+					config.pushType,
+					set.value,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				))
 					.to.throw(`Expected \`pushEnabled\` to be of type \`boolean\` but received type \`${set.type}\``);
 			});
 		});
@@ -250,9 +286,18 @@ describe("Api class", () => {
 		it("should throw an error when using `pushEnabled = true` and something other than a String as pushToken", () => {
 			filterPrimitives([
 				"string",
-				"undefined", // Dont test for undefined, because pushToken is optional and if we give undefined it will test for `verison` next
+				"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(set.value, config.pushType, true))
+				expect(() => config.api.subscribeDevice(
+					set.value,
+					config.pushType,
+					true,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				))
 					.to.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
@@ -260,9 +305,18 @@ describe("Api class", () => {
 		it("should throw an error when using something other than an Object as userAdditionalInformation", () => {
 			filterPrimitives([
 				"Object",
-				"undefined", // Dont test for undefined, because userAdditionalInformation is optional and if we give undefined it will test for `verison` next
+				"undefined", // Don't test for undefined, because userAdditionalInformation is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(config.pushToken, config.pushType, true, set.value))
+				expect(() => config.api.subscribeDevice(
+					config.pushToken,
+					config.pushType,
+					true,
+					set.value,
+					undefined,
+					undefined,
+					undefined,
+					undefined,
+				))
 					.to.throw(`Expected \`userAdditionalInformation\` to be of type \`object\` but received type \`${set.type}\``);
 			});
 		});
@@ -271,7 +325,7 @@ describe("Api class", () => {
 			filterPrimitives([
 				"number",
 				"boolean", // Boolean are numbers
-				"undefined", // Dont test for undefined, because type is optional and if we give undefined it will test for `verison` next
+				"undefined", // Don't test for undefined, because type is optional and if we give undefined it will test for `version` next
 			]).forEach((set) => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
@@ -279,6 +333,9 @@ describe("Api class", () => {
 					true,
 					config.userAdditionalInformation,
 					set.value,
+					undefined,
+					undefined,
+					undefined,
 				))
 					.to.throw(`Expected \`type\` to be of type \`number\` but received type \`${set.type}\``);
 			});
@@ -292,6 +349,9 @@ describe("Api class", () => {
 				true,
 				config.userAdditionalInformation,
 				type,
+				undefined,
+				undefined,
+				undefined,
 			))
 				.to.throw(`Expected number \`type\` to be one of \`[1,2,3,4]\`, got ${type}`);
 		});
@@ -305,6 +365,8 @@ describe("Api class", () => {
 					config.userAdditionalInformation,
 					config.type,
 					set.value,
+					undefined,
+					undefined,
 				))
 					.to.throw(`Expected \`version\` to be of type \`string\` but received type \`${set.type}\``);
 			});
@@ -320,6 +382,8 @@ describe("Api class", () => {
 				config.userAdditionalInformation,
 				config.type,
 				shortVersion,
+				config.referer,
+				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to have a minimum length of \`5\`, got \`${shortVersion}\``);
 
@@ -332,6 +396,8 @@ describe("Api class", () => {
 				config.userAdditionalInformation,
 				config.type,
 				longVersion,
+				config.referer,
+				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to have a maximum length of \`8\`, got \`${longVersion}\``);
 
@@ -344,6 +410,8 @@ describe("Api class", () => {
 				config.userAdditionalInformation,
 				config.type,
 				wrongFormat,
+				config.referer,
+				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
@@ -361,6 +429,7 @@ describe("Api class", () => {
 					config.type,
 					config.version,
 					set.value,
+					config.authorization,
 				))
 					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
 			});
@@ -395,6 +464,8 @@ describe("Api class", () => {
 				config.userAdditionalInformation,
 				config.type,
 				config.version,
+				undefined,
+				undefined,
 			);
 
 			cy.wait("@postDevices").then((interception) => {
@@ -422,6 +493,8 @@ describe("Api class", () => {
 						config.userAdditionalInformation,
 						config.type,
 						config.version,
+						config.referer,
+						config.authorization,
 					);
 					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
 				});
@@ -445,6 +518,8 @@ describe("Api class", () => {
 							config.userAdditionalInformation,
 							config.type,
 							config.version,
+							config.referer,
+							config.authorization,
 						);
 					});
 				});
