@@ -24,6 +24,13 @@ function clickOnLauncher() {
 		.should("be.visible")
 		.click();
 }
+function clickOnMenu() {
+	return cy.get("@app")
+		.find("[class^=left__]")
+		.find("button")
+		.should("be.visible")
+		.click();
+}
 function sendMessage(testMessage) {
 	return cy.get("@app")
 		.find("[class^=chat__]")
@@ -1048,6 +1055,83 @@ describe("UI", () => {
 					.find("button")
 					.should("have.id", "launcher");
 			});
+		});
+	});
+
+	describe("menu options", () => {
+		it("should open the menu and have options available", () => {
+			visitHome();
+			clickOnLauncher();
+			clickOnMenu();
+
+			// Check if menu is open
+			cy.get("@app")
+				.find("[class^=menu__]")
+				.should("be.visible")
+				.find("[class^=content__]")
+				.should("be.visible")
+				.find("button")
+				.should("be.visible")
+				.contains(InterfaceTexts.english.downloadTranscript)
+				.should("be.visible");
+		});
+
+		it("should close the menu", () => {
+			visitHome();
+			clickOnLauncher();
+			clickOnMenu();
+
+			// Check if you can close menu
+			cy.get("@app")
+				.find("[class^=menu__]")
+				.should("be.visible")
+				.find("[class^=navigation__]")
+				.should("be.visible")
+				.find("button")
+				.should("be.visible")
+				.click();
+
+			// Validate that chat is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible");
+		});
+
+		it("click on download transcript from menu", () => {
+			// Intercept the api call with fake data
+			cy.fixture("getMessagesResponse.json").then((json) => {
+				cy.intercept("GET", "*/**/messages", json);
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// TODO check for other ways to wait on x instead of time
+			// Because we intercept the api call and it returns data,
+			// we need to wait else the menu closes when messages received.
+			// eslint-disable-next-line cypress/no-unnecessary-waiting
+			cy.wait(1000);
+
+			clickOnMenu();
+
+			// Click on download transcript
+			cy.get("@app")
+				.find("[class^=menu__]")
+				.should("be.visible")
+				.find("[class^=content__]")
+				.should("be.visible")
+				.find("button")
+				.should("be.visible")
+				.click();
+
+			// TODO check for other ways to wait on x instead of time
+			// Wait on download
+			// eslint-disable-next-line cypress/no-unnecessary-waiting
+			cy.wait(1000);
+
+			// Read and check transcript
+			cy.readFile(`/home/gydo/projects/web-library/cypress/downloads/${InterfaceTexts.english.downloadTranscript}.txt`)
+				.should("contain", "Generated conversation");
 		});
 	});
 });

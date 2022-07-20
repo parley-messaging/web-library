@@ -211,6 +211,93 @@ export default class Api {
 			});
 	}
 
+	getAllMessages(oldData = undefined) {
+		if(!oldData)
+			return this.getMessages().then(data => this.getAllMessages(data));
+
+		if(oldData?.paging?.before) {
+			return this.fetchWrapper(`${this.config.apiUrl}${oldData.paging.before}`, {
+				method: "GET",
+				headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
+			})
+				.then((data) => {
+					if(data.paging?.before)
+						return this.getAllMessages(data);
+
+					const newData = data.concat(oldData);
+					this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, newData));
+					return newData;
+				})
+				.catch((errorNotifications, warningNotifications) => {
+					this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, {
+						errorNotifications,
+						warningNotifications,
+						data: null,
+					}));
+				});
+		}
+
+		if(oldData?.data)
+			return oldData.data;
+
+		return undefined;
+	}
+
+	async getTranscript() {
+		// Get all messages
+		const allMessages = await this.getAllMessages();
+
+		// Required variables
+		let lastDate;
+		const currentDate = new Date();
+		const typeAccount = 2;
+		const newLine = "\n";
+
+		// Starting file content
+		const content = [];
+		content.push(`Generated conversation${newLine}`);
+		content.push(`From: ${window.location.href}${newLine}`);
+		content.push(`Date: ${currentDate.toLocaleDateString(navigator.language)}${newLine}`);
+
+		allMessages.forEach((messageObject) => {
+			// Get formatted time
+			const milisecondToSecond = 1000;
+			const messageTimestamp = new Date(messageObject.time * milisecondToSecond);
+			const messageDate = messageTimestamp.toLocaleDateString(navigator.language);
+			const messageTime = messageTimestamp.toLocaleTimeString(navigator.language, {
+				hours: "long",
+				minutes: "long",
+				seconds: "long",
+			});
+
+			// Get author name
+			let author = messageObject.typeId === typeAccount ? "Operator" : "You";
+			if(messageObject.agent?.name)
+				author = messageObject.agent.name;
+
+			// Get message
+			let {message} = messageObject;
+			if(messageObject.image)
+				message = "[image]";
+
+			// If message ends with new line don't add our own
+			if(message.match(/.*\n$/u) === null)
+				message += newLine;
+
+			// Check if we need to write a new date
+			if(lastDate !== messageDate)
+				content.push(newLine + messageDate + newLine);
+
+			// The actual content
+			content.push(`${messageTime} ${author}: ${message}`);
+
+			// Add current date to lastDate
+			lastDate = messageDate;
+		});
+
+		return content;
+	}
+
 	fetchWrapper(url, options) {
 		// Merge any custom headers into the already configured headers
 		const extendedOptions = {

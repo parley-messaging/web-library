@@ -16,6 +16,7 @@ export const InterfaceTexts = {
 	english: {
 		// New in v2
 		ariaLabelButtonMenu: "show options menu",
+		ariaLabelButtonMenuClose: "show or hide options menu",
 		ariaLabelButtonMinimize: "hide chat window",
 		ariaLabelButtonClose: "stop chat session",
 		ariaLabelButtonLauncher: "toggle chat window visibility",
@@ -33,10 +34,13 @@ export const InterfaceTexts = {
 		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
 		subscribeDeviceFailedError: "Something went wrong while registering your device, please re-open the chat to try again", // New in v2
 		retrievingMessagesFailedError: "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening", // New in v2
+		downloadTranscript: "Download conversation", // New in v2
+		aboutApp: "About this app", // New in v2
 	},
 	dutch: {
 		// New from v2
 		ariaLabelButtonMenu: "toon optie menu",
+		ariaLabelButtonMenuClose: "toon of sluit optie menu",
 		ariaLabelButtonMinimize: "verberg chat scherm",
 		ariaLabelButtonClose: "stop chat sessie",
 		ariaLabelButtonLauncher: "chat scherm zichtbaarheid schakelen",
@@ -54,6 +58,8 @@ export const InterfaceTexts = {
 		serviceUnreachableError: "De service is momenteel niet bereikbaar, probeer het later opnieuw", // Was `serviceUnreachableNotification`
 		subscribeDeviceFailedError: "Er ging iets fout met het registreren van je apparaat, open de chat opnieuw om het nog een keer te proberen", // New in v2
 		retrievingMessagesFailedError: "Er ging iets fout bij het ophalen van je berichten, open de chat opnieuw als dit zich voor blijft doen", // New in v2
+		downloadTranscript: "Download conversatie", // New in v2
+		aboutApp: "Over deze app", // New in v2
 	},
 };
 

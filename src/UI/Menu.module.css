@@ -1,0 +1,51 @@
+.menu {
+	width: 300px;
+	transform: scale(1);
+	transform-origin: bottom right;
+	transition: transform 250ms ease-in-out,opacity .1s linear 150ms;
+	font-size: var(--parley-link-font-size, 14px);
+	position: fixed;
+	right: 17px;
+	bottom: 85px;
+	height: auto;
+	background-color: var(--parley-background-color, #FFF);
+	border-radius: 5px;
+	box-sizing: border-box;
+	box-shadow: var(--parley-shadow, 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19));
+	padding: 10px;
+	z-index: 2001;
+}
+.navigation{
+	position: absolute;
+	right: -7px;
+	top: -7px;
+}
+.navigation button {
+	border-radius: 50%;
+	line-height: 20px;
+	text-align: center;
+	font-style: normal;
+	background-color: var(--parley-nav-background-color, #4A5E83);
+	color: var(--parley-nav-title-color, #FFF);
+	cursor: pointer;
+	border: none;
+	padding: 0;
+	width: 19px;
+	height: 19px;
+}
+.content {
+	padding: 10px;
+}
+.content button {
+	height: 26px;
+	line-height: 26px;
+	border: none;
+	background-color: transparent;
+}
+.content button:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+.content button span{
+	margin-left: 5px;
+}

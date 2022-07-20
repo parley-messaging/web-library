@@ -73,11 +73,15 @@ describe("Api class", () => {
 		// This way we don't fill up the API with test data
 		cy.fixture("postDevicesResponse.json").as("postDevicesResponse");
 		cy.fixture("postMessagesResponse.json").as("postMessagesResponse");
+		cy.fixture("getMessagesResponse.json").as("getMessagesResponse");
 		cy.get("@postDevicesResponse").then((json) => {
 			cy.intercept("POST", `${config.apiDomain}/**/devices`, json).as("postDevices");
 		});
 		cy.get("@postMessagesResponse").then((json) => {
 			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
+		});
+		cy.get("@getMessagesResponse").then((json) => {
+			cy.intercept("GET", `${config.apiDomain}/**/messages`, json).as("getMessages");
 		});
 
 		// This should not go in afterEach,
@@ -532,6 +536,107 @@ describe("Api class", () => {
 			cy.wait("@postDevices").then((interception) => {
 				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(customHeaders));
 				expect(Object.values(interception.request.headers)).to.include.members(Object.values(customHeaders));
+			});
+		});
+	});
+
+	// TODO still need to make a new api
+	// describe("getAllMessages()", () => {
+	// 	it("returns all messages", () => {
+	//
+	// 	});
+	// });
+
+	describe("getTranscript()", () => {
+		it("does the transcript contains all messages", () => {
+			// Intercept the api call with fake data
+			cy.get("@getMessages").then((interception) => {
+				config.api.getAllMessages()
+					.then((messages) => {
+						config.api.getTranscript()
+							.then((transcript) => {
+								// Test will fail after one of the messages are not inside the transcript
+								messages.forEach((message) => {
+									// Check if href is in the array returns true/false
+									const included = transcript.some(substring => substring.includes(message.message));
+
+									// eslint-disable-next-line no-unused-expressions
+									expect(included).to.be.true;
+								});
+							});
+					});
+			});
+		});
+
+		it("does it contains the current url", () => {
+			cy.visit("/");
+
+			// Intercept the api call with fake data
+			cy.get("@getMessages").then((interception) => {
+				cy.location("href").then((href) => {
+					config.api.getTranscript()
+						.then((transcript) => {
+							// Check if href is in the array returns true/false
+							const included = transcript.some(substring => substring.includes(href));
+
+							// eslint-disable-next-line no-unused-expressions
+							expect(included).to.be.true;
+						});
+				});
+			});
+		});
+		it("does it contains the current date", () => {
+			// Intercept the api call with fake data
+			cy.get("@getMessages").then((interception) => {
+				config.api.getTranscript()
+					.then((transcript) => {
+						const currentDate = new Date().toLocaleDateString(navigator.language);
+
+						// Check if the current date is in the array returns true/false
+						const included = transcript.some(substring => substring.includes(currentDate));
+
+						// eslint-disable-next-line no-unused-expressions
+						expect(included).to.be.true;
+					});
+			});
+		});
+		it("check the message format", () => {
+			// Intercept the api call with fake data
+			cy.get("@getMessages").then((interception) => {
+				config.api.getTranscript()
+					.then((transcript) => {
+						console.log(transcript);
+
+						// TODO don't know how to solve this
+						// const hoursFormat = /(0?[1-9]|1?[0-9]|2?[0-4])/;
+						// const minutesAndSecondsFormat = /(?:[0-5]\d)/;
+						// eslint-disable-next-line prefer-named-capture-group
+						const selectFormat = /(0?[1-9]|1?[0-9]|2?[0-4]):(?:[0-5]\d):(?:[0-5]\d) ([AaPp][Mm]) ?(Gerben|You):/u;
+
+						// Check if href is in the array returns true/false
+						const included = transcript.some(substring => substring.contains(selectFormat));
+
+						// eslint-disable-next-line no-unused-expressions
+						expect(included).to.be.true;
+					});
+			});
+
+			// hh:mm:ss You|Agentname: Message
+		});
+		it("messages need to be grouped by date", () => {
+			// Intercept the api call with fake data
+			cy.get("@getMessages").then((interception) => {
+				config.api.getTranscript()
+					.then((transcript) => {
+						// Check if href is in the array returns true/false
+						const firstDate = transcript.some(substring => substring.includes("\n9/12/2018\n"));
+						const secondDate = transcript.some(substring => substring.includes("\n10/12/2018\n"));
+
+						// eslint-disable-next-line no-unused-expressions
+						expect(firstDate).to.be.true;
+						// eslint-disable-next-line no-unused-expressions
+						expect(secondDate).to.be.true;
+					});
 			});
 		});
 	});

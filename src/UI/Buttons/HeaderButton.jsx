@@ -34,7 +34,12 @@ class HeaderButton extends Component {
 		}
 
 		return (
-			<button aria-label={ariaLabel} className={classNames} onClick={this.props.onClick} type={typeButton}>
+			<button
+				aria-label={ariaLabel}
+				className={classNames}
+				onClick={this.props.onClick}
+				type={typeButton}
+			>
 				<FontAwesomeIcon icon={icon} />
 			</button>
 		);

@@ -12,6 +12,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import Launcher from "./Launcher";
 import Chat from "./Chat";
+import Menu from "./Menu";
 import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
@@ -37,6 +38,7 @@ export default class App extends React.Component {
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
+			showMenu: false,
 			offline: false,
 			isMobile: isMobile(),
 			isiOSMobile: isiOSMobileDevice(),
@@ -65,6 +67,7 @@ export default class App extends React.Component {
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
+			transcriptFileName: window?.parleySettings?.transcriptFileName || window?.parleySettings?.downloadFileName || "transcript",
 		};
 
 		this.Api = new Api(
@@ -469,6 +472,8 @@ export default class App extends React.Component {
 				}
 			} else if(path[layer1] === "country") {
 				objectToSaveIntoState = {interfaceLanguage: value};
+			} else if(path[layer1] === "transcriptFileName" || path[layer1] === "downloadFileName") {
+				objectToSaveIntoState = {transcriptFileName: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -519,6 +524,9 @@ export default class App extends React.Component {
 
 	handleClick = () => {
 		this.toggleChat();
+
+		// Be sure to turn close everything else
+		this.setState(() => ({showMenu: false}));
 	}
 
 	showChat = () => {
@@ -550,6 +558,12 @@ export default class App extends React.Component {
 			this.hideChat();
 		 else
 			this.showChat();
+	}
+
+	handleMenuClick = () => {
+		// Toggle chat and menu
+		this.toggleChat();
+		this.setState(state => ({showMenu: !state.showMenu}));
 	}
 
 	restartPolling = () => {
@@ -593,10 +607,18 @@ export default class App extends React.Component {
 							closeButton={this.state.closeButton}
 							isMobile={this.state.isMobile}
 							isiOSMobile={this.state.isiOSMobile}
+							onMenuClick={this.handleMenuClick}
 							onMinimizeClick={this.handleClick}
 							restartPolling={this.restartPolling}
 							title={this.state.interfaceTexts.title}
 							welcomeMessage={this.state.interfaceTexts.welcomeMessage}
+						   />
+				}
+				{
+					this.state.showMenu
+						&& <Menu
+							api={this.Api}
+							onClose={this.handleMenuClick}
 						   />
 				}
 			</InterfaceTextsContext.Provider>
