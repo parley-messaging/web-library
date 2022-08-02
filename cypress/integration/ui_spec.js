@@ -538,7 +538,7 @@ describe("UI", () => {
 				cy.wait("@createDevice");
 			});
 			it("should clear the messages when switching accounts", () => {
-				const parleyConfig = {roomNumber: "0W4qcE5aXoKq9OzvHxj2"};
+				const parleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
 				cy.visit("/", {
@@ -555,7 +555,7 @@ describe("UI", () => {
 				findMessage(testMessage); // Wait until the server received the new message
 
 				// Change the account identification
-				const newAccountIdentification = "0cce5bfcdbf07978b269";
+				const newAccountIdentification = "0W4qcE5aXoKq9OzvHxj2";
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.roomNumber = newAccountIdentification;
