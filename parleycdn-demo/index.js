@@ -7,7 +7,7 @@ let settingsUrl = "";
 
 // Default config used to create a chat
 const config = {
-	roomNumber: "0W4qcE5aXoKq9OzvHxj2",
+	roomNumber: "0cce5bfcdbf07978b269",
 	runOptions: {},
 };
 window.parleySettingsDemo = config;
