@@ -18,6 +18,9 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
+		if(!this.state.reply)
+			return; // Don't send empty messages
+
 		// While sending the message we don't want the user to keep
 		// trying to send this message by submitting the input field,
 		// so we disable it until we get a response from the API
