@@ -1,5 +1,6 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
+import {interceptIndefinitely} from "../support/utils";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 function visitHome(parleyConfig) {
@@ -251,9 +252,25 @@ describe("UI", () => {
 		it("should re-enable the input field after sending the message is successful", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
+			const interception = interceptIndefinitely("POST", "*/**/messages");
+
 			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
+
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
 			findMessage(testMessage);
 
 			// Validate that api error is visible
@@ -273,7 +290,7 @@ describe("UI", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
 			// Make sure that posting the message fails
-			cy.intercept("POST", "*/**/messages", {
+			const interception = interceptIndefinitely("POST", "*/**/messages", {
 				statusCode: 400,
 				body: {
 					status: "ERROR",
@@ -290,7 +307,21 @@ describe("UI", () => {
 			clickOnLauncher();
 			sendMessage(testMessage);
 
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
 			// Validate that api error is visible
+			// and that the text area is enabled
 			cy.get("@app")
 				.find("[class^=chat__]")
 				.should("be.visible")
@@ -303,12 +334,16 @@ describe("UI", () => {
 				.should("be.enabled");
 		});
 
-		it("should re-enable the input field after trying to send an empty message", () => {
+		it("should not disable the input field when trying to send an empty message", () => {
 			const testMessage = "";
 
 			visitHome();
 			clickOnLauncher();
 			sendMessage(testMessage);
+
+			// It is not possible to check if the POST /messages request is
+			// NOT done, so all we can do is check if the text area
+			// is enabled below..
 
 			// Validate that api error is visible
 			cy.get("@app")
