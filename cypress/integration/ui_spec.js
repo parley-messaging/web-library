@@ -273,7 +273,7 @@ describe("UI", () => {
 
 			findMessage(testMessage);
 
-			// Validate that api error is visible
+			// Validate that the textarea is enabled
 			cy.get("@app")
 				.find("[class^=chat__]")
 				.should("be.visible")
@@ -320,8 +320,7 @@ describe("UI", () => {
 				.should("be.disabled")
 				.then(interception.sendResponse);
 
-			// Validate that api error is visible
-			// and that the text area is enabled
+			// Validate that the text area is enabled
 			cy.get("@app")
 				.find("[class^=chat__]")
 				.should("be.visible")
@@ -343,9 +342,9 @@ describe("UI", () => {
 
 			// It is not possible to check if the POST /messages request is
 			// NOT done, so all we can do is check if the text area
-			// is enabled below..
+			// is enabled below...
 
-			// Validate that api error is visible
+			// Validate that the textarea is enabled
 			cy.get("@app")
 				.find("[class^=chat__]")
 				.should("be.visible")
