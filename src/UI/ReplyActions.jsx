@@ -18,7 +18,7 @@ class ReplyActions extends Component {
 	}
 
 	handleSubmit = () => {
-		if(!this.state.reply)
+		if(this.state.reply === "")
 			return; // Don't send empty messages
 
 		// While sending the message we don't want the user to keep
