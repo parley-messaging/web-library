@@ -132,7 +132,10 @@ export default class App extends React.Component {
 			const [
 				name, value,
 			] = cookies[i].split("=");
-			if(name === "deviceIdentification" && value.length > 0)
+
+			// Make sure to trim any whitespace from the name
+			// Some user agents use ";" and some use "; "
+			if(name.trim() === "deviceIdentification" && value.length > 0)
 				return value;
 		}
 
