@@ -1103,7 +1103,20 @@ describe("UI", () => {
 					// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
 					// I think because the cookie is not created in the `before()` but in an `it()`
 					const deviceIdentification = "some-device-identification-string";
+
+					// We also need to put this cookie in the middle of other cookies,
+					// so we can test if we can find cookies in the middle of cookie strings
+					cy.setCookie("dummyCookie1", "dummy value", {
+						domain: ".parley.nu",
+						path: "/",
+					});
+
 					cy.setCookie("deviceIdentification", deviceIdentification, {
+						domain: ".parley.nu",
+						path: "/",
+					});
+
+					cy.setCookie("dummyCookie2", "dummy value", {
 						domain: ".parley.nu",
 						path: "/",
 					});
