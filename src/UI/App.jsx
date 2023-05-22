@@ -185,19 +185,7 @@ export default class App extends React.Component {
 		userAdditionalInformation, type, deviceVersion,
 		referer, authorization,
 	) => {
-		const body = {
-			pushToken,
-			pushType,
-			pushEnabled,
-			userAdditionalInformation,
-			type,
-			version: deviceVersion,
-			referer,
-			authorization,
-		};
-
 		const storeIntoLocalStorage = JSON.stringify({
-			...body,
 			accountIdentification: this.Api.accountIdentification,
 			deviceIdentification: this.Api.deviceIdentification,
 		});
