@@ -1172,4 +1172,54 @@ describe("UI", () => {
 			});
 		});
 	});
+	describe("localstorage", () => {
+		it("should only have device and account registration", () => {
+			const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
+			const testMessage = `test message localstorage variable check ${Date.now()}`;
+			visitHome(parleyConfig);
+
+			cy.get("[id=app]").as("app");
+
+			clickOnLauncher();
+			sendMessage(testMessage);
+			findMessage(testMessage); // Wait until the server received the new message
+
+			const newAuthHeader = "1234";
+			const apiVersion = "v1.6";
+
+			// see configuration options https://developers.parley.nu/docs/settings#runoptions
+			cy.window().then((win) => {
+				// eslint-disable-next-line no-param-reassign
+				win.parleySettings.authHeader = newAuthHeader;
+				// eslint-disable-next-line no-param-reassign
+				win.parleySettings.apiVersion = apiVersion;
+			});
+			cy.window().then((win) => {
+				// get the content of the deviceInformation key from the local storage
+				let localStorageValue = win.localStorage.getItem("deviceInformation");
+				localStorageValue = JSON.parse(localStorageValue);
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.accountIdentification).to.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.deviceIdentification).to.exist;
+
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.userAdditionalInformation).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.authorization).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.version).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.type).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.pushToken).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.pushType).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.pushEnabled).to.not.exist;
+				// eslint-disable-next-line no-unused-expressions
+				expect(localStorageValue.referer).to.not.exist;
+			});
+		});
+	});
 });
