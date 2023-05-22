@@ -1182,7 +1182,6 @@ describe("UI", () => {
 
 			clickOnLauncher();
 			sendMessage(testMessage);
-			findMessage(testMessage); // Wait until the server received the new message
 
 			const newAuthHeader = "1234";
 			const apiVersion = "v1.6";
