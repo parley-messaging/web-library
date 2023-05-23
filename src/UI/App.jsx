@@ -190,22 +190,6 @@ export default class App extends React.Component {
 			deviceIdentification: this.Api.deviceIdentification,
 		});
 
-		// Check registration in local storage
-		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === storeIntoLocalStorage) {
-			// Create cookie if it doesn't exist already (and the persistDeviceBetweenDomain setting is used)
-			if(this.state.persistDeviceBetweenDomain && !this.getDeviceIdentificationCookie()) {
-				this.createDeviceIdentificationCookie(
-					this.state.deviceIdentification,
-					this.state.persistDeviceBetweenDomain,
-				);
-			}
-
-			Logger.debug("Found same device information from localStorage, using that instead of registering a new device");
-			this.Api.deviceRegistered = true;
-			return; // No need to call the API if we don't have any new data
-		}
-
 		this.Api.subscribeDevice(
 			pushToken,
 			pushType,
