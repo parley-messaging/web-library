@@ -242,9 +242,6 @@ export default class App extends React.Component {
 
 			this.removeDeviceIdentificationCookie(this.state.persistDeviceBetweenDomain);
 
-			// Remove old device info, otherwise we cannot create a new one with the same info
-			localStorage.removeItem("deviceInformation");
-
 			// Make sure we stop otherwise it will poll for the old device info
 			this.PollingService.stopPolling();
 
