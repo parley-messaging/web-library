@@ -43,7 +43,7 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 ## Testing
 ### Cypress
 #### Installation
-1. Install the following: https://docs.cypress.io/guides/getting-started/installing-cypress#Ubuntu-Debian
+1. Install the following: https://docs.cypress.io/guides/getting-started/installing-cypress#UbuntuDebian
 1. Next install Cypress with NPM: https://docs.cypress.io/guides/getting-started/installing-cypress#npm-install
 3. ~~WSL can't (yet) open GUI applications on its own, that's why we need additional setup: https://nickymeuleman.netlify.app/blog/gui-on-wsl2-cypress~~
    This is not necessary anymore due to `npm run cy:open` runs `bin/start_cypress.sh`. This also fixes the problem
