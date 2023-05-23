@@ -179,16 +179,21 @@ export default class App extends React.Component {
 	 * @param deviceVersion
 	 * @param referer
 	 * @param authorization
+	 * @param force bool If true, it will not check for any existing registrations and force a new one
 	 */
 	subscribeDevice = (
 		pushToken, pushType, pushEnabled,
 		userAdditionalInformation, type, deviceVersion,
-		referer, authorization,
+		referer, authorization, force,
 	) => {
-		const storeIntoLocalStorage = JSON.stringify({
-			accountIdentification: this.Api.accountIdentification,
-			deviceIdentification: this.Api.deviceIdentification,
-		});
+		if(this.Api.deviceRegistered && !force) {
+			Logger.debug("Device is already registered, not registering a new one");
+			return; // Don't register if we already are registered
+		}
+		Logger.debug("Registering new device");
+
+		// Store the device identification, so we don't generate a new one on each registration
+		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
 
 		this.Api.subscribeDevice(
 			pushToken,
@@ -261,6 +266,7 @@ export default class App extends React.Component {
 				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization,
+				true,
 			);
 			this.PollingService.restartPolling();
 		}
@@ -284,6 +290,7 @@ export default class App extends React.Component {
 				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization || undefined,
+				true,
 			);
 		}
 
@@ -508,6 +515,7 @@ export default class App extends React.Component {
 			this.state.deviceVersion,
 			undefined,
 			undefined,
+			false,
 		);
 	}
 
