@@ -1181,29 +1181,28 @@ describe("UI", () => {
 
 			visitHome(parleyConfig);
 			cy.get("[id=app]").as("app");
-
 			cy.window().then((win) => {
-				win.parleySettings.authHeader = newAuthHeader;
-				win.parleySettings.apiVersion = apiVersion;
+				const window = {...win};
+				window.parleySettings.authHeader = newAuthHeader;
+				window.parleySettings.apiVersion = apiVersion;
 			});
-
 			clickOnLauncher();
 			sendMessage(testMessage);
-
 			cy.window().then((win) => {
-				// get the content of the deviceInformation key from the local storage
-				let localStorageValue = win.localStorage.getItem("deviceInformation");
-				localStorageValue = JSON.parse(localStorageValue);
-				expect(localStorageValue.accountIdentification).to.exist;
-				expect(localStorageValue.deviceIdentification).to.exist;
-				expect(localStorageValue.userAdditionalInformation).to.not.exist;
-				expect(localStorageValue.authorization).to.not.exist;
-				expect(localStorageValue.version).to.not.exist;
-				expect(localStorageValue.type).to.not.exist;
-				expect(localStorageValue.pushToken).to.not.exist;
-				expect(localStorageValue.pushType).to.not.exist;
-				expect(localStorageValue.pushEnabled).to.not.exist;
-				expect(localStorageValue.referer).to.not.exist;
+				// get the Parley setting information which was created inside the local storage
+				cy.wrap(win.localStorage.getItem("deviceInformation")).then((value) => {
+					const parsedValue = JSON.parse(value);
+					cy.wrap(parsedValue.accountIdentification).should("exist");
+					cy.wrap(parsedValue.deviceIdentification).should("exist");
+					cy.wrap(parsedValue.userAdditionalInformation).should("not.exist");
+					cy.wrap(parsedValue.authorization).should("not.exist");
+					cy.wrap(parsedValue.version).should("not.exist");
+					cy.wrap(parsedValue.type).should("not.exist");
+					cy.wrap(parsedValue.pushToken).should("not.exist");
+					cy.wrap(parsedValue.pushType).should("not.exist");
+					cy.wrap(parsedValue.pushEnabled).should("not.exist");
+					cy.wrap(parsedValue.referer).should("not.exist");
+				});
 			});
 		});
 	});
@@ -1216,25 +1215,26 @@ describe("UI", () => {
 			visitHome(parleyConfig);
 			cy.get("[id=app]").as("app");
 			cy.window().then((win) => {
-				win.parleySettings.apiVersion = apiVersion;
+				const window = {...win};
+				window.parleySettings.apiVersion = apiVersion;
 			});
 			clickOnLauncher();
 			sendMessage(testMessage);
-
 			cy.window().then((win) => {
-				// get the content of the deviceInformation key from the local storage
-				let localStorageValue = win.localStorage.getItem("deviceInformation");
-				localStorageValue = JSON.parse(localStorageValue);
-				expect(localStorageValue.accountIdentification).to.exist;
-				expect(localStorageValue.deviceIdentification).to.exist;
-				expect(localStorageValue.userAdditionalInformation).to.not.exist;
-				expect(localStorageValue.authorization).to.not.exist;
-				expect(localStorageValue.version).to.not.exist;
-				expect(localStorageValue.type).to.not.exist;
-				expect(localStorageValue.pushToken).to.not.exist;
-				expect(localStorageValue.pushType).to.not.exist;
-				expect(localStorageValue.pushEnabled).to.not.exist;
-				expect(localStorageValue.referer).to.not.exist;
+				// get the Parley setting information which was created inside the local storage
+				cy.wrap(win.localStorage.getItem("deviceInformation")).then((value) => {
+					const parsedValue = JSON.parse(value);
+					cy.wrap(parsedValue.accountIdentification).should("exist");
+					cy.wrap(parsedValue.deviceIdentification).should("exist");
+					cy.wrap(parsedValue.userAdditionalInformation).should("not.exist");
+					cy.wrap(parsedValue.authorization).should("not.exist");
+					cy.wrap(parsedValue.version).should("not.exist");
+					cy.wrap(parsedValue.type).should("not.exist");
+					cy.wrap(parsedValue.pushToken).should("not.exist");
+					cy.wrap(parsedValue.pushType).should("not.exist");
+					cy.wrap(parsedValue.pushEnabled).should("not.exist");
+					cy.wrap(parsedValue.referer).should("not.exist");
+				});
 			});
 		});
 	});
