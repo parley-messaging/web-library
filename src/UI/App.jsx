@@ -179,44 +179,21 @@ export default class App extends React.Component {
 	 * @param deviceVersion
 	 * @param referer
 	 * @param authorization
+	 * @param force bool If true, it will not check for any existing registrations and force a new one
 	 */
 	subscribeDevice = (
 		pushToken, pushType, pushEnabled,
 		userAdditionalInformation, type, deviceVersion,
-		referer, authorization,
+		referer, authorization, force,
 	) => {
-		const body = {
-			pushToken,
-			pushType,
-			pushEnabled,
-			userAdditionalInformation,
-			type,
-			version: deviceVersion,
-			referer,
-			authorization,
-		};
-
-		const storeIntoLocalStorage = JSON.stringify({
-			...body,
-			accountIdentification: this.Api.accountIdentification,
-			deviceIdentification: this.Api.deviceIdentification,
-		});
-
-		// Check registration in local storage
-		const storedDeviceInformation = localStorage.getItem("deviceInformation");
-		if(storedDeviceInformation === storeIntoLocalStorage) {
-			// Create cookie if it doesn't exist already (and the persistDeviceBetweenDomain setting is used)
-			if(this.state.persistDeviceBetweenDomain && !this.getDeviceIdentificationCookie()) {
-				this.createDeviceIdentificationCookie(
-					this.state.deviceIdentification,
-					this.state.persistDeviceBetweenDomain,
-				);
-			}
-
-			Logger.debug("Found same device information from localStorage, using that instead of registering a new device");
-			this.Api.deviceRegistered = true;
-			return; // No need to call the API if we don't have any new data
+		if(this.Api.deviceRegistered && !force) {
+			Logger.debug("Device is already registered, not registering a new one");
+			return; // Don't register if we already are registered
 		}
+		Logger.debug("Registering new device");
+
+		// Store the device identification, so we don't generate a new one on each registration
+		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
 
 		this.Api.subscribeDevice(
 			pushToken,
@@ -270,9 +247,6 @@ export default class App extends React.Component {
 
 			this.removeDeviceIdentificationCookie(this.state.persistDeviceBetweenDomain);
 
-			// Remove old device info, otherwise we cannot create a new one with the same info
-			localStorage.removeItem("deviceInformation");
-
 			// Make sure we stop otherwise it will poll for the old device info
 			this.PollingService.stopPolling();
 
@@ -292,6 +266,7 @@ export default class App extends React.Component {
 				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization,
+				true,
 			);
 			this.PollingService.restartPolling();
 		}
@@ -315,6 +290,7 @@ export default class App extends React.Component {
 				this.state.deviceVersion,
 				undefined,
 				nextState.deviceAuthorization || undefined,
+				true,
 			);
 		}
 
@@ -539,6 +515,7 @@ export default class App extends React.Component {
 			this.state.deviceVersion,
 			undefined,
 			undefined,
+			false,
 		);
 	}
 

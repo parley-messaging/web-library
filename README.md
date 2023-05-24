@@ -55,6 +55,10 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
    sudo apt -y install ./google-chrome-stable_current_amd64.deb
    rm google-chrome-stable_current_amd64.deb
    ```
+5. Give execute access to `/bin/start_cypress.sh`
+   ```bash
+   chmod +x ./bin/start_cypress.sh
+   ```
 #### Start
 ```
 npm run cy:open
