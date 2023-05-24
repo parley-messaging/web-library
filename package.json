@@ -42,7 +42,7 @@
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
 		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip",
 		"ci:server": "npx parcel serve --host chat-dev.parley.nu --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
-		"ci:tests": "cypress run --config-file cypress.ci.json",
+		"ci:tests": "NO_COLOR=1 cypress run --config-file cypress.ci.json",
 		"ci:merge-results": "mochawesome-merge ./mochawesome-report/*.json -o ./mochawesome-report/merged.json"
 	},
 	"repository": {
