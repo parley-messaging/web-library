@@ -1210,4 +1210,80 @@ describe("UI", () => {
 			});
 		});
 	});
+	describe("messengerOpenState", () => {
+		it("should save the value minimize when there is no localstorage value available", () => {
+			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
+			visitHome(parleyConfig);
+
+			// Check if a localStorage value minimize exists
+			cy.window()
+				.then((win) => {
+					const storedValue = win.localStorage.getItem("messengerOpenState");
+					expect(storedValue)
+						.to
+						.equal("minimize");
+				});
+		});
+		it("should save the value open when the chat has been opened and refreshed", () => {
+			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
+			visitHome(parleyConfig);
+			clickOnLauncher();
+
+			// Check if a localStorage value open exists
+			cy.window()
+				.then((win) => {
+					const storedValue = win.localStorage.getItem("messengerOpenState");
+					expect(storedValue)
+						.to
+						.equal("open");
+				});
+			cy.reload();
+
+			// Check if a localStorage value open still exists after refresh
+			cy.window()
+				.then((win) => {
+					const storedValue = win.localStorage.getItem("messengerOpenState");
+					expect(storedValue)
+						.to
+						.equal("open");
+				});
+
+			// Check if the chat is visible
+			cy.get("#app")
+				.get("#chat")
+				.should("exist");
+		});
+		it("should save the value minimize when the chat is hidden and refreshed", () => {
+			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
+			visitHome(parleyConfig);
+			clickOnLauncher();
+
+			// Minimize the chat
+			cy.get("#app")
+				.get("[class^=\"launcher__\"]")
+				.get("#launcher")
+				.click();
+
+			// Check if the localStorage value is set to minimize
+			cy.window()
+				.then((win) => {
+					const storedValue = win.localStorage.getItem("messengerOpenState");
+					expect(storedValue)
+						.to
+						.equal("minimize");
+				});
+
+			// Check if the chat is not visible
+			cy.get("#app")
+				.get("#chat")
+				.should("not.exist");
+
+			cy.reload();
+
+			// Check if the chat is still not visible
+			cy.get("#app")
+				.get("#chat")
+				.should("not.exist");
+		});
+	});
 });
