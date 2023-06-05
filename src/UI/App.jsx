@@ -37,6 +37,7 @@ export default class App extends React.Component {
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
+			messengerOpenState: localStorage.getItem("messengerOpenState"),
 			offline: false,
 			isMobile: isMobile(),
 			isiOSMobile: isiOSMobileDevice(),
@@ -321,6 +322,14 @@ export default class App extends React.Component {
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
+
+		const {messengerOpenState} = this.state;
+		if(messengerOpenState === "open")
+			this.showChat();
+		 else if(messengerOpenState === "minimize")
+			this.hideChat();
+		 else
+			localStorage.setItem("messengerOpenState", "minimize");
 	}
 
 	componentWillUnmount() {
@@ -504,6 +513,9 @@ export default class App extends React.Component {
 		Logger.debug("Show chat, registering device");
 
 		this.setState(() => ({showChat: true}));
+		localStorage.setItem("messengerOpenState", "open");
+
+		//  Double check that the chat will start retrieving messages after opening through componentDidMount()
 
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice(
@@ -523,6 +535,7 @@ export default class App extends React.Component {
 		Logger.debug("Hide chat");
 
 		this.setState(() => ({showChat: false}));
+		localStorage.setItem("messengerOpenState", "minimize");
 	}
 
 	toggleChat = () => {
