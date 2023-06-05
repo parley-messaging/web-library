@@ -1211,11 +1211,10 @@ describe("UI", () => {
 		});
 	});
 	describe("messengerOpenState", () => {
-		it("should save the value minimize when there is no localstorage value available", () => {
-			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
-			visitHome(parleyConfig);
+		it("should save the value 'minimize' when there is no localstorage value available", () => {
+			visitHome();
 
-			// Check if a localStorage value minimize exists
+			// Check if the localStorage value minimize exists
 			cy.window()
 				.then((win) => {
 					const storedValue = win.localStorage.getItem("messengerOpenState");
@@ -1224,12 +1223,11 @@ describe("UI", () => {
 						.equal("minimize");
 				});
 		});
-		it("should save the value open when the chat has been opened and refreshed", () => {
-			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
-			visitHome(parleyConfig);
+		it("should save the value 'open' when the chat has been opened and also when the page is refreshed", () => {
+			visitHome();
 			clickOnLauncher();
 
-			// Check if a localStorage value open exists
+			// Check if the localStorage value is set to open
 			cy.window()
 				.then((win) => {
 					const storedValue = win.localStorage.getItem("messengerOpenState");
@@ -1239,7 +1237,7 @@ describe("UI", () => {
 				});
 			cy.reload();
 
-			// Check if a localStorage value open still exists after refresh
+			// Check if the localStorage value open still exists after refresh
 			cy.window()
 				.then((win) => {
 					const storedValue = win.localStorage.getItem("messengerOpenState");
@@ -1253,16 +1251,14 @@ describe("UI", () => {
 				.get("#chat")
 				.should("exist");
 		});
-		it("should save the value minimize when the chat is hidden and refreshed", () => {
-			const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
-			visitHome(parleyConfig);
+		it("should save the value 'minimize' when the chat is hidden and the page is refreshed", () => {
+			visitHome();
+
+			// Open chat
 			clickOnLauncher();
 
-			// Minimize the chat
-			cy.get("#app")
-				.get("[class^=\"launcher__\"]")
-				.get("#launcher")
-				.click();
+			// Minimize chat
+			clickOnLauncher();
 
 			// Check if the localStorage value is set to minimize
 			cy.window()
@@ -1272,15 +1268,18 @@ describe("UI", () => {
 						.to
 						.equal("minimize");
 				});
-
-			// Check if the chat is not visible
-			cy.get("#app")
-				.get("#chat")
-				.should("not.exist");
-
 			cy.reload();
 
-			// Check if the chat is still not visible
+			// Check if the localStorage value minimize still exists after refresh
+			cy.window()
+				.then((win) => {
+					const storedValue = win.localStorage.getItem("messengerOpenState");
+					expect(storedValue)
+						.to
+						.equal("minimize");
+				});
+
+			// Check if the chat is not visible
 			cy.get("#app")
 				.get("#chat")
 				.should("not.exist");

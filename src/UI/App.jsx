@@ -32,12 +32,13 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
-
+		this.messengerOpenStateOpen = "open";
+		this.messengerOpenStateMinimize = "minimize";
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
 			showChat: false,
-			messengerOpenState: localStorage.getItem("messengerOpenState"),
+			messengerOpenState: this.showChat ? this.messengerOpenStateOpen : this.messengerOpenStateMinimize,
 			offline: false,
 			isMobile: isMobile(),
 			isiOSMobile: isiOSMobileDevice(),
@@ -322,13 +323,13 @@ export default class App extends React.Component {
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
-
-		if(this.state.messengerOpenState === "open")
+		const MessengerOpenState = localStorage.getItem("messengerOpenState");
+		if(MessengerOpenState === this.messengerOpenStateOpen)
 			this.showChat();
-		 else if(this.state.messengerOpenState === "minimize")
+		 else if(MessengerOpenState === this.messengerOpenStateMinimize)
 			this.hideChat();
 		 else
-			localStorage.setItem("messengerOpenState", "minimize");
+			localStorage.setItem("messengerOpenState", this.messengerOpenStateMinimize);
 	}
 
 	componentWillUnmount() {
