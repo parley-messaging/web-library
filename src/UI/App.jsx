@@ -323,10 +323,9 @@ export default class App extends React.Component {
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
 
-		const {messengerOpenState} = this.state;
-		if(messengerOpenState === "open")
+		if(this.state.messengerOpenState === "open")
 			this.showChat();
-		 else if(messengerOpenState === "minimize")
+		 else if(this.state.messengerOpenState === "minimize")
 			this.hideChat();
 		 else
 			localStorage.setItem("messengerOpenState", "minimize");
