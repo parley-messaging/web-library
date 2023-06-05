@@ -515,8 +515,6 @@ export default class App extends React.Component {
 		this.setState(() => ({showChat: true}));
 		localStorage.setItem("messengerOpenState", "open");
 
-		//  Double check that the chat will start retrieving messages after opening through componentDidMount()
-
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice(
 			undefined,
