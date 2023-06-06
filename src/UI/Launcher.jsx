@@ -8,7 +8,7 @@ class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
-		const launcherClass = `${styles.launcher} state-${this.props.messengerOpenState}`;
+		const launcherClass = `${styles.launcher} state-${this.props.messengerState}`;
 
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -32,8 +32,8 @@ class Launcher extends Component {
 }
 
 Launcher.propTypes = {
+	messengerState: PropTypes.string,
 	onClick: PropTypes.func,
-	messengerOpenState: PropTypes.string,
 };
 
 export default Launcher;

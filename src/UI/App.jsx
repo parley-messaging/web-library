@@ -563,7 +563,7 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 						&& <Launcher
-							messengerOpenState={this.state.showChat ? this.messengerStateOpen : this.messengerStateMinimize}
+							messengerState={this.state.showChat ? this.messengerStateOpen : this.messengerStateMinimize}
 							onClick={this.handleClick}
 						   />
 				}
