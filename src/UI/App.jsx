@@ -450,7 +450,7 @@ export default class App extends React.Component {
 			} else if(path[layer1] === "country") {
 				objectToSaveIntoState = {interfaceLanguage: value};
 			} else if(path[layer1] === "icon") {
-				objectToSaveIntoState = {icon: value};
+				objectToSaveIntoState = {launcherIcon: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")

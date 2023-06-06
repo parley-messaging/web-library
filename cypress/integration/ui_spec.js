@@ -360,6 +360,89 @@ describe("UI", () => {
 
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
+			it("should change the icon of the launcher", () => {
+				cy.fixture("parley.png")
+					.then((logo) => {
+						const parleyConfig = {runOptions: {icon: `data:image/png;base64,${logo}`}};
+						visitHome(parleyConfig);
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("img")
+							.should("exist");
+
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("svg")
+							.should("not.exist");
+					});
+			});
+			it("should use the default icon of the launcher", () => {
+				visitHome();
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("svg")
+					.should("exist");
+
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("img")
+					.should("not.exist");
+			});
+			it("should convert the default logo to custom logo and back again", () => {
+				visitHome();
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("svg")
+					.should("exist");
+
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("img")
+					.should("not.exist");
+
+				// add custom icon to the launcher
+				cy.window().then((win) => {
+					cy.fixture("parley.png")
+						.then((logo) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.icon = `data:image/png;base64,${logo}`;
+						});
+				});
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("img")
+					.should("exist");
+
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("svg")
+					.should("not.exist");
+
+				// add empty string so that the default icon for the launcher will be used
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.runOptions.icon = undefined;
+				});
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("svg")
+					.should("exist");
+
+				cy.get("#app")
+					.get("[class^=launcher__]")
+					.get("#launcher")
+					.get("img")
+					.should("not.exist");
+			});
 			describe("interfaceTexts", () => {
 				describe("desc", () => {
 					it("should change the title text", () => {
