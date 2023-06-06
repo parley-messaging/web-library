@@ -578,9 +578,9 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 					&& <Launcher
+						icon={this.state.launcherIcon}
 						onClick={this.handleClick}
 					   />
-						&& <Launcher icon={this.state.launcherIcon} onClick={this.handleClick} />
 				}
 				{
 					this.state.showChat
