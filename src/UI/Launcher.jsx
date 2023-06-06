@@ -5,15 +5,17 @@ import LauncherSVG from "./Resources/launcher.svg";
 import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Launcher extends Component {
+	static propTypes = {messengerOpenState: PropTypes.string}
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
+		const launcherClass = `${styles.launcher} state-${this.props.messengerOpenState}`;
 
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
 					interfaceTexts => (
-						<div className={styles.launcher}>
+						<div className={launcherClass}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}

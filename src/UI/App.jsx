@@ -562,7 +562,10 @@ export default class App extends React.Component {
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
-						&& <Launcher onClick={this.handleClick} />
+						&& <Launcher
+							messengerOpenState={this.state.showChat ? this.messengerStateOpen : this.messengerStateMinimize}
+							onClick={this.handleClick}
+						   />
 				}
 				{
 					this.state.showChat
