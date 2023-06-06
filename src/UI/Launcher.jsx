@@ -20,7 +20,7 @@ class Launcher extends Component {
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
-								<LauncherSVG />
+								{this.props.icon === undefined && <LauncherSVG />}
 							</button>
 						</div>
 					)
@@ -30,6 +30,9 @@ class Launcher extends Component {
 	}
 }
 
-Launcher.propTypes = {onClick: PropTypes.func};
+Launcher.propTypes = {
+	icon: PropTypes.string,
+	onClick: PropTypes.func,
+};
 
 export default Launcher;

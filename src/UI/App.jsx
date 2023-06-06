@@ -65,6 +65,7 @@ export default class App extends React.Component {
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
+			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
 		};
 
 		this.Api = new Api(
@@ -448,6 +449,8 @@ export default class App extends React.Component {
 				}
 			} else if(path[layer1] === "country") {
 				objectToSaveIntoState = {interfaceLanguage: value};
+			} else if(path[layer1] === "icon") {
+				objectToSaveIntoState = {icon: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -562,7 +565,7 @@ export default class App extends React.Component {
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
-						&& <Launcher onClick={this.handleClick} />
+						&& <Launcher icon={this.state.launcherIcon} onClick={this.handleClick} />
 				}
 				{
 					this.state.showChat
