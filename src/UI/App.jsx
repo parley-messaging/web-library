@@ -32,7 +32,10 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
-
+		this.messengerState = {
+			open: "open",
+			minimize: "minimize",
+		};
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
@@ -321,6 +324,13 @@ export default class App extends React.Component {
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
+		const messengerOpenState = localStorage.getItem("messengerOpenState");
+		if(messengerOpenState === this.messengerState.open)
+			this.showChat();
+		 else if(messengerOpenState === this.messengerState.minimize)
+			this.hideChat();
+		 else
+			localStorage.setItem("messengerOpenState", this.state.showChat ? this.messengerState.open : this.messengerState.minimize);
 	}
 
 	componentWillUnmount() {
@@ -504,6 +514,7 @@ export default class App extends React.Component {
 		Logger.debug("Show chat, registering device");
 
 		this.setState(() => ({showChat: true}));
+		localStorage.setItem("messengerOpenState", this.messengerState.open);
 
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice(
@@ -523,6 +534,7 @@ export default class App extends React.Component {
 		Logger.debug("Hide chat");
 
 		this.setState(() => ({showChat: false}));
+		localStorage.setItem("messengerOpenState", this.messengerState.minimize);
 	}
 
 	toggleChat = () => {
@@ -566,21 +578,24 @@ export default class App extends React.Component {
 							messengerState={this.state.showChat ? this.messengerStateOpen : this.messengerStateMinimize}
 							onClick={this.handleClick}
 						   />
+					&& <Launcher
+						onClick={this.handleClick}
+					   />
 				}
 				{
 					this.state.showChat
-						&& <Chat
-							allowEmoji={true}
-							allowFileUpload={true}
-							api={this.Api}
-							closeButton={this.state.closeButton}
-							isMobile={this.state.isMobile}
-							isiOSMobile={this.state.isiOSMobile}
-							onMinimizeClick={this.handleClick}
-							restartPolling={this.restartPolling}
-							title={this.state.interfaceTexts.title}
-							welcomeMessage={this.state.interfaceTexts.welcomeMessage}
-						   />
+					&& <Chat
+						allowEmoji={true}
+						allowFileUpload={true}
+						api={this.Api}
+						closeButton={this.state.closeButton}
+						isMobile={this.state.isMobile}
+						isiOSMobile={this.state.isiOSMobile}
+						onMinimizeClick={this.handleClick}
+						restartPolling={this.restartPolling}
+						title={this.state.interfaceTexts.title}
+						welcomeMessage={this.state.interfaceTexts.welcomeMessage}
+					   />
 				}
 			</InterfaceTextsContext.Provider>
 		);
