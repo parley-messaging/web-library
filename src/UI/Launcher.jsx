@@ -5,7 +5,6 @@ import LauncherSVG from "./Resources/launcher.svg";
 import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Launcher extends Component {
-	static propTypes = {messengerOpenState: PropTypes.string}
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
@@ -32,6 +31,9 @@ class Launcher extends Component {
 	}
 }
 
-Launcher.propTypes = {onClick: PropTypes.func};
+Launcher.propTypes = {
+	onClick: PropTypes.func,
+	messengerOpenState: PropTypes.string,
+};
 
 export default Launcher;
