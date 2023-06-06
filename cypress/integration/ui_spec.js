@@ -1285,4 +1285,25 @@ describe("UI", () => {
 				.should("not.exist");
 		});
 	});
+	describe("messengerOpenState class", () => {
+		it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
+			visitHome();
+			cy.get("#app")
+				.find('div[class*="state-minimize"]')
+				.should("exist");
+			cy.get("#app")
+				.find('div[class*="state-open"]')
+				.should("not.exist");
+		});
+		it("should contain the class name 'state-open' when the chat has been opened'", () => {
+			visitHome();
+			clickOnLauncher();
+			cy.get("#app")
+				.find('div[class*="state-open"]')
+				.should("exist");
+			cy.get("#app")
+				.find('div[class*="state-minimize"]')
+				.should("not.exist");
+		});
+	});
 });
