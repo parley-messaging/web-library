@@ -8,7 +8,7 @@ class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
-
+		const imgAltText = "icon";
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
@@ -20,7 +20,8 @@ class Launcher extends Component {
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
-								{this.props.icon === undefined && <LauncherSVG />}
+								{/* eslint-disable-next-line max-len */}
+								{this.props.icon === undefined ? <LauncherSVG /> : <img alt={imgAltText} src={this.props.icon} />}
 							</button>
 						</div>
 					)
