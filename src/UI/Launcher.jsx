@@ -8,13 +8,13 @@ class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
-		const launcherClass = `${styles.launcher} state-${this.props.msgState}`;
+		const launcherClasses = `${styles.launcher} state-${this.props.msgState}`;
 
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
 					interfaceTexts => (
-						<div className={launcherClass}>
+						<div className={launcherClasses}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
