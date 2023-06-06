@@ -18,7 +18,7 @@ import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
 import {messages} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
-import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
+import {ApiOptions, InterfaceTexts, InterfaceTextsContext, messengerState} from "./Scripts/Context";
 import deepMerge from "deepmerge";
 import {Observable} from "object-observer";
 import deepForEach from "deep-for-each";
@@ -32,10 +32,6 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
-		this.messengerState = {
-			open: "open",
-			minimize: "minimize",
-		};
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
@@ -325,12 +321,12 @@ export default class App extends React.Component {
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
 		const messengerOpenState = localStorage.getItem("messengerOpenState");
-		if(messengerOpenState === this.messengerState.open)
+		if(messengerOpenState === messengerState.open)
 			this.showChat();
-		 else if(messengerOpenState === this.messengerState.minimize)
+		 else if(messengerOpenState === messengerState.minimize)
 			this.hideChat();
 		 else
-			localStorage.setItem("messengerOpenState", this.state.showChat ? this.messengerState.open : this.messengerState.minimize);
+			localStorage.setItem("messengerOpenState", this.state.showChat ? messengerState.open : messengerState.minimize);
 	}
 
 	componentWillUnmount() {
@@ -514,7 +510,7 @@ export default class App extends React.Component {
 		Logger.debug("Show chat, registering device");
 
 		this.setState(() => ({showChat: true}));
-		localStorage.setItem("messengerOpenState", this.messengerState.open);
+		localStorage.setItem("messengerOpenState", messengerState.open);
 
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice(
@@ -534,7 +530,7 @@ export default class App extends React.Component {
 		Logger.debug("Hide chat");
 
 		this.setState(() => ({showChat: false}));
-		localStorage.setItem("messengerOpenState", this.messengerState.minimize);
+		localStorage.setItem("messengerOpenState", messengerState.minimize);
 	}
 
 	toggleChat = () => {
@@ -575,12 +571,9 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 						&& <Launcher
-							msgState={this.state.showChat ? this.messengerState.open : this.messengerState.minimize}
+							msgState={this.state.showChat ? messengerState.open : messengerState.minimize}
 							onClick={this.handleClick}
 						   />
-					&& <Launcher
-						onClick={this.handleClick}
-					   />
 				}
 				{
 					this.state.showChat
