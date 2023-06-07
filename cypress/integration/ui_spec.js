@@ -360,88 +360,134 @@ describe("UI", () => {
 
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
-			it("should change the icon of the launcher", () => {
-				cy.fixture("parley.png")
-					.then((logo) => {
-						const parleyConfig = {runOptions: {icon: `data:image/png;base64,${logo}`}};
-						visitHome(parleyConfig);
+			describe("icon", () => {
+				it("should change the icon of the launcher", () => {
+					// Load startup icon
+					cy.fixture("custom-chat-icon1.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("startupIcon");
+
+					// Set startup icon as icon, in the config, before loading the chat
+					// and load the chat
+					cy.get("@startupIcon").then((startupIcon) => {
+						visitHome({runOptions: {icon: startupIcon}});
+					});
+
+					// Check that the icon is changed
+					cy.get("@startupIcon").then((startupIcon) => {
 						cy.get("#app")
 							.get("[class^=launcher__]")
 							.get("#launcher")
 							.get("img")
-							.should("exist");
+							.should("exist")
+							.and("have.attr", "src", startupIcon);
+					});
 
+					// Check that the default svg "icon" is not visible
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("not.exist");
+
+					// Load a new icon
+					cy.fixture("custom-chat-icon2.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("newIcon");
+
+					// Change the icon to the new icon during runtime
+					cy.get("@newIcon").then((newIcon) => {
+						cy.window().then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.icon = newIcon;
+						});
+					});
+
+					// Check that the icon is changed (during runtime)
+					cy.get("@newIcon").then((newIcon) => {
 						cy.get("#app")
 							.get("[class^=launcher__]")
 							.get("#launcher")
-							.get("svg")
-							.should("not.exist");
+							.get("img")
+							.should("exist")
+							.and("have.attr", "src", newIcon);
 					});
-			});
-			it("should use the default icon of the launcher", () => {
-				visitHome();
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("svg")
-					.should("exist");
 
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("img")
-					.should("not.exist");
-			});
-			it("should convert the default logo to custom logo and back again", () => {
-				visitHome();
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("svg")
-					.should("exist");
+					// We don't really need an extra check for the absence of the svg "icon"
+					// since that is already checked above
+				});
+				it("should use the default icon of the launcher", () => {
+					visitHome();
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
 
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("img")
-					.should("not.exist");
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
+				});
+				it("should convert the default logo to custom logo and back again", () => {
+					visitHome();
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
 
-				// add custom icon to the launcher
-				cy.window().then((win) => {
-					cy.fixture("parley.png")
-						.then((logo) => {
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
+
+					// Load a new icon
+					cy.fixture("custom-chat-icon1.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("newIcon");
+
+					// Change the icon to the new icon during runtime
+					cy.get("@newIcon").then((newIcon) => {
+						cy.window().then((win) => {
 							// eslint-disable-next-line no-param-reassign
-							win.parleySettings.runOptions.icon = `data:image/png;base64,${logo}`;
+							win.parleySettings.runOptions.icon = newIcon;
 						});
+					});
+
+					// Check that the icon is changed (during runtime)
+					cy.get("@newIcon").then((newIcon) => {
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("img")
+							.should("exist")
+							.and("have.attr", "src", newIcon);
+					});
+
+					// Remove custom icon during runtime
+					cy.window().then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.runOptions.icon = undefined;
+					});
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
 				});
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("img")
-					.should("exist");
-
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("svg")
-					.should("not.exist");
-
-				// add empty string so that the default icon for the launcher will be used
-				cy.window().then((win) => {
-					// eslint-disable-next-line no-param-reassign
-					win.parleySettings.runOptions.icon = undefined;
-				});
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("svg")
-					.should("exist");
-
-				cy.get("#app")
-					.get("[class^=launcher__]")
-					.get("#launcher")
-					.get("img")
-					.should("not.exist");
 			});
 			describe("interfaceTexts", () => {
 				describe("desc", () => {
