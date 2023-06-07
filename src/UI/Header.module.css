@@ -1,5 +1,5 @@
 .header {
-	z-index: calc(var(--parley-index-prefix, 100) + 3);
+	z-index: calc(var(--parley-base-z-index, 100) + 3);
 	top: 0;
 	display: grid;
 	margin: 0;

@@ -1,6 +1,6 @@
 .launcher {
 	position: fixed;
-	z-index: calc(var(--parley-index-prefix, 100) + 1);
+	z-index: calc(var(--parley-base-z-index, 100) + 1);
 	right: 20px;
 	bottom: 20px;
 	width: 50px;
