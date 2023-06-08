@@ -2,13 +2,13 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./Launcher.module.css";
 import LauncherSVG from "./Resources/launcher.svg";
-import {InterfaceTextsContext, messengerState} from "./Scripts/Context";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
-		const launcherClasses = `${styles.launcher} state-${this.props.msgState}`;
+		const launcherClasses = `${styles.launcher} state-${this.props.messengerOpenState}`;
 
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -32,9 +32,7 @@ class Launcher extends Component {
 }
 
 Launcher.propTypes = {
-	msgState: PropTypes.oneOf([
-		messengerState.open, messengerState.minimize,
-	]).isRequired,
+	messengerOpenState: PropTypes.string.isRequired,
 	onClick: PropTypes.func,
 };
 

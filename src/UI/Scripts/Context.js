@@ -1,11 +1,6 @@
 import React from "react";
 import {v4 as uuidv4} from "uuid";
 
-export const messengerState = {
-	open: "open",
-	minimize: "minimize",
-};
-
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0cce5bfcdbf07978b269",
