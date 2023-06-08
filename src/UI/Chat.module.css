@@ -1,6 +1,6 @@
 .chat {
 	position: fixed;
-	z-index: 2002;
+	z-index: calc(var(--parley-base-z-index, 100) + 2);
 	right: 20px;
 	bottom: 90px;
 	display: grid;
