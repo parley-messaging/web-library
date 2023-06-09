@@ -13,7 +13,6 @@
       <option name="FORCE_QUOTE_STYlE" value="true" />
       <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
       <option name="OBJECT_LITERAL_WRAP" value="2" />
-      <option name="SPACES_WITHIN_INTERPOLATION_EXPRESSIONS" value="true" />
     </JSCodeStyleSettings>
     <JSON>
       <option name="KEEP_TRAILING_COMMA" value="true" />
@@ -65,6 +64,7 @@
     </codeStyleSettings>
     <codeStyleSettings language="JavaScript">
       <option name="RIGHT_MARGIN" value="120" />
+      <option name="BLOCK_COMMENT_ADD_SPACE" value="true" />
       <option name="INDENT_CASE_FROM_SWITCH" value="false" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
       <option name="ALIGN_MULTILINE_FOR" value="false" />
