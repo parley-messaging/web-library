@@ -6,6 +6,7 @@ import {media} from "../Api/Constants/Events";
 import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import * as styles from "./Image.module.css";
+import ImageViewer from "./ImageViewer";
 
 class Image extends Component {
 	constructor(props) {
@@ -22,21 +23,28 @@ class Image extends Component {
 	componentDidMount() {
 		ApiEventTarget.addEventListener(media, this.handleMediaError);
 
-		const {year, month, day, filename} = this.props.media;
-		this.props.api.getMedia(year, month, day, filename).then((mediaBlob) => {
-			this.setState(() => ({isLoading: false}));
+		const {
+			year,
+			month,
+			day,
+			filename,
+		} = this.props.media;
+		this.props.api.getMedia(year, month, day, filename)
+			.then((mediaBlob) => {
+				this.setState(() => ({isLoading: false}));
 
-			if(!mediaBlob)
-				return;
+				if(!mediaBlob)
+					return;
 
-			// Convert blob to data: url
-			// and save it in state
-			const reader = new FileReader();
-			reader.readAsDataURL(mediaBlob);
-			reader.onloadend = () => {
-				this.setState(() => ({imageUrl: reader.result}));
-			};
-		});
+
+				// Convert blob to data: url
+				// and save it in state
+				const reader = new FileReader();
+				reader.readAsDataURL(mediaBlob);
+				reader.onloadend = () => {
+					this.setState(() => ({imageUrl: reader.result}));
+				};
+			});
 	}
 
 	componentWillUnmount() {
@@ -57,30 +65,40 @@ class Image extends Component {
 		if(!this.props.media.mimeType.startsWith("image/"))
 			return null;
 
+
 		// Don't load if we have no content (yet)
 		if(this.state.isLoading)
-			return null; // TODO: What should we render if an image is loading?
+			return null;
+
+
+		// TODO: What should we render if an image is loading?
 
 		const error = "_Unable to load image_";
+		const inputType = "image";
 
 		return (
 			<>
 				{
 					this.state.imageUrl
-						? <img
-							alt={this.props.media.description}
-							onClick={this.handleToggleImageViewer}
-							src={this.state.imageUrl}
-							className={styles.image}
+						? <input
+								alt={this.props.media.description}
+								className={styles.image}
+								onClick={this.handleToggleImageViewer}
+								src={this.state.imageUrl}
+								type={inputType}
 						  />
 						: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
 							{error}
 						</ReactMarkdown>
 				}
-				{/* {*/}
-				{/*	this.state.showImageViewer*/}
-				{/*	&& <ImageViewer media={this.props.media} onClose={this.handleToggleImageViewer} />*/}
-				{/* }*/}
+				{
+					this.state.showImageViewer
+					&& <ImageViewer
+							alt={this.props.media.description}
+							onClose={this.handleToggleImageViewer}
+							src={this.state.imageUrl}
+					   />
+				}
 			</>
 		);
 	}
