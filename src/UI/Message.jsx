@@ -7,6 +7,7 @@ import MessageTypes from "../Api/Constants/MessageTypes";
 
 // components
 import Image from "./Image";
+import Api from "../Api/Api";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -40,7 +41,7 @@ class Message extends Component {
 				<div className={styles.message}>
 					{
 						this.props.message.media
-							? <Image media={this.props.message.media} />
+							? <Image api={this.props.api} media={this.props.message.media} />
 							: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
 								{this.props.message.message}
 							  </ReactMarkdown>
@@ -55,6 +56,7 @@ class Message extends Component {
 }
 
 Message.propTypes = {
+	api: PropTypes.instanceOf(Api),
 	message: PropTypes.shape({
 		agent: PropTypes.shape({
 			avatar: PropTypes.string,

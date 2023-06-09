@@ -9,6 +9,7 @@ import Announcement from "./Announcement";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {messages as messagesEvent} from "../Api/Constants/Events";
 import Logger from "js-logger";
+import Api from "../Api/Api";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -137,14 +138,11 @@ class Conversation extends Component {
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
 										&& <DateGroup timestamp={message.time} />
 								}
-								{
-									message.message !== null
-									&& message.message.length > 0
-										&& <Message
-											message={message}
-											showAgent={this.shouldRenderAgentName(index, index - 1)}
-										   />
-								}
+								<Message
+									api={this.props.api}
+									message={message}
+									showAgent={this.shouldRenderAgentName(index, index - 1)}
+								/>
 								{
 									message.typeId === MessageTypes.Agent
 									&& index === array.length - 1
@@ -167,6 +165,7 @@ class Conversation extends Component {
 }
 
 Conversation.propTypes = {
+	api: PropTypes.instanceOf(Api),
 	defaultWelcomeMessage: PropTypes.string,
 	restartPolling: PropTypes.func,
 };

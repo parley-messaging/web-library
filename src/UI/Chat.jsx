@@ -160,6 +160,7 @@ class Chat extends Component {
 					title={this.props.title}
 				/>
 				<Conversation
+					api={this.props.api}
 					defaultWelcomeMessage={this.props.welcomeMessage}
 					restartPolling={this.props.restartPolling}
 				/>
