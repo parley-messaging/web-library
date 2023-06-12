@@ -67,11 +67,13 @@ class Image extends Component {
 
 
 		// Don't load if we have no content (yet)
-		if(this.state.isLoading)
-			return null;
-
-
-		// TODO: What should we render if an image is loading?
+		if(this.state.isLoading) {
+			return (
+				<div className={styles.loadingContainer}>
+					<span className={styles.loading} />
+				</div>
+			);
+		}
 
 		const error = "_Unable to load image_";
 		const inputType = "image";

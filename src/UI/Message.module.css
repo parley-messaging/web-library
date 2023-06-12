@@ -25,9 +25,11 @@
 
 /* region Message */
 .message {
+	--message-max-width: 190px;
+
 	position: relative;
 	display: grid;
-	max-width: 190px;
+	max-width: var(--message-max-width);
 	padding: 8px 10px;
 	border-radius: 5px;
 	grid-template-columns: auto;
