@@ -26,12 +26,13 @@
 /* region Message */
 .message {
 	--message-max-width: 190px;
+	--message-border-radius: 5px;
 
 	position: relative;
 	display: grid;
 	max-width: var(--message-max-width);
-	padding: 8px 10px;
-	border-radius: 5px;
+	padding: 8px;
+	border-radius: var(--message-border-radius);
 	grid-template-columns: auto;
 	grid-template-rows: auto auto;
 	hyphens: auto;

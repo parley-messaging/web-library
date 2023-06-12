@@ -1,6 +1,6 @@
 .image {
 	width: 100%;
-	/*border-radius: inherit;*/ /* TODO: Do we want a border-radius here? */
+	border-radius: 0 var(--message-border-radius) 0 0;
 }
 
 .loadingContainer {
