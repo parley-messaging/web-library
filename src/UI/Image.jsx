@@ -7,6 +7,7 @@ import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import * as styles from "./Image.module.css";
 import ImageViewer from "./ImageViewer";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 class Image extends Component {
 	constructor(props) {
@@ -77,6 +78,7 @@ class Image extends Component {
 
 		const error = "_Unable to load image_";
 		const inputType = "image";
+		const classNames = `${styles.image} ${this.props.messageType === MessageTypes.Agent ? styles.agent : styles.user}`;
 
 		return (
 			<>
@@ -84,7 +86,7 @@ class Image extends Component {
 					this.state.imageUrl
 						? <input
 								alt={this.props.media.description}
-								className={styles.image}
+								className={classNames}
 								onClick={this.handleToggleImageViewer}
 								src={this.state.imageUrl}
 								type={inputType}
@@ -117,6 +119,10 @@ Image.propTypes = {
 		month: PropTypes.string.isRequired,
 		year: PropTypes.string.isRequired,
 	}),
+	messageType: PropTypes.oneOf([
+		MessageTypes.Agent,
+		MessageTypes.User,
+	]).isRequired,
 };
 
 export default Image;

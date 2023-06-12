@@ -1,3 +1,7 @@
+:root {
+	--message-border-radius: 10px;
+}
+
 /* region Container */
 .messageBubble {
 	display: block;
@@ -26,7 +30,6 @@
 /* region Message */
 .message {
 	--message-max-width: 190px;
-	--message-border-radius: 5px;
 
 	position: relative;
 	display: grid;
@@ -57,14 +60,14 @@
 
 .user .message {
 	background-color: var(--parley-user-background-color, #4A5E83);
-	border-radius: 10px 10px 0;
+	border-bottom-right-radius: 0;
 	color: var(--parley-user-text-color, #FFF);
 	float: right;
 }
 
 .agent .message {
 	background: var(--parley-account-background-color, #E7E3E0);
-	border-radius: 0 10px 10px;
+	border-top-left-radius: 0;
 	color: var(--parley-account-text-color, #535353);
 	float: left;
 }

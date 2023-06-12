@@ -21,12 +21,16 @@ class Message extends Component {
 
 	render() {
 		let classNames = styles.messageBubble;
-		if(this.props.message.typeId === MessageTypes.User)
+		let messageType = null;
+		if(this.props.message.typeId === MessageTypes.User) {
 			classNames += ` ${styles.user}`;
-		else if(this.props.message.typeId === MessageTypes.Agent)
+			messageType = MessageTypes.User;
+		} else if(this.props.message.typeId === MessageTypes.Agent) {
 			classNames += ` ${styles.agent}`;
-		else
+			messageType = MessageTypes.Agent;
+		} else {
 			return null;
+		}
 
 		return (
 			<div className={classNames}>
@@ -41,7 +45,7 @@ class Message extends Component {
 				<div className={styles.message}>
 					{
 						this.props.message.media
-							? <Image api={this.props.api} media={this.props.message.media} />
+							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 							: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
 								{this.props.message.message}
 							  </ReactMarkdown>

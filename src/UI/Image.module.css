@@ -1,6 +1,16 @@
 .image {
 	width: 100%;
-	border-radius: 0 var(--message-border-radius) 0 0;
+	border-radius: calc(var(--message-border-radius) / 2);
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.agent {
+	border-top-left-radius: 0;
+}
+
+.user {
+	border-bottom-right-radius: 0;
 }
 
 .loadingContainer {
