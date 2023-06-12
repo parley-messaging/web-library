@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import Api from "../Api/Api";
-import ApiEventTarget from "../Api/ApiEventTarget";
-import {media} from "../Api/Constants/Events";
 import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import * as styles from "./Image.module.css";
@@ -22,8 +20,6 @@ class Image extends Component {
 	}
 
 	componentDidMount() {
-		ApiEventTarget.addEventListener(media, this.handleMediaError);
-
 		const {
 			year,
 			month,
@@ -32,8 +28,6 @@ class Image extends Component {
 		} = this.props.media;
 		this.props.api.getMedia(year, month, day, filename)
 			.then((mediaBlob) => {
-				this.setState(() => ({isLoading: false}));
-
 				if(!mediaBlob)
 					return;
 
@@ -45,16 +39,10 @@ class Image extends Component {
 				reader.onloadend = () => {
 					this.setState(() => ({imageUrl: reader.result}));
 				};
+			})
+			.finally(() => {
+				this.setState(() => ({isLoading: false}));
 			});
-	}
-
-	componentWillUnmount() {
-		ApiEventTarget.removeEventListener(media, this.handleMediaError);
-	}
-
-	handleMediaError(err) {
-		// TODO: Handle errors correctly
-		console.error("GetMedia error:", err);
 	}
 
 	handleToggleImageViewer = () => {
