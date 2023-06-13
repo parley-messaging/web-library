@@ -540,15 +540,12 @@ describe("Api class", () => {
 				config.version,
 				config.referer,
 				config.authorization,
-			);
+			).then(() => {
+				expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
+				expect(config.api.deviceRegistered).to.be.equal(true);
+			});
 
 			expect(config.api.isDeviceRegistrationPending).to.be.equal(true);
-
-			cy.wait("@postDevices")
-				.then(() => {
-					expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
-					expect(config.api.deviceRegistered).to.be.equal(true);
-				});
 		});
 	});
 
