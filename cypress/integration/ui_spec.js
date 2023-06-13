@@ -465,19 +465,15 @@ describe("UI", () => {
 
 					// Check that the icon is changed
 					cy.get("@startupIcon").then((startupIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", startupIcon);
 					});
 
 					// Check that the default svg "icon" is not visible
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("not.exist");
 
 					// Load a new icon
@@ -496,10 +492,8 @@ describe("UI", () => {
 
 					// Check that the icon is changed (during runtime)
 					cy.get("@newIcon").then((newIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", newIcon);
 					});
@@ -509,30 +503,22 @@ describe("UI", () => {
 				});
 				it("should use the default icon of the launcher", () => {
 					visitHome();
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 				});
 				it("should convert the default logo to custom logo and back again", () => {
 					visitHome();
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 
 					// Load a new icon
@@ -551,10 +537,8 @@ describe("UI", () => {
 
 					// Check that the icon is changed (during runtime)
 					cy.get("@newIcon").then((newIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", newIcon);
 					});
@@ -565,16 +549,12 @@ describe("UI", () => {
 						win.parleySettings.runOptions.icon = undefined;
 					});
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 				});
 			});
