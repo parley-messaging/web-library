@@ -1,3 +1,7 @@
+/* eslint-disable compat/compat */
+// Don't need compat checking here because this code will only
+// run on development systems
+
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
@@ -55,6 +59,10 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 	return primitiveTypes.filter(set => !excludePrimitiveTypes.includes(set.type));
 }
 
+function requestExpectations(req) {
+	expect(req.headers).to.have.property("x-iris-identification");
+}
+
 describe("Api class", () => {
 	beforeEach(() => {
 		console.log("");
@@ -73,12 +81,35 @@ describe("Api class", () => {
 		// This way we don't fill up the API with test data
 		cy.fixture("postDevicesResponse.json").as("postDevicesResponse");
 		cy.fixture("postMessagesResponse.json").as("postMessagesResponse");
+		cy.fixture("1x1.png", "latin1").as("getMediaResponse");
 		cy.get("@postDevicesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/devices`, json).as("postDevices");
+			cy.intercept("POST", `${config.apiDomain}/**/devices`, (req) => {
+				requestExpectations(req);
+
+				req.reply(json);
+			})
+				.as("postDevices");
 		});
 		cy.get("@postMessagesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/messages`, json).as("postMessages");
+			cy.intercept("POST", `${config.apiDomain}/**/messages`, (req) => {
+				requestExpectations(req);
+
+				req.reply(json);
+			})
+				.as("postMessages");
 		});
+		cy.get("@getMediaResponse").then((media) => {
+			cy.intercept("GET", `${config.apiDomain}/**/media/**/*`, (req) => {
+				requestExpectations(req);
+
+				req.reply({
+					body: media,
+					headers: {"Content-Type": "image/png"},
+				});
+			})
+				.as("getMedia");
+		});
+
 
 		// This should not go in afterEach,
 		// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
@@ -598,16 +629,69 @@ describe("Api class", () => {
 				"x-custom-1": "1",
 				"x-custom-2": "2",
 			};
-			const url = `${config.apiDomain}/clientApi/vx.x/devices`;
 
 			config.api.setCustomHeaders(customHeaders);
 
-			config.api.fetchWrapper(url, {method: "POST"});
+			config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				config.version,
+				config.referer,
+				config.authorization,
+			);
 
 			cy.wait("@postDevices").then((interception) => {
 				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(customHeaders));
 				expect(Object.values(interception.request.headers)).to.include.members(Object.values(customHeaders));
 			});
+		});
+	});
+
+	describe("getMedia", () => {
+		it("should throw an error when using something other than a String as year", () => {
+			filterPrimitives(["string"]).forEach((set) => {
+				expect(() => config.api.getMedia(set.value))
+					.to.throw(`Expected \`year\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as month", () => {
+			filterPrimitives(["string"]).forEach((set) => {
+				expect(() => config.api.getMedia("2023", set.value))
+					.to.throw(`Expected \`month\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as day", () => {
+			filterPrimitives(["string"]).forEach((set) => {
+				expect(() => config.api.getMedia("2023", "6", set.value))
+					.to.throw(`Expected \`day\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should throw an error when using something other than a String as fileName", () => {
+			filterPrimitives(["string"]).forEach((set) => {
+				expect(() => config.api.getMedia("2023", "6", "6", set.value))
+					.to.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@getMediaResponse")
+				.then(async (fixture) => {
+					const data = await config.api.getMedia("2023", "6", "6", "41cedb695613d417be10c65f089521599c103cc9.png");
+
+					// `data` is a Blob and we need text so we can match it to the fixture
+					const dataAsText = await data.text();
+
+					// `fixture` is a buffer, so we need to convert it to a blob and then to text
+					const fixtureAsText = await new Blob([fixture], {type: "image/png"}).text();
+
+					expect(dataAsText).to.be.equal(fixtureAsText);
+				});
 		});
 	});
 });

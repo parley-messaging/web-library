@@ -16,10 +16,20 @@ class Image extends Component {
 			showImageViewer: false,
 			imageUrl: null,
 			isLoading: true,
+			errorText: "_Unable to load media_",
 		};
 	}
 
 	componentDidMount() {
+		// Don't load if this is an unsupported mime type
+		if(!this.props.media.mimeType.startsWith("image/")) {
+			this.setState(() => ({
+				errorText: "_Unsupported media_",
+				isLoading: false,
+			}));
+			return;
+		}
+
 		const {
 			year,
 			month,
@@ -50,11 +60,6 @@ class Image extends Component {
 	};
 
 	render() {
-		// Don't load if this is an unsupported mime type
-		if(!this.props.media.mimeType.startsWith("image/"))
-			return null;
-
-
 		// Don't load if we have no content (yet)
 		if(this.state.isLoading) {
 			return (
@@ -64,7 +69,6 @@ class Image extends Component {
 			);
 		}
 
-		const error = "_Unable to load image_";
 		const inputType = "image";
 		const classNames = `${styles.image} ${this.props.messageType === MessageTypes.Agent ? styles.agent : styles.user}`;
 
@@ -80,7 +84,7 @@ class Image extends Component {
 								type={inputType}
 						  />
 						: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
-							{error}
+							{this.state.errorText}
 						</ReactMarkdown>
 				}
 				{

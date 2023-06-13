@@ -212,6 +212,11 @@ export default class Api {
 	}
 
 	getMedia(year, month, day, fileName) {
+		ow(year, "year", ow.string.nonEmpty);
+		ow(month, "month", ow.string.nonEmpty);
+		ow(day, "day", ow.string.nonEmpty);
+		ow(fileName, "fileName", ow.string.nonEmpty);
+
 		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {
 			method: "GET",
 			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
