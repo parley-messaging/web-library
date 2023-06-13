@@ -25,6 +25,7 @@ import deepForEach from "deep-for-each";
 import Logger from "js-logger";
 import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
+import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -32,10 +33,6 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
-		this.messengerState = {
-			open: "open",
-			minimize: "minimize",
-		};
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		this.state = {
@@ -68,6 +65,7 @@ export default class App extends React.Component {
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
+			messengerOpenState: null,
 		};
 
 		this.Api = new Api(
@@ -308,6 +306,11 @@ export default class App extends React.Component {
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
 		}
 
+		if(nextState.messengerOpenState !== this.state.messengerOpenState) {
+			Logger.debug(`messengerOpenState state changed to '${nextState.messengerOpenState}', saving new value in local storage`);
+			localStorage.setItem("messengerOpenState", nextState.messengerOpenState);
+		}
+
 		return true;
 	}
 
@@ -324,13 +327,16 @@ export default class App extends React.Component {
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
 		window.parleySettings = this.createParleyProxy(window.parleySettings);
+
+		// Check if our messengerOpenState is in sync with the localStorage
 		const messengerOpenState = localStorage.getItem("messengerOpenState");
-		if(messengerOpenState === this.messengerState.open)
+		Logger.debug(`messengerOpenState value in localStorage is '${messengerOpenState}'`);
+		if(messengerOpenState === MessengerOpenState.open)
 			this.showChat();
-		 else if(messengerOpenState === this.messengerState.minimize)
+		 else if(messengerOpenState === MessengerOpenState.minimize)
 			this.hideChat();
 		 else
-			localStorage.setItem("messengerOpenState", this.state.showChat ? this.messengerState.open : this.messengerState.minimize);
+			this.hideChat(); // This probably does nothing if `state.showChat` is `false`, but it does update the messengerOpenState in the localStorage
 	}
 
 	componentWillUnmount() {
@@ -513,8 +519,10 @@ export default class App extends React.Component {
 	showChat = () => {
 		Logger.debug("Show chat, registering device");
 
-		this.setState(() => ({showChat: true}));
-		localStorage.setItem("messengerOpenState", this.messengerState.open);
+		this.setState(() => ({
+			showChat: true,
+			messengerOpenState: MessengerOpenState.open,
+		}));
 
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice(
@@ -533,8 +541,10 @@ export default class App extends React.Component {
 	hideChat = () => {
 		Logger.debug("Hide chat");
 
-		this.setState(() => ({showChat: false}));
-		localStorage.setItem("messengerOpenState", this.messengerState.minimize);
+		this.setState(() => ({
+			showChat: false,
+			messengerOpenState: MessengerOpenState.minimize,
+		}));
 	}
 
 	toggleChat = () => {
@@ -574,9 +584,10 @@ export default class App extends React.Component {
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
-					&& <Launcher
-						onClick={this.handleClick}
-					   />
+						&& <Launcher
+							messengerOpenState={this.state.messengerOpenState}
+							onClick={this.handleClick}
+						   />
 				}
 				{
 					this.state.showChat
