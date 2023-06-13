@@ -9,6 +9,7 @@ class Launcher extends Component {
 		const buttonType = "button";
 		const buttonId = "launcher";
 		const launcherClasses = `${styles.launcher} state-${this.props.messengerOpenState}`;
+		const imgAltText = "icon";
 
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -21,7 +22,8 @@ class Launcher extends Component {
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
-								<LauncherSVG />
+								{/* eslint-disable-next-line max-len */}
+								{this.props.icon === undefined ? <LauncherSVG /> : <img alt={imgAltText} src={this.props.icon} />}
 							</button>
 						</div>
 					)
@@ -32,6 +34,7 @@ class Launcher extends Component {
 }
 
 Launcher.propTypes = {
+	icon: PropTypes.string,
 	messengerOpenState: PropTypes.string.isRequired,
 	onClick: PropTypes.func,
 };
