@@ -416,6 +416,135 @@ describe("UI", () => {
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
+			describe("icon", () => {
+				it("should change the icon of the launcher", () => {
+					// Load startup icon
+					cy.fixture("custom-chat-icon1.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("startupIcon");
+
+					// Set startup icon as icon, in the config, before loading the chat
+					// and load the chat
+					cy.get("@startupIcon").then((startupIcon) => {
+						visitHome({runOptions: {icon: startupIcon}});
+					});
+
+					// Check that the icon is changed
+					cy.get("@startupIcon").then((startupIcon) => {
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("img")
+							.should("exist")
+							.and("have.attr", "src", startupIcon);
+					});
+
+					// Check that the default svg "icon" is not visible
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("not.exist");
+
+					// Load a new icon
+					cy.fixture("custom-chat-icon2.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("newIcon");
+
+					// Change the icon to the new icon during runtime
+					cy.get("@newIcon").then((newIcon) => {
+						cy.window().then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.icon = newIcon;
+						});
+					});
+
+					// Check that the icon is changed (during runtime)
+					cy.get("@newIcon").then((newIcon) => {
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("img")
+							.should("exist")
+							.and("have.attr", "src", newIcon);
+					});
+
+					// We don't really need an extra check for the absence of the svg "icon"
+					// since that is already checked above
+				});
+				it("should use the default icon of the launcher", () => {
+					visitHome();
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
+				});
+				it("should convert the default logo to custom logo and back again", () => {
+					visitHome();
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
+
+					// Load a new icon
+					cy.fixture("custom-chat-icon1.png").then((logo) => {
+						return `data:image/png;base64,${logo}`;
+					})
+						.as("newIcon");
+
+					// Change the icon to the new icon during runtime
+					cy.get("@newIcon").then((newIcon) => {
+						cy.window().then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.icon = newIcon;
+						});
+					});
+
+					// Check that the icon is changed (during runtime)
+					cy.get("@newIcon").then((newIcon) => {
+						cy.get("#app")
+							.get("[class^=launcher__]")
+							.get("#launcher")
+							.get("img")
+							.should("exist")
+							.and("have.attr", "src", newIcon);
+					});
+
+					// Remove custom icon during runtime
+					cy.window().then((win) => {
+						// eslint-disable-next-line no-param-reassign
+						win.parleySettings.runOptions.icon = undefined;
+					});
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("svg")
+						.should("exist");
+
+					cy.get("#app")
+						.get("[class^=launcher__]")
+						.get("#launcher")
+						.get("img")
+						.should("not.exist");
+				});
+			});
 			describe("interfaceTexts", () => {
 				describe("desc", () => {
 					it("should change the title text", () => {
@@ -1265,7 +1394,7 @@ describe("UI", () => {
 			});
 		});
 	});
-	describe("messengerOpenState", () => {
+	describe("chat open state", () => {
 		it("should save the value 'minimize' when there is no localstorage value available", () => {
 			visitHome();
 
@@ -1306,7 +1435,7 @@ describe("UI", () => {
 				.get("#chat")
 				.should("exist");
 		});
-		it("should save the value 'minimize' when the chat is hidden and the page is refreshed", () => {
+		it("should save the value 'minimize' when the chat is hidden and also when the page is refreshed", () => {
 			visitHome();
 
 			// Open chat
@@ -1334,47 +1463,75 @@ describe("UI", () => {
 						.equal("minimize");
 				});
 
-			// Check if the chat is not visible
+			// Wait until the app is loaded
+			// Otherwise the "#chat should not exist" will pass
+			// immediately before the chat has been initialized
 			cy.get("#app")
-				.get("#chat")
+				.find("[class^=launcher__]")
+				.find("button")
+				.should("be.visible");
+
+			// Check if the chat is not visible
+			cy.get("#chat")
 				.should("not.exist");
 		});
-	});
-	describe("images", () => {
-		it("should open the fullscreen view on click and close it with the close button", () => {
-			visitHome();
+		describe("launcher component css class", () => {
+			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
+				visitHome();
+				cy.get("#app")
+					.find('div[class*="state-minimize"]')
+					.should("exist");
+				cy.get("#app")
+					.find('div[class*="state-open"]')
+					.should("not.exist");
+			});
+			it("should contain the class name 'state-open' when the chat has been opened'", () => {
+				visitHome();
+				clickOnLauncher();
+				cy.get("#app")
+					.find('div[class*="state-open"]')
+					.should("exist");
+				cy.get("#app")
+					.find('div[class*="state-minimize"]')
+					.should("not.exist");
+			});
+		});
+		describe("images", () => {
+			it("should open the fullscreen view on click and close it with the close button", () => {
+				visitHome();
 
-			// Intercept GET messages and return a fixture message with an image in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
 
-			// Intercept the request for the image binary
-			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+				// Intercept the request for the image binary
+				cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
 
-			clickOnLauncher();
+				clickOnLauncher();
 
-			// Find image and click on it
-			cy.get("@app")
-				.find("[class^=message__]")
-				.find("input[type=image]")
-				.first()
-				.click();
+				// Find image and click on it
+				cy.get("@app")
+					.find("[class^=message__]")
+					.find("input[type=image]")
+					.first()
+					.click();
 
-			// Find fullscreen image container
-			// and close it
-			cy.get("@app")
-				.find("[class^=container__]")
-				.should("be.visible")
-				.find("img[class^=image]")
-				.should("be.visible")
-				.parent()
-				.find("button[class^=closeButton__]")
-				.should("be.visible")
-				.click();
+				// Find fullscreen image container
+				// and close it
+				cy.get("@app")
+					.find("[class^=container__]")
+					.should("be.visible")
+					.find("img[class^=image]")
+					.should("be.visible")
+					.parent()
+					.find("button[class^=closeButton__]")
+					.should("be.visible")
+					.click();
 
-			// Make sure image container is gone
-			cy.get("@app")
-				.find("[class^=container__]")
-				.should("not.exist");
+				// Make sure image container is gone
+				cy.get("@app")
+					.find("[class^=container__]")
+					.should("not.exist");
+			});
 		});
 	});
 });

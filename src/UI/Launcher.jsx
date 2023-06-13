@@ -8,19 +8,22 @@ class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
+		const launcherClasses = `${styles.launcher} state-${this.props.messengerOpenState}`;
+		const imgAltText = "icon";
 
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
 					interfaceTexts => (
-						<div className={styles.launcher}>
+						<div className={launcherClasses}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
 								onClick={this.props.onClick}
 								type={buttonType}
 							>
-								<LauncherSVG />
+								{/* eslint-disable-next-line max-len */}
+								{this.props.icon === undefined ? <LauncherSVG /> : <img alt={imgAltText} src={this.props.icon} />}
 							</button>
 						</div>
 					)
@@ -30,6 +33,10 @@ class Launcher extends Component {
 	}
 }
 
-Launcher.propTypes = {onClick: PropTypes.func};
+Launcher.propTypes = {
+	icon: PropTypes.string,
+	messengerOpenState: PropTypes.string.isRequired,
+	onClick: PropTypes.func,
+};
 
 export default Launcher;
