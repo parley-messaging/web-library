@@ -357,6 +357,63 @@ describe("UI", () => {
 				.should("be.enabled");
 		});
 	});
+	describe("receiving messages", () => {
+		it("should render images when received", () => {
+			visitHome();
+
+			// Intercept GET messages and return a fixture message with an image in it
+			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+
+			// Intercept the request for the image binary
+			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+			clickOnLauncher();
+
+			cy.get("@app")
+				.find("[class^=message__]")
+				.should("have.length", 2)
+				.find("input[type=image]")
+				.should("have.length", 2)
+				.should("exist");
+		});
+		it("should render an error message for unsupported media types", () => {
+			visitHome();
+
+			// Intercept GET messages and return a fixture message with an image in it
+			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithPdfResponse.json"})
+				.as("getMessages");
+
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			cy.get("@app")
+				.find("[class^=message__]")
+				.should("be.visible")
+				.find("p")
+				.should("have.text", "Unsupported media");
+		});
+		it("should render an error message when the image cannot be loaded", () => {
+			visitHome();
+
+			// Intercept GET messages and return a fixture message with an image in it
+			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"})
+				.as("getMessages");
+
+			// Don't intercept GET /media and let the API give use the error we want
+
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			cy.get("@app")
+				.find("[class^=message__]")
+				.first()
+				.should("be.visible")
+				.find("p")
+				.should("have.text", "Unable to load media");
+		});
+	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
 			describe("icon", () => {
@@ -1438,6 +1495,43 @@ describe("UI", () => {
 					.find('div[class*="state-minimize"]')
 					.should("not.exist");
 			});
+		});
+	});
+	describe("images", () => {
+		it("should open the fullscreen view on click and close it with the close button", () => {
+			visitHome();
+
+			// Intercept GET messages and return a fixture message with an image in it
+			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+
+			// Intercept the request for the image binary
+			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+			clickOnLauncher();
+
+			// Find image and click on it
+			cy.get("@app")
+				.find("[class^=message__]")
+				.find("input[type=image]")
+				.first()
+				.click();
+
+			// Find fullscreen image container
+			// and close it
+			cy.get("@app")
+				.find("[class^=container__]")
+				.should("be.visible")
+				.find("img[class^=image]")
+				.should("be.visible")
+				.parent()
+				.find("button[class^=closeButton__]")
+				.should("be.visible")
+				.click();
+
+			// Make sure image container is gone
+			cy.get("@app")
+				.find("[class^=container__]")
+				.should("not.exist");
 		});
 	});
 });

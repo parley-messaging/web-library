@@ -13,7 +13,7 @@ import {
 	MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {messages, messageSent, subscribe} from "./Constants/Events";
+import {media, messages, messageSent, subscribe} from "./Constants/Events";
 import PushTypes from "./Constants/PushTypes";
 import DeviceTypes from "./Constants/DeviceTypes";
 import {
@@ -211,6 +211,25 @@ export default class Api {
 			});
 	}
 
+	getMedia(year, month, day, fileName) {
+		ow(year, "year", ow.string.nonEmpty);
+		ow(month, "month", ow.string.nonEmpty);
+		ow(day, "day", ow.string.nonEmpty);
+		ow(fileName, "fileName", ow.string.nonEmpty);
+
+		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {
+			method: "GET",
+			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
+		})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
 	fetchWrapper(url, options) {
 		// Merge any custom headers into the already configured headers
 		const extendedOptions = {
@@ -221,23 +240,33 @@ export default class Api {
 
 		return new Promise((resolve, reject) => {
 			fetch(url, extendedOptions)
-				.then(response => response.json())
-				.then((json) => {
-					// Check if we have an API error and throw it
-					if(json.status === ErrorStatus) {
-						if(json.notifications) {
-							const errorNotifications = json.notifications
-								.map(notification => notification.type === ErrorResponse && notification.message);
-							const warningNotifications = json.notifications
-								.map(notification => notification.type === WarningResponse && notification.message);
+				.then((response) => {
+					const contentType = response.headers.get("Content-Type");
 
-							reject(errorNotifications, warningNotifications);
-						} else {
-							reject([ApiGenericError], []);
+					if(contentType && contentType.includes("application/json"))
+						return response.json(); // Handle JSON response
+					 else if(contentType && contentType.includes("image"))
+						return response.blob(); // Handle image binary response
+					 throw new Error("Unsupported response type");
+				})
+				.then((data) => {
+					// Check if we have an API error and throw it
+					if(typeof data === "object") {
+						if(data.status === ErrorStatus) {
+							if(data.notifications) {
+								const errorNotifications = data.notifications
+									.map(notification => notification.type === ErrorResponse && notification.message);
+								const warningNotifications = data.notifications
+									.map(notification => notification.type === WarningResponse && notification.message);
+
+								reject(errorNotifications, warningNotifications);
+							} else {
+								reject([ApiGenericError], []);
+							}
 						}
-					} else {
-						resolve(json);
 					}
+
+					resolve(data);
 				})
 				.catch(() => {
 					reject([ApiFetchFailed], []);

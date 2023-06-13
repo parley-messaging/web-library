@@ -7,7 +7,7 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<!-- Strict CSP (for testing CSP support) -->
-	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://api.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self' data:;font-src 'self'; script-src 'self'; default-src 'self'">
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://*.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self' data:;font-src 'self'; script-src 'self'; default-src 'self'">
 	<!---->
 
 	<title>Parley messenger</title>
@@ -67,6 +67,7 @@
 			--parley-close-alert-right-button-background-color: #E6E6E8;
 			--parley-close-alert-right-button-color: #070721;
 			--parley-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+			--parley-image-loading-color: var(--parley-nav-background-color);
 		}
 	</style>
 </head>
