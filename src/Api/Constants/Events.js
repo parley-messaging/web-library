@@ -3,5 +3,4 @@
 export const subscribe = "subscribe";
 export const messageSent = "messagesent";
 export const messages = "messages";
-
 export const media = "media";
