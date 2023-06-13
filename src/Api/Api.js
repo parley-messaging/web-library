@@ -34,6 +34,7 @@ export default class Api {
 		this.setCustomHeaders(customHeaders);
 		this.eventTarget = apiEventTarget;
 		this.deviceRegistered = false;
+		this.isDeviceRegistrationPending = false;
 	}
 
 	setDomain(apiDomain) {
@@ -130,6 +131,8 @@ export default class Api {
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
+		this.isDeviceRegistrationPending = true;
+
 		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {
@@ -149,6 +152,7 @@ export default class Api {
 		})
 			.then((data) => {
 				this.deviceRegistered = true; // Important, must be before sending out any events
+				this.isDeviceRegistrationPending = false;
 
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 

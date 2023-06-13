@@ -524,6 +524,32 @@ describe("Api class", () => {
 					});
 				});
 		});
+
+		it("should set the deviceRegistered and isDeviceRegistrationPending correctly", () => {
+			cy.visit("/");
+
+			expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
+			expect(config.api.deviceRegistered).to.be.equal(false);
+
+			config.api.subscribeDevice(
+				config.pushToken,
+				config.pushType,
+				true,
+				config.userAdditionalInformation,
+				config.type,
+				config.version,
+				config.referer,
+				config.authorization,
+			);
+
+			expect(config.api.isDeviceRegistrationPending).to.be.equal(true);
+
+			cy.wait("@postDevices")
+				.then(() => {
+					expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
+					expect(config.api.deviceRegistered).to.be.equal(true);
+				});
+		});
 	});
 
 	describe("sendMessage()", () => {

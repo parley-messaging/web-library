@@ -356,6 +356,96 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
+
+		it("should keep the input field disabled, after submitting a message, while device registration is not finished", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
+			findMessage(testMessage);
+
+			// Validate that the textarea is enabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
+
+		it("should keep the input field disabled, after submitting a message and closing/opening the chat window, while device registration is not finished", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled");
+
+			clickOnLauncher(); // Hide chat
+			clickOnLauncher(); // Show chat
+
+			// Validate that the text area is still disabled
+			// and then continue the subscribe call
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
+			findMessage(testMessage);
+
+			// Validate that the textarea is enabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
@@ -1287,7 +1377,7 @@ describe("UI", () => {
 
 			// Check if the chat is not visible
 			cy.get("#chat")
-				.should("not.exist");
+				.should("not.be.visible");
 		});
 		describe("launcher component css class", () => {
 			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
