@@ -20,3 +20,9 @@
 	text-align: center;
 	transform: translateZ(0);
 }
+
+.launcher img {
+	width: 35px;
+	height: 35px;
+	padding: 10px 0 10px 0; /* Makes sure the img is centered correctly in the round button */
+}

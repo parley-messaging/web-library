@@ -66,6 +66,7 @@ export default class App extends React.Component {
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 			messengerOpenState: null,
+			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
 		};
 
 		this.Api = new Api(
@@ -464,6 +465,8 @@ export default class App extends React.Component {
 				}
 			} else if(path[layer1] === "country") {
 				objectToSaveIntoState = {interfaceLanguage: value};
+			} else if(path[layer1] === "icon") {
+				objectToSaveIntoState = {launcherIcon: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -585,6 +588,7 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 						&& <Launcher
+							icon={this.state.launcherIcon}
 							messengerOpenState={this.state.messengerOpenState}
 							onClick={this.handleClick}
 						   />
