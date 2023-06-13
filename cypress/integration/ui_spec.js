@@ -1496,42 +1496,42 @@ describe("UI", () => {
 					.should("not.exist");
 			});
 		});
-		describe("images", () => {
-			it("should open the fullscreen view on click and close it with the close button", () => {
-				visitHome();
+	});
+	describe("images", () => {
+		it("should open the fullscreen view on click and close it with the close button", () => {
+			visitHome();
 
-				// Intercept GET messages and return a fixture message with an image in it
-				cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+			// Intercept GET messages and return a fixture message with an image in it
+			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
 
-				// Intercept the request for the image binary
-				cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+			// Intercept the request for the image binary
+			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
 
-				clickOnLauncher();
+			clickOnLauncher();
 
-				// Find image and click on it
-				cy.get("@app")
-					.find("[class^=message__]")
-					.find("input[type=image]")
-					.first()
-					.click();
+			// Find image and click on it
+			cy.get("@app")
+				.find("[class^=message__]")
+				.find("input[type=image]")
+				.first()
+				.click();
 
-				// Find fullscreen image container
-				// and close it
-				cy.get("@app")
-					.find("[class^=container__]")
-					.should("be.visible")
-					.find("img[class^=image]")
-					.should("be.visible")
-					.parent()
-					.find("button[class^=closeButton__]")
-					.should("be.visible")
-					.click();
+			// Find fullscreen image container
+			// and close it
+			cy.get("@app")
+				.find("[class^=container__]")
+				.should("be.visible")
+				.find("img[class^=image]")
+				.should("be.visible")
+				.parent()
+				.find("button[class^=closeButton__]")
+				.should("be.visible")
+				.click();
 
-				// Make sure image container is gone
-				cy.get("@app")
-					.find("[class^=container__]")
-					.should("not.exist");
-			});
+			// Make sure image container is gone
+			cy.get("@app")
+				.find("[class^=container__]")
+				.should("not.exist");
 		});
 	});
 });
