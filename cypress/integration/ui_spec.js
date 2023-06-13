@@ -357,7 +357,6 @@ describe("UI", () => {
 				.should("be.enabled");
 		});
 	});
-
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
 			describe("icon", () => {
@@ -1280,7 +1279,6 @@ describe("UI", () => {
 			});
 		});
 	});
-
 	describe("component structure", () => {
 		beforeEach(() => {
 			cy.visit("/", {
@@ -1339,7 +1337,7 @@ describe("UI", () => {
 			});
 		});
 	});
-	describe("messengerOpenState", () => {
+	describe("chat open state", () => {
 		it("should save the value 'minimize' when there is no localstorage value available", () => {
 			visitHome();
 
@@ -1380,7 +1378,7 @@ describe("UI", () => {
 				.get("#chat")
 				.should("exist");
 		});
-		it("should save the value 'minimize' when the chat is hidden and the page is refreshed", () => {
+		it("should save the value 'minimize' when the chat is hidden and also when the page is refreshed", () => {
 			visitHome();
 
 			// Open chat
@@ -1408,10 +1406,38 @@ describe("UI", () => {
 						.equal("minimize");
 				});
 
-			// Check if the chat is not visible
+			// Wait until the app is loaded
+			// Otherwise the "#chat should not exist" will pass
+			// immediately before the chat has been initialized
 			cy.get("#app")
-				.get("#chat")
+				.find("[class^=launcher__]")
+				.find("button")
+				.should("be.visible");
+
+			// Check if the chat is not visible
+			cy.get("#chat")
 				.should("not.exist");
+		});
+		describe("launcher component css class", () => {
+			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
+				visitHome();
+				cy.get("#app")
+					.find('div[class*="state-minimize"]')
+					.should("exist");
+				cy.get("#app")
+					.find('div[class*="state-open"]')
+					.should("not.exist");
+			});
+			it("should contain the class name 'state-open' when the chat has been opened'", () => {
+				visitHome();
+				clickOnLauncher();
+				cy.get("#app")
+					.find('div[class*="state-open"]')
+					.should("exist");
+				cy.get("#app")
+					.find('div[class*="state-minimize"]')
+					.should("not.exist");
+			});
 		});
 	});
 });

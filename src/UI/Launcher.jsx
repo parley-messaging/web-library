@@ -8,12 +8,14 @@ class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
+		const launcherClasses = `${styles.launcher} state-${this.props.messengerOpenState}`;
 		const imgAltText = "icon";
+
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
 					interfaceTexts => (
-						<div className={styles.launcher}>
+						<div className={launcherClasses}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
@@ -33,6 +35,7 @@ class Launcher extends Component {
 
 Launcher.propTypes = {
 	icon: PropTypes.string,
+	messengerOpenState: PropTypes.string.isRequired,
 	onClick: PropTypes.func,
 };
 
