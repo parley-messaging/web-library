@@ -152,7 +152,6 @@ export default class Api {
 		})
 			.then((data) => {
 				this.deviceRegistered = true; // Important, must be before sending out any events
-				this.isDeviceRegistrationPending = false;
 
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(subscribe, data));
 
@@ -164,6 +163,11 @@ export default class Api {
 					warningNotifications,
 					data: null,
 				}));
+			})
+			.finally(() => {
+				// Always reset pending flag
+				// whether we succeeded or not
+				this.isDeviceRegistrationPending = false;
 			});
 	}
 

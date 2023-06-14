@@ -161,7 +161,7 @@ describe("UI", () => {
 						},
 					],
 				},
-			});
+			}).as("postDevices");
 
 			visitHome();
 			clickOnLauncher();
@@ -173,6 +173,15 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
+
+			// Re-open the chat
+			clickOnLauncher(); // hide
+			clickOnLauncher(); // show
+
+			// Validate that the chat retries the subscribe call
+			cy.wait("@postDevices")
+				.its("response")
+				.should("have.property", "statusCode", 400);
 		});
 
 		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
