@@ -1,42 +1,120 @@
-import {Component} from "react";
+import React, {Component} from "react";
 import PropTypes from "prop-types";
-
-// components
-// import ImageViewer from "./ImageViewer";
+import Api from "../Api/Api";
+import gfm from "remark-gfm";
+import ReactMarkdown from "react-markdown";
+import * as styles from "./Image.module.css";
+import ImageViewer from "./ImageViewer";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 class Image extends Component {
 	constructor(props) {
 		super(props);
 
 		// state
-		this.state = {showImageViewer: false};
+		this.state = {
+			showImageViewer: false,
+			imageUrl: null,
+			isLoading: true,
+			errorText: "_Unable to load media_",
+		};
+	}
+
+	componentDidMount() {
+		// Don't load if this is an unsupported mime type
+		if(!this.props.media.mimeType.startsWith("image/")) {
+			this.setState(() => ({
+				errorText: "_Unsupported media_",
+				isLoading: false,
+			}));
+			return;
+		}
+
+		const {
+			year,
+			month,
+			day,
+			filename,
+		} = this.props.media;
+		this.props.api.getMedia(year, month, day, filename)
+			.then((mediaBlob) => {
+				if(!mediaBlob)
+					return;
+
+
+				// Convert blob to data: url
+				// and save it in state
+				const reader = new FileReader();
+				reader.readAsDataURL(mediaBlob);
+				reader.onloadend = () => {
+					this.setState(() => ({imageUrl: reader.result}));
+				};
+			})
+			.finally(() => {
+				this.setState(() => ({isLoading: false}));
+			});
 	}
 
 	handleToggleImageViewer = () => {
 		this.setState(state => ({showImageViewer: !state.showImageViewer}));
-	}
+	};
 
 	render() {
-		// Not using in first version
-		// return (
-		// 	<>
-		// 		<span onClick={this.handleToggleImageViewer}>
-		// 			<img alt={this.props.media.description} src={this.props.media.id} />
-		// 		</span>
-		// 		{this.state.showImageViewer &&
-		// 			<ImageViewer media={this.props.media} onClose={this.handleToggleImageViewer} />}
-		// 	</>
-		// );
+		// Don't load if we have no content (yet)
+		if(this.state.isLoading) {
+			return (
+				<div className={styles.loadingContainer}>
+					<span className={styles.loading} />
+				</div>
+			);
+		}
 
-		return null;
+		const inputType = "image";
+		const classNames = `${styles.image} ${this.props.messageType === MessageTypes.Agent ? styles.agent : styles.user}`;
+
+		return (
+			<>
+				{
+					this.state.imageUrl
+						? <input
+								alt={this.props.media.description}
+								className={classNames}
+								onClick={this.handleToggleImageViewer}
+								src={this.state.imageUrl}
+								type={inputType}
+						  />
+						: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
+							{this.state.errorText}
+						</ReactMarkdown>
+				}
+				{
+					this.state.showImageViewer
+					&& <ImageViewer
+							alt={this.props.media.description}
+							onClose={this.handleToggleImageViewer}
+							src={this.state.imageUrl}
+					   />
+				}
+			</>
+		);
 	}
 }
 
 Image.propTypes = {
+	api: PropTypes.instanceOf(Api),
 	media: PropTypes.shape({
-		description: PropTypes.string,
+		day: PropTypes.string.isRequired,
+		description: PropTypes.string.isRequired,
+		filename: PropTypes.string.isRequired,
 		id: PropTypes.string.isRequired,
+		mimeType: PropTypes.string.isRequired,
+		month: PropTypes.string.isRequired,
+		year: PropTypes.string.isRequired,
 	}),
+	messageType: PropTypes.oneOf([
+		MessageTypes.Agent,
+		MessageTypes.User,
+	]).isRequired,
 };
 
 export default Image;

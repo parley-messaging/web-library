@@ -1,3 +1,7 @@
+:root {
+	--message-border-radius: 10px;
+}
+
 /* region Container */
 .messageBubble {
 	display: block;
@@ -25,11 +29,13 @@
 
 /* region Message */
 .message {
+	--message-max-width: 190px;
+
 	position: relative;
 	display: grid;
-	max-width: 190px;
-	padding: 8px 10px;
-	border-radius: 5px;
+	max-width: var(--message-max-width);
+	padding: 8px;
+	border-radius: var(--message-border-radius);
 	grid-template-columns: auto;
 	grid-template-rows: auto auto;
 	hyphens: auto;
@@ -54,14 +60,14 @@
 
 .user .message {
 	background-color: var(--parley-user-background-color, #4A5E83);
-	border-radius: 10px 10px 0;
+	border-bottom-right-radius: 0;
 	color: var(--parley-user-text-color, #FFF);
 	float: right;
 }
 
 .agent .message {
 	background: var(--parley-account-background-color, #E7E3E0);
-	border-radius: 0 10px 10px;
+	border-top-left-radius: 0;
 	color: var(--parley-account-text-color, #535353);
 	float: left;
 }

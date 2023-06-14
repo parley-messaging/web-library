@@ -1,36 +1,30 @@
 {
 	"data": [
 		{
-			"id": 10737,
-			"time": 1536739259,
-			"message": "hi!",
-			"image": null,
+			"id": 5682,
+			"time": 1686054738,
+			"message": null,
+			"image": "img/364/2023/6/6/41cedb695613d417be10c65f089521599c103cc9.pdf",
 			"typeId": 2,
 			"agent": {
-				"id": 2,
+				"id": 3,
 				"name": "Tracebuzz",
-				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"avatar": "https://beta.tracebuzz.com/V002/img/avatar.php?i=TB&c=f4931d",
 				"isTyping": null
 			},
 			"carousel": [],
 			"quickReplies": [],
 			"custom": [],
 			"title": null,
-			"media": null,
-			"buttons": []
-		},
-		{
-			"id": 10736,
-			"time": 1536739157,
-			"message": "Hello, i have a question",
-			"image": null,
-			"typeId": 1,
-			"agent": null,
-			"carousel": [],
-			"quickReplies": [],
-			"custom": [],
-			"title": null,
-			"media": null,
+			"media": {
+				"id": "img/364/2023/6/6/41cedb695613d417be10c65f089521599c103cc9.pdf",
+				"mimeType": "application/pdf",
+				"year": "2023",
+				"month": "6",
+				"day": "6",
+				"filename": "41cedb695613d417be10c65f089521599c103cc9.pdf",
+				"description": "2117234911_1686055386_2743.pdf"
+			},
 			"buttons": []
 		}
 	],
