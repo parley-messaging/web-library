@@ -188,9 +188,15 @@ export default class App extends React.Component {
 		userAdditionalInformation, type, deviceVersion,
 		referer, authorization, force,
 	) => {
-		if(this.Api.deviceRegistered && !force) {
-			Logger.debug("Device is already registered, not registering a new one");
-			return; // Don't register if we already are registered
+		if(!force) {
+			if(this.Api.deviceRegistered) {
+				Logger.debug("Device is already registered, not registering a new one");
+				return; // Don't register if we already are registered
+			}
+			if(this.Api.isDeviceRegistrationPending) {
+				Logger.debug("There is already a device registration pending, not registering a new one");
+				return;
+			}
 		}
 		Logger.debug("Registering new device");
 
@@ -593,21 +599,19 @@ export default class App extends React.Component {
 							onClick={this.handleClick}
 						   />
 				}
-				{
-					this.state.showChat
-					&& <Chat
-						allowEmoji={true}
-						allowFileUpload={true}
-						api={this.Api}
-						closeButton={this.state.closeButton}
-						isMobile={this.state.isMobile}
-						isiOSMobile={this.state.isiOSMobile}
-						onMinimizeClick={this.handleClick}
-						restartPolling={this.restartPolling}
-						title={this.state.interfaceTexts.title}
-						welcomeMessage={this.state.interfaceTexts.welcomeMessage}
-					   />
-				}
+				<Chat
+					allowEmoji={true}
+					allowFileUpload={true}
+					api={this.Api}
+					closeButton={this.state.closeButton}
+					isMobile={this.state.isMobile}
+					isiOSMobile={this.state.isiOSMobile}
+					onMinimizeClick={this.handleClick}
+					restartPolling={this.restartPolling}
+					showChat={this.state.showChat}
+					title={this.state.interfaceTexts.title}
+					welcomeMessage={this.state.interfaceTexts.welcomeMessage}
+				/>
 			</InterfaceTextsContext.Provider>
 		);
 	}

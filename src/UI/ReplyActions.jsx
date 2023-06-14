@@ -5,6 +5,8 @@ import ReplyText from "./ReplyText";
 import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
 import {InterfaceTextsContext} from "./Scripts/Context";
+import ApiEventTarget from "../Api/ApiEventTarget";
+import {subscribe} from "../Api/Constants/Events";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -26,17 +28,34 @@ class ReplyActions extends Component {
 		// so we disable it until we get a response from the API
 		this.props.replyTextRef.current.textArea.current.disabled = true;
 
-		// Send reply to Parley
-		this.props.api.sendMessage(this.state.reply)
-			.then(() => {
-				// Reset state
-				this.setState(() => ({reply: ""}));
-				this.props.replyTextRef.current.textArea.current.disabled = false;
-
-				// After re-enabling the focus must be set again
-				this.props.replyTextRef.current.textArea.current.focus();
-			});
+		if(this.props.api.deviceRegistered) {
+			this.sendMessage();
+		} else {
+			// Wait until device is subscribed before trying to send a message
+			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		}
 	}
+
+	handleSubscribe = (event) => {
+		if(!event.detail.errorNotifications)
+			this.sendMessage();
+
+		// This is a one time thing (for this submit),
+		// so stop listening for future subscriptions
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+	}
+
+	sendMessage = () => this.props.api.sendMessage(this.state.reply)
+		.then(() => {
+			// Reset state
+			this.setState(() => ({reply: ""}));
+		})
+		.finally(() => {
+			this.props.replyTextRef.current.textArea.current.disabled = false;
+
+			// After re-enabling the focus must be set again
+			this.props.replyTextRef.current.textArea.current.focus();
+		})
 
 	render() {
 		return (

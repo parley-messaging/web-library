@@ -34,6 +34,7 @@ export default class Api {
 		this.setCustomHeaders(customHeaders);
 		this.eventTarget = apiEventTarget;
 		this.deviceRegistered = false;
+		this.isDeviceRegistrationPending = false;
 	}
 
 	setDomain(apiDomain) {
@@ -130,6 +131,8 @@ export default class Api {
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
+		this.isDeviceRegistrationPending = true;
+
 		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			headers: {
@@ -160,6 +163,11 @@ export default class Api {
 					warningNotifications,
 					data: null,
 				}));
+			})
+			.finally(() => {
+				// Always reset pending flag
+				// whether we succeeded or not
+				this.isDeviceRegistrationPending = false;
 			});
 	}
 

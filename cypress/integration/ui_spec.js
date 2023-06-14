@@ -161,7 +161,7 @@ describe("UI", () => {
 						},
 					],
 				},
-			});
+			}).as("postDevices");
 
 			visitHome();
 			clickOnLauncher();
@@ -173,6 +173,15 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
+
+			// Re-open the chat
+			clickOnLauncher(); // hide
+			clickOnLauncher(); // show
+
+			// Validate that the chat retries the subscribe call
+			cy.wait("@postDevices")
+				.its("response")
+				.should("have.property", "statusCode", 400);
 		});
 
 		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
@@ -356,6 +365,96 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
+
+		it("should keep the input field disabled, after submitting a message, while device registration is not finished", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
+			findMessage(testMessage);
+
+			// Validate that the textarea is enabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
+
+		it("should keep the input field disabled, after submitting a message and closing/opening the chat window, while device registration is not finished", () => {
+			const testMessage = `Test message ${Date.now()}`;
+
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
+			visitHome();
+			clickOnLauncher();
+			sendMessage(testMessage);
+
+			// Validate that the text area is disabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled");
+
+			clickOnLauncher(); // Hide chat
+			clickOnLauncher(); // Show chat
+
+			// Validate that the text area is still disabled
+			// and then continue the subscribe call
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.disabled")
+				.then(interception.sendResponse);
+
+			findMessage(testMessage);
+
+			// Validate that the textarea is enabled
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=footer__]")
+				.should("be.visible")
+				.find("[class^=text__]")
+				.should("be.visible")
+				.find("textarea")
+				.should("be.visible")
+				.should("be.enabled");
+		});
 	});
 	describe("receiving messages", () => {
 		it("should render images when received", () => {
@@ -432,19 +531,15 @@ describe("UI", () => {
 
 					// Check that the icon is changed
 					cy.get("@startupIcon").then((startupIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", startupIcon);
 					});
 
 					// Check that the default svg "icon" is not visible
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("not.exist");
 
 					// Load a new icon
@@ -463,10 +558,8 @@ describe("UI", () => {
 
 					// Check that the icon is changed (during runtime)
 					cy.get("@newIcon").then((newIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", newIcon);
 					});
@@ -476,30 +569,22 @@ describe("UI", () => {
 				});
 				it("should use the default icon of the launcher", () => {
 					visitHome();
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 				});
 				it("should convert the default logo to custom logo and back again", () => {
 					visitHome();
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 
 					// Load a new icon
@@ -518,10 +603,8 @@ describe("UI", () => {
 
 					// Check that the icon is changed (during runtime)
 					cy.get("@newIcon").then((newIcon) => {
-						cy.get("#app")
-							.get("[class^=launcher__]")
-							.get("#launcher")
-							.get("img")
+						cy.get("#launcher")
+							.find("img")
 							.should("exist")
 							.and("have.attr", "src", newIcon);
 					});
@@ -532,16 +615,12 @@ describe("UI", () => {
 						win.parleySettings.runOptions.icon = undefined;
 					});
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("svg")
+					cy.get("#launcher")
+						.find("svg")
 						.should("exist");
 
-					cy.get("#app")
-						.get("[class^=launcher__]")
-						.get("#launcher")
-						.get("img")
+					cy.get("#launcher")
+						.find("img")
 						.should("not.exist");
 				});
 			});
@@ -1204,6 +1283,8 @@ describe("UI", () => {
 					.then(clickOnLauncher)
 					.then(() => {
 						return cy.wait("@postDevices").then((interception) => {
+							// Make sure both headers are used and not only the new one
+							expect(interception.request.headers).to.include(parleyConfig.apiCustomHeaders);
 							expect(interception.request.headers).to.include(newCustomHeader);
 						});
 					});
@@ -1473,7 +1554,7 @@ describe("UI", () => {
 
 			// Check if the chat is not visible
 			cy.get("#chat")
-				.should("not.exist");
+				.should("not.be.visible");
 		});
 		describe("launcher component css class", () => {
 			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {

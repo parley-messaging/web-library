@@ -19,6 +19,10 @@
 	grid-template-rows: 45px minmax(0, 1fr) auto;
 }
 
+.chat.hidden {
+	display: none;
+}
+
 .chat.mobile {
 	right: 0;
 	bottom: 0;

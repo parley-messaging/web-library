@@ -106,6 +106,12 @@ class Chat extends Component {
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
+	componentDidUpdate(prevProps, prevState, snapshot) {
+		// Focus input field if chat was hidden but is now shown
+		if(prevProps.showChat !== this.props.showChat && this.props.showChat === true)
+			this.replyTextRef.current.textArea.current.focus();
+	}
+
 	handleMessageSent = (event) => {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
@@ -149,6 +155,7 @@ class Chat extends Component {
 		let classNames = styles.chat;
 		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
 		classNames += ` ${this.isiOSDevice ? styles.ios : ""}`;
+		classNames += ` ${this.props.showChat ? "" : styles.hidden}`;
 		const typeButton = "button";
 
 		return (
@@ -202,6 +209,7 @@ Chat.propTypes = {
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,
 	restartPolling: PropTypes.func,
+	showChat: PropTypes.bool,
 	title: PropTypes.string,
 	welcomeMessage: PropTypes.string,
 };
