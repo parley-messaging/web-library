@@ -35,8 +35,9 @@ export default class App extends React.Component {
 		this.visibilityChange = "visibilitychange";
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
+		const showChat = false;
 		this.state = {
-			showChat: false,
+			showChat,
 			offline: false,
 			isMobile: isMobile(),
 			isiOSMobile: isiOSMobileDevice(),
@@ -65,7 +66,7 @@ export default class App extends React.Component {
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
-			messengerOpenState: null,
+			messengerOpenState: showChat ? MessengerOpenState.open : MessengerOpenState.minimize,
 			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
 		};
 
@@ -314,8 +315,8 @@ export default class App extends React.Component {
 		}
 
 		if(nextState.messengerOpenState !== this.state.messengerOpenState) {
-			Logger.debug(`messengerOpenState state changed to '${nextState.messengerOpenState}', saving new value in local storage`);
-			localStorage.setItem("messengerOpenState", nextState.messengerOpenState);
+			Logger.debug(`messengerOpenState state changed from '${this.state.messengerOpenState}' to '${nextState.messengerOpenState}'`);
+			this.saveMessengerOpenState(nextState.messengerOpenState);
 		}
 
 		return true;
@@ -343,7 +344,7 @@ export default class App extends React.Component {
 		 else if(messengerOpenState === MessengerOpenState.minimize)
 			this.hideChat();
 		 else
-			this.hideChat(); // This probably does nothing if `state.showChat` is `false`, but it does update the messengerOpenState in the localStorage
+			this.saveMessengerOpenState(this.state.messengerOpenState); // Save the current state into the localStorage
 	}
 
 	componentWillUnmount() {
@@ -586,6 +587,11 @@ export default class App extends React.Component {
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
 		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
+	}
+
+	saveMessengerOpenState = (messengerOpenState) => {
+		Logger.debug(`Saving messengerOpenState value '${messengerOpenState}' into localStorage`);
+		localStorage.setItem("messengerOpenState", messengerOpenState);
 	}
 
 	render() {
