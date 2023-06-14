@@ -7,15 +7,7 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 
 	<!-- Strict CSP (for testing CSP support) -->
-	<meta http-equiv="Content-Security-Policy" content="
-		connect-src 'self' https://api.parley.nu;
-		style-src 'self'
-		'unsafe-inline';
-		img-src 'self';
-		font-src 'self';
-		script-src 'self';
-		default-src 'self'
-	">
+	<meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://*.parley.nu; style-src 'self' 'unsafe-inline'; img-src 'self' data:;font-src 'self'; script-src 'self'; default-src 'self'">
 	<!---->
 
 	<title>Messenger Demo</title>
