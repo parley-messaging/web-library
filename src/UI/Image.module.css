@@ -1,0 +1,55 @@
+.image {
+	width: 100%;
+	border-radius: calc(var(--message-border-radius) / 2);
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.agent {
+	border-top-left-radius: 0;
+}
+
+.user {
+	border-bottom-right-radius: 0;
+}
+
+.loadingContainer {
+
+	/* This helps centering the loading animation */
+	display: flex;
+
+	/* fill up the parent completely.
+	 * This way the message bubble wont change
+	 * sizes too much when switching between
+	 * loading and the actual image
+	 * when loading is done
+	 */
+	width: var(--message-max-width);
+	height: var(--message-max-width);
+}
+
+.loading {
+	display: block;
+	width: 10px;
+	height: 10px;
+	border: 6px solid #F3F3F3;
+	border-top: 6px solid var(--parley-image-loading-color, #4A5E83);
+	margin: auto;
+	animation: pending_animation 2s linear infinite;
+	background-color: transparent;
+	border-radius: 50%;
+	color: #FFF;
+	font-size: 20px;
+	line-height: 20px;
+	text-align: center;
+}
+
+@keyframes pending_animation {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
