@@ -1217,6 +1217,8 @@ describe("UI", () => {
 					.then(clickOnLauncher)
 					.then(() => {
 						return cy.wait("@postDevices").then((interception) => {
+							// Make sure both headers are used and not only the new one
+							expect(interception.request.headers).to.include(parleyConfig.apiCustomHeaders);
 							expect(interception.request.headers).to.include(newCustomHeader);
 						});
 					});
