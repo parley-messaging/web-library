@@ -283,11 +283,14 @@ export default class App extends React.Component {
 		// Re-register device when deviceAuthorization changes
 		// and when userAdditionalInformation changes
 		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
-			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+			// eslint-disable-next-line max-len
+			|| JSON.stringify(nextState.userAdditionalInformation) !== JSON.stringify(this.state.userAdditionalInformation)
 		) {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
-			if(nextState.userAdditionalInformation !== this.state.userAdditionalInformation)
+
+			// eslint-disable-next-line max-len
+			if(JSON.stringify(nextState.userAdditionalInformation) !== JSON.stringify(this.state.userAdditionalInformation))
 				Logger.debug("User additional information changed, registering new device");
 
 			this.subscribeDevice(
@@ -304,12 +307,12 @@ export default class App extends React.Component {
 		}
 
 		// Check working hours when they changed
-		if(nextState.workingHours !== this.state.workingHours) {
+		if(JSON.stringify(nextState.workingHours) !== JSON.stringify(this.state.workingHours)) {
 			Logger.debug("Working hours changed, changing online/offline mode");
 			this.checkWorkingHours();
 		}
 
-		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders) {
+		if(JSON.stringify(nextState.apiCustomHeaders) !== JSON.stringify(this.state.apiCustomHeaders)) {
 			Logger.debug("Api custom headers changed, setting new custom headers");
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
 		}

@@ -955,6 +955,31 @@ describe("UI", () => {
 
 				cy.wait("@createDevice");
 			});
+			it("should not re-register the device when the changes contains no differences", () => {
+				// eslint-disable-next-line no-unused-vars
+				let interceptionOccurred = false;
+				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
+				visitHome(parleyConfig);
+				cy.get("[id=app]").as("app");
+				clickOnLauncher();
+
+				cy.intercept("POST", "*/**/devices", (req) => {
+					interceptionOccurred = true;
+				}).as("createDevice");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.userAdditionalInformation = {"some-key": "some-value"};
+				});
+
+				// short wait is needed otherwise the setting interceptionOccurred was not set
+				// eslint-disable-next-line cypress/no-unnecessary-waiting
+				cy.wait(500);
+				cy.get("@createDevice", {timeout: 5000}).then((interceptions) => {
+					// eslint-disable-next-line no-unused-expressions
+					expect(interceptionOccurred).to.be.false;
+				});
+			});
 		});
 		describe("weekdays", () => {
 			describe("format [day, start, end]", () => {
@@ -1288,6 +1313,31 @@ describe("UI", () => {
 							expect(interception.request.headers).to.include(newCustomHeader);
 						});
 					});
+			});
+			it("should not re-register the device when the custom headers changes", () => {
+				// eslint-disable-next-line no-unused-vars
+				let interceptionOccurred = false;
+				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
+				visitHome(parleyConfig);
+				cy.get("[id=app]").as("app");
+				clickOnLauncher();
+
+				cy.intercept("POST", "*/**/devices", (req) => {
+					interceptionOccurred = true;
+				}).as("createDevice");
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": Math.random()};
+				});
+
+				// short wait is needed otherwise the setting interceptionOccurred was not set
+				// eslint-disable-next-line cypress/no-unnecessary-waiting
+				cy.wait(500);
+				cy.get("@createDevice", {timeout: 5000}).then((interceptions) => {
+					// eslint-disable-next-line no-unused-expressions
+					expect(interceptionOccurred).to.be.false;
+				});
 			});
 		});
 		describe("persistDeviceBetweenDomain", () => {
