@@ -974,8 +974,8 @@ describe("UI", () => {
 
 				// short wait is needed otherwise the setting interceptionOccurred was not set
 				// eslint-disable-next-line cypress/no-unnecessary-waiting
-				cy.wait(500);
-				cy.get("@createDevice", {timeout: 5000}).then((interceptions) => {
+				cy.wait(1000);
+				cy.get("@createDevice").then(() => {
 					// eslint-disable-next-line no-unused-expressions
 					expect(interceptionOccurred).to.be.false;
 				});
@@ -1333,8 +1333,8 @@ describe("UI", () => {
 
 				// short wait is needed otherwise the setting interceptionOccurred was not set
 				// eslint-disable-next-line cypress/no-unnecessary-waiting
-				cy.wait(500);
-				cy.get("@createDevice", {timeout: 5000}).then((interceptions) => {
+				cy.wait(1000);
+				cy.get("@createDevice").then(() => {
 					// eslint-disable-next-line no-unused-expressions
 					expect(interceptionOccurred).to.be.false;
 				});
