@@ -24,4 +24,21 @@ import '@cypress/code-coverage/support'
 Cypress.on('window:before:load', (win) => {
 	// this lets React DevTools "see" components inside application's iframe
 	win.__REACT_DEVTOOLS_GLOBAL_HOOK__ = window.top.__REACT_DEVTOOLS_GLOBAL_HOOK__
+	// Create an array to store the captured debug messages
+	const capturedDebugMessages = [];
+
+	// Capture console.debug messages
+	const originalConsoleDebug = win.console.debug;
+	win.console.debug = (...args) => {
+		const message = args.join(' ');
+
+		// Add the debug message to the capturedDebugMessages array
+		capturedDebugMessages.push(message);
+
+		// Call the original console.debug method
+		originalConsoleDebug.apply(win.console, args);
+	};
+
+	// Expose the capturedDebugMessages array globally
+	win.__capturedDebugMessages = capturedDebugMessages;
 })

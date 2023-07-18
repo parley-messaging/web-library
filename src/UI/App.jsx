@@ -282,15 +282,18 @@ export default class App extends React.Component {
 
 		// Re-register device when deviceAuthorization changes
 		// and when userAdditionalInformation changes
+		const nextStateUserAdditionalInformation = JSON.stringify(nextState.userAdditionalInformation);
+		const stateUserAdditionalInformation = JSON.stringify(this.state.userAdditionalInformation);
+
 		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
 			// eslint-disable-next-line max-len
-			|| JSON.stringify(nextState.userAdditionalInformation) !== JSON.stringify(this.state.userAdditionalInformation)
+			|| nextStateUserAdditionalInformation !== stateUserAdditionalInformation
 		) {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
 
 			// eslint-disable-next-line max-len
-			if(JSON.stringify(nextState.userAdditionalInformation) !== JSON.stringify(this.state.userAdditionalInformation))
+			if(nextStateUserAdditionalInformation !== stateUserAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
 
 			this.subscribeDevice(

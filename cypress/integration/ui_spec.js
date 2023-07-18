@@ -957,27 +957,27 @@ describe("UI", () => {
 			});
 			it("should not re-register the device when the changes contains no differences", () => {
 				// eslint-disable-next-line no-unused-vars
-				let interceptionOccurred = false;
+				const log = "[parley-web-library:DEBUG] Registering new device";
 				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
 				visitHome(parleyConfig);
 				cy.get("[id=app]").as("app");
+
+				// creates the first device subscription call
 				clickOnLauncher();
 
-				cy.intercept("POST", "*/**/devices", (req) => {
-					interceptionOccurred = true;
-				}).as("createDevice");
-
+				// set the additional information
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
 					win.parleySettings.userAdditionalInformation = {"some-key": "some-value"};
 				});
 
-				// short wait is needed otherwise the setting interceptionOccurred was not set
-				// eslint-disable-next-line cypress/no-unnecessary-waiting
-				cy.wait(1000);
-				cy.get("@createDevice").then(() => {
-					// eslint-disable-next-line no-unused-expressions
-					expect(interceptionOccurred).to.be.false;
+				// Retrieve the captured debug messages
+				cy.window().then((win) => {
+					const capturedDebugMessages = win.__capturedDebugMessages;
+
+					// we would only expect 1 device subscription call in total
+					const actualCount = capturedDebugMessages.filter(msg => msg.includes(log)).length;
+					expect(actualCount).to.equal(1);
 				});
 			});
 		});
@@ -1314,29 +1314,25 @@ describe("UI", () => {
 						});
 					});
 			});
-			it("should not re-register the device when the custom headers changes", () => {
-				// eslint-disable-next-line no-unused-vars
-				let interceptionOccurred = false;
-				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
+			it("should not update the custom headers when the new header contains no differences", () => {
+				const log = "[parley-web-library:DEBUG] Api custom headers changed, setting new custom headers";
+				const parleyConfig = {apiCustomHeaders: {"X-CookiesOK": 1}};
 				visitHome(parleyConfig);
 				cy.get("[id=app]").as("app");
 				clickOnLauncher();
 
-				cy.intercept("POST", "*/**/devices", (req) => {
-					interceptionOccurred = true;
-				}).as("createDevice");
-
 				cy.window().then((win) => {
 					// eslint-disable-next-line no-param-reassign
-					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": Math.random()};
+					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": 1};
 				});
 
-				// short wait is needed otherwise the setting interceptionOccurred was not set
-				// eslint-disable-next-line cypress/no-unnecessary-waiting
-				cy.wait(1000);
-				cy.get("@createDevice").then(() => {
-					// eslint-disable-next-line no-unused-expressions
-					expect(interceptionOccurred).to.be.false;
+				// Retrieve the captured debug messages
+				cy.window().then((win) => {
+					const capturedDebugMessages = win.__capturedDebugMessages;
+
+					// We would not expect an API custom header log since it already was set
+					const actualCount = capturedDebugMessages.filter(msg => msg.includes(log)).length;
+					expect(actualCount).to.equal(0);
 				});
 			});
 		});
