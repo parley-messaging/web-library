@@ -310,7 +310,7 @@ export default class App extends React.Component {
 		}
 
 		// Check working hours when they changed
-		if(JSON.stringify(nextState.workingHours) !== JSON.stringify(this.state.workingHours)) {
+		if(nextState.workingHours !== this.state.workingHours) {
 			Logger.debug("Working hours changed, changing online/offline mode");
 			this.checkWorkingHours();
 		}
