@@ -955,6 +955,31 @@ describe("UI", () => {
 
 				cy.wait("@createDevice");
 			});
+			it("should not re-register the device when the changes contains no differences", () => {
+				// eslint-disable-next-line no-unused-vars
+				const log = "[parley-web-library:DEBUG] Registering new device";
+				const parleyConfig = {userAdditionalInformation: {"some-key": "some-value"}};
+				visitHome(parleyConfig);
+				cy.get("[id=app]").as("app");
+
+				// creates the first device subscription call
+				clickOnLauncher();
+
+				// set the additional information
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.userAdditionalInformation = {"some-key": "some-value"};
+				});
+
+				// Retrieve the captured debug messages
+				cy.window().then((win) => {
+					const capturedDebugMessages = win.__capturedDebugMessages;
+
+					// we would only expect 1 device subscription call in total
+					const actualCount = capturedDebugMessages.filter(msg => msg.includes(log)).length;
+					expect(actualCount).to.equal(1);
+				});
+			});
 		});
 		describe("weekdays", () => {
 			describe("format [day, start, end]", () => {
@@ -1288,6 +1313,27 @@ describe("UI", () => {
 							expect(interception.request.headers).to.include(newCustomHeader);
 						});
 					});
+			});
+			it("should not update the custom headers when the new header contains no differences", () => {
+				const log = "[parley-web-library:DEBUG] Api custom headers changed, setting new custom headers";
+				const parleyConfig = {apiCustomHeaders: {"X-CookiesOK": 1}};
+				visitHome(parleyConfig);
+				cy.get("[id=app]").as("app");
+				clickOnLauncher();
+
+				cy.window().then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": 1};
+				});
+
+				// Retrieve the captured debug messages
+				cy.window().then((win) => {
+					const capturedDebugMessages = win.__capturedDebugMessages;
+
+					// We would not expect an API custom header log since it already was set
+					const actualCount = capturedDebugMessages.filter(msg => msg.includes(log)).length;
+					expect(actualCount).to.equal(0);
+				});
 			});
 		});
 		describe("persistDeviceBetweenDomain", () => {

@@ -282,12 +282,18 @@ export default class App extends React.Component {
 
 		// Re-register device when deviceAuthorization changes
 		// and when userAdditionalInformation changes
+		const nextStateUserAdditionalInformation = JSON.stringify(nextState.userAdditionalInformation);
+		const stateUserAdditionalInformation = JSON.stringify(this.state.userAdditionalInformation);
+
 		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
-			|| nextState.userAdditionalInformation !== this.state.userAdditionalInformation
+			// eslint-disable-next-line max-len
+			|| nextStateUserAdditionalInformation !== stateUserAdditionalInformation
 		) {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
-			if(nextState.userAdditionalInformation !== this.state.userAdditionalInformation)
+
+			// eslint-disable-next-line max-len
+			if(nextStateUserAdditionalInformation !== stateUserAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
 
 			this.subscribeDevice(
@@ -309,7 +315,7 @@ export default class App extends React.Component {
 			this.checkWorkingHours();
 		}
 
-		if(nextState.apiCustomHeaders !== this.state.apiCustomHeaders) {
+		if(JSON.stringify(nextState.apiCustomHeaders) !== JSON.stringify(this.state.apiCustomHeaders)) {
 			Logger.debug("Api custom headers changed, setting new custom headers");
 			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
 		}
