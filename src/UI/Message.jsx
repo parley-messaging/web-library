@@ -22,6 +22,7 @@ class Message extends Component {
 	render() {
 		let classNames = styles.messageBubble;
 		let messageType = null;
+		const linkTarget = "_blank";
 		if(this.props.message.typeId === MessageTypes.User) {
 			classNames += ` ${styles.user}`;
 			messageType = MessageTypes.User;
@@ -46,7 +47,7 @@ class Message extends Component {
 					{
 						this.props.message.media
 							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-							: <ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
+							: <ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
 								{this.props.message.message}
 							  </ReactMarkdown>
 					}
