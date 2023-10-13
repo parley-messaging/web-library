@@ -23,6 +23,7 @@ const config = {
 	message: "test message",
 	referer: "weblib-v2_cypress-test",
 	customHeaders: {},
+	authorization: "someauthorization",
 };
 const primitiveTypes = [
 	{
@@ -630,6 +631,30 @@ describe("Api class", () => {
 	});
 
 	describe("fetchWrapper()", () => {
+		it("should make a request with the default headers", () => {
+			const defaultHeaders = {
+				"x-iris-identification": `${config.accountIdentification}:${config.deviceIdentification}`,
+				authorization: config.authorization,
+			};
+
+			config.api.setDeviceIdentification(config.deviceIdentification);
+			config.api.setAuthorization(config.authorization);
+
+			const testUrl = `/test/fetch/wrapper`;
+			const method = "GET";
+
+			cy.intercept(method, testUrl, {
+				statusCode: 200,
+				body: {},
+			}).as("fetchWrapper");
+
+			config.api.fetchWrapper(testUrl, {method});
+
+			cy.wait("@fetchWrapper").then((interception) => {
+				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(defaultHeaders));
+				expect(Object.values(interception.request.headers)).to.include.members(Object.values(defaultHeaders));
+			});
+		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
 				"x-custom-1": "1",
