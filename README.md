@@ -62,6 +62,8 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
    ```bash
    chmod +x ./bin/start_cypress.sh
    ```
+6. Copy/Paste/Rename `cypress.env.json.example` to `cypress.env.json` and fill in the variables
+   - `authorizationHeader`: The authorization header used for tests where the client needs to log in. Can be acquired from https://admin.parley.nu/account/0cce5bfcdbf07978b269/settings/authorization
 #### Start
 ```
 npm run cy:open

@@ -555,7 +555,7 @@ export default class App extends React.Component {
 			DeviceTypes.Web,
 			this.state.deviceVersion,
 			undefined,
-			undefined,
+			this.state.deviceAuthorization,
 			false,
 		);
 	}

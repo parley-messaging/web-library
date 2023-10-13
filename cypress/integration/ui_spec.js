@@ -72,13 +72,33 @@ afterEach(() => {
 
 describe("UI", () => {
 	describe("sending messages", () => {
-		it("should send a new message with the new message showing up in the conversation", () => {
-			const testMessage = `Test message ${Date.now()}`;
+		[
+			true, false,
+		].forEach((loggedIn) => {
+			it(`should send a new message, as a ${loggedIn ? "logged in" : "anonymous"} user, with the new message showing up in the conversation`, () => {
+				const testMessage = `Test message ${Date.now()}`;
 
-			visitHome();
-			clickOnLauncher();
-			sendMessage(testMessage);
-			findMessage(testMessage);
+				let authHeader;
+				if(loggedIn)
+					authHeader = Cypress.env("authorizationHeader");
+
+				cy.intercept("POST", "/**/messages").as("postMessage");
+
+				visitHome({authHeader});
+				clickOnLauncher();
+				sendMessage(testMessage);
+
+				// Make sure the authorization is set correctly on the POST /message call
+				cy.wait("@postMessage").then((interception) => {
+					if(loggedIn)
+						expect(interception.request.headers).to.have.property("authorization", authHeader);
+					else
+						expect(interception.request.headers).to.have.property("authorization", "");
+				});
+
+				// Check to see if the message is rendered correctly
+				findMessage(testMessage);
+			});
 		});
 
 		it("should show a generic error when the API returns `status = ERROR`, but without an error", () => {
