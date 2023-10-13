@@ -6,5 +6,8 @@
 		"reportFilename": "[name]-report",
 		"html": false,
 		"json": true
+	},
+	"retries": {
+		"runMode": 2
 	}
 }

@@ -640,20 +640,15 @@ describe("Api class", () => {
 			config.api.setDeviceIdentification(config.deviceIdentification);
 			config.api.setAuthorization(config.authorization);
 
-			const testUrl = `/test/fetch/wrapper`;
-			const method = "GET";
-
-			cy.intercept(method, testUrl, (req) => {
-				expect(Object.keys(req.headers)).to.include.members(Object.keys(defaultHeaders));
-				expect(Object.values(req.headers)).to.include.members(Object.values(defaultHeaders));
-
-				req.reply({
-					statusCode: 200,
-					body: {},
-				});
-			}).as("fetchWrapper");
+			const testUrl = `${config.apiDomain}/**/devices`;
+			const method = "POST";
 
 			cy.wrap(config.api.fetchWrapper(testUrl, {method}));
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(defaultHeaders));
+				expect(Object.values(interception.request.headers)).to.include.members(Object.values(defaultHeaders));
+			});
 		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
