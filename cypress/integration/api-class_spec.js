@@ -653,7 +653,7 @@ describe("Api class", () => {
 				});
 			}).as("fetchWrapper");
 
-			config.api.fetchWrapper(testUrl, {method});
+			cy.wrap(config.api.fetchWrapper(testUrl, {method}));
 		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
