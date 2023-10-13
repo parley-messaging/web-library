@@ -643,17 +643,17 @@ describe("Api class", () => {
 			const testUrl = `/test/fetch/wrapper`;
 			const method = "GET";
 
-			cy.intercept(method, testUrl, {
-				statusCode: 200,
-				body: {},
+			cy.intercept(method, testUrl, (req) => {
+				expect(Object.keys(req.headers)).to.include.members(Object.keys(defaultHeaders));
+				expect(Object.values(req.headers)).to.include.members(Object.values(defaultHeaders));
+
+				req.reply({
+					statusCode: 200,
+					body: {},
+				});
 			}).as("fetchWrapper");
 
 			config.api.fetchWrapper(testUrl, {method});
-
-			cy.wait("@fetchWrapper").then((interception) => {
-				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(defaultHeaders));
-				expect(Object.values(interception.request.headers)).to.include.members(Object.values(defaultHeaders));
-			});
 		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
