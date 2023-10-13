@@ -199,6 +199,15 @@ export default class App extends React.Component {
 				return;
 			}
 		}
+
+		if(authorization !== this.Api.authorization) {
+			Logger.debug("Using new Authorization from now on", {
+				oldAuthorization: this.Api.authorization,
+				newAuthorization: authorization,
+			});
+			this.Api.setAuthorization(authorization);
+		}
+
 		Logger.debug("Registering new device");
 
 		// Store the device identification, so we don't generate a new one on each registration
@@ -212,7 +221,6 @@ export default class App extends React.Component {
 			type,
 			deviceVersion,
 			referer,
-			authorization,
 		)
 			.then(() => {
 				// Save registration in local storage
@@ -230,6 +238,7 @@ export default class App extends React.Component {
 				Logger.debug("Device registered, ", {
 					accountIdentification: this.Api.accountIdentification,
 					deviceIdentification: this.Api.deviceIdentification,
+					authorization: this.Api.authorization,
 				});
 			});
 	}
@@ -284,15 +293,12 @@ export default class App extends React.Component {
 		// and when userAdditionalInformation changes
 		const nextStateUserAdditionalInformation = JSON.stringify(nextState.userAdditionalInformation);
 		const stateUserAdditionalInformation = JSON.stringify(this.state.userAdditionalInformation);
-
 		if(nextState.deviceAuthorization !== this.state.deviceAuthorization
-			// eslint-disable-next-line max-len
 			|| nextStateUserAdditionalInformation !== stateUserAdditionalInformation
 		) {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
 
-			// eslint-disable-next-line max-len
 			if(nextStateUserAdditionalInformation !== stateUserAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
 
