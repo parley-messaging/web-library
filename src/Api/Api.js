@@ -243,14 +243,12 @@ export default class Api {
 			...options,
 		};
 
-		// Set the default headers that are used for all api calls
+		// Set the user defined custom and default headers that are used for all api calls
 		extendedOptions.headers = Object.assign(extendedOptions.headers, {
+			...this.customHeaders,
 			"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
 			Authorization: this.authorization || "",
 		});
-
-		// Set the user defined custom headers
-		extendedOptions.headers = Object.assign(extendedOptions.headers, this.customHeaders);
 
 		return new Promise((resolve, reject) => {
 			fetch(url, extendedOptions)
