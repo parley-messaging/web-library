@@ -23,6 +23,7 @@ const config = {
 	message: "test message",
 	referer: "weblib-v2_cypress-test",
 	customHeaders: {},
+	authorization: "someauthorization",
 };
 const primitiveTypes = [
 	{
@@ -144,8 +145,9 @@ describe("Api class", () => {
 
 			expect(config.api.config.apiDomain).to.be.equal(newDomain);
 		});
-		it("should throw an error when using something other than a String as domain", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as domain`, () => {
 				expect(() => config.api.setDomain(set.value))
 					.to.throw(`Expected \`apiDomain\` to be of type \`string\` but received type \`${set.type}\``);
 			});
@@ -163,8 +165,8 @@ describe("Api class", () => {
 
 			expect(config.api.accountIdentification).to.be.equal(newAccountIdentification);
 		});
-		it("should throw an error when using something other than a String as accountIdentification", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as accountIdentification`, () => {
 				expect(() => config.api.setAccountIdentification(set.value))
 					.to.throw(`Expected \`accountIdentification\` to be of type \`string\` but received type \`${set.type}\``);
 			});
@@ -182,8 +184,8 @@ describe("Api class", () => {
 
 			expect(config.api.deviceIdentification).to.be.equal(newDeviceIdentification);
 		});
-		it("should throw an error when using something other than a String as deviceIdentification", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as deviceIdentification`, () => {
 				expect(() => config.api.setDeviceIdentification(set.value))
 					.to.throw(`Expected \`deviceIdentification\` to be of type \`string\` but received type \`${set.type}\``);
 			});
@@ -200,6 +202,24 @@ describe("Api class", () => {
 		});
 	});
 
+	describe("setAuthorization()", () => {
+		it("should change the authorization", () => {
+			const newAuthorization = "somenewauthorization";
+			config.api.setAuthorization(newAuthorization);
+
+			expect(config.api.authorization).to.be.equal(newAuthorization);
+		});
+
+		filterPrimitives([
+			"string", "undefined",
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as authorization`, () => {
+				expect(() => config.api.setAuthorization(set.value))
+					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
+			});
+		});
+	});
+
 	describe("setCustomHeaders()", () => {
 		it("should change the customHeaders", () => {
 			const newCustomHeaders = {
@@ -210,10 +230,10 @@ describe("Api class", () => {
 
 			expect(config.api.customHeaders).to.be.equal(newCustomHeaders);
 		});
-		it("should throw an error when using something other than an Object as customHeaders", () => {
-			filterPrimitives([
-				"Object", "undefined", "null", "boolean",
-			]).forEach((set) => {
+		filterPrimitives([
+			"Object", "undefined", "null", "boolean",
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as customHeaders`, () => {
 				expect(() => config.api.setCustomHeaders(set.value))
 					.to.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
 			});
@@ -242,14 +262,13 @@ describe("Api class", () => {
 	});
 
 	describe("subscribeDevice()", () => {
-		it("should throw an error when using something other than a String as pushToken", () => {
-			filterPrimitives([
-				"string",
-				"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"string",
+			"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as pushToken`, () => {
 				expect(() => config.api.subscribeDevice(
 					set.value,
-					undefined,
 					undefined,
 					undefined,
 					undefined,
@@ -261,15 +280,14 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a Number as pushType", () => {
-			filterPrimitives([
-				"number",
-				"undefined", // Don't test for undefined, because pushType is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"number",
+			"undefined", // Don't test for undefined, because pushType is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as pushType`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					set.value,
-					undefined,
 					undefined,
 					undefined,
 					undefined,
@@ -290,21 +308,19 @@ describe("Api class", () => {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
 			))
 				.to.throw(`Expected number \`pushType\` to be one of \`[1,2,3,4,5,6]\`, got ${pushType}`);
 		});
 
-		it("should throw an error when using something other than a Boolean as pushEnabled", () => {
-			filterPrimitives([
-				"boolean",
-				"undefined", // Don't test for undefined, because pushEnabled is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"boolean",
+			"undefined", // Don't test for undefined, because pushEnabled is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as pushEnabled`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					config.pushType,
 					set.value,
-					undefined,
 					undefined,
 					undefined,
 					undefined,
@@ -314,16 +330,15 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using `pushEnabled = true` and something other than a String as pushToken", () => {
-			filterPrimitives([
-				"string",
-				"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"string",
+			"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using 'pushEnabled = true' and '${set.type}' as pushToken`, () => {
 				expect(() => config.api.subscribeDevice(
 					set.value,
 					config.pushType,
 					true,
-					undefined,
 					undefined,
 					undefined,
 					undefined,
@@ -333,17 +348,16 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than an Object as userAdditionalInformation", () => {
-			filterPrimitives([
-				"Object",
-				"undefined", // Don't test for undefined, because userAdditionalInformation is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"Object",
+			"undefined", // Don't test for undefined, because userAdditionalInformation is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as userAdditionalInformation`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					config.pushType,
 					true,
 					set.value,
-					undefined,
 					undefined,
 					undefined,
 					undefined,
@@ -352,19 +366,18 @@ describe("Api class", () => {
 			});
 		});
 
-		it("should throw an error when using something other than a Number as type", () => {
-			filterPrimitives([
-				"number",
-				"boolean", // Boolean are numbers
-				"undefined", // Don't test for undefined, because type is optional and if we give undefined it will test for `version` next
-			]).forEach((set) => {
+		filterPrimitives([
+			"number",
+			"boolean", // Boolean are numbers
+			"undefined", // Don't test for undefined, because type is optional and if we give undefined it will test for `version` next
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as type`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					config.pushType,
 					true,
 					config.userAdditionalInformation,
 					set.value,
-					undefined,
 					undefined,
 					undefined,
 				))
@@ -382,13 +395,12 @@ describe("Api class", () => {
 				type,
 				undefined,
 				undefined,
-				undefined,
 			))
 				.to.throw(`Expected number \`type\` to be one of \`[1,2,3,4]\`, got ${type}`);
 		});
 
-		it("should throw an error when using something other than a String as version", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as version`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					config.pushType,
@@ -396,7 +408,6 @@ describe("Api class", () => {
 					config.userAdditionalInformation,
 					config.type,
 					set.value,
-					undefined,
 					undefined,
 				))
 					.to.throw(`Expected \`version\` to be of type \`string\` but received type \`${set.type}\``);
@@ -414,7 +425,6 @@ describe("Api class", () => {
 				config.type,
 				shortVersion,
 				config.referer,
-				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to have a minimum length of \`5\`, got \`${shortVersion}\``);
 
@@ -428,7 +438,6 @@ describe("Api class", () => {
 				config.type,
 				longVersion,
 				config.referer,
-				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to have a maximum length of \`8\`, got \`${longVersion}\``);
 
@@ -442,16 +451,15 @@ describe("Api class", () => {
 				config.type,
 				wrongFormat,
 				config.referer,
-				config.authorization,
 			))
 				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
-			filterPrimitives([
-				"string",
-				"undefined",
-			]).forEach((set) => {
+		filterPrimitives([
+			"string",
+			"undefined",
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as referer`, () => {
 				expect(() => config.api.subscribeDevice(
 					config.pushToken,
 					config.pushType,
@@ -460,28 +468,8 @@ describe("Api class", () => {
 					config.type,
 					config.version,
 					set.value,
-					config.authorization,
 				))
 					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
-			});
-		});
-
-		it("should throw an error when using something other than a String as authorization", () => {
-			filterPrimitives([
-				"string",
-				"undefined", // Don't test for undefined, because authorization is optional and if we give undefined it will test for other params next
-			]).forEach((set) => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					config.userAdditionalInformation,
-					config.type,
-					config.version,
-					config.referer,
-					set.value,
-				))
-					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
@@ -495,7 +483,6 @@ describe("Api class", () => {
 				config.userAdditionalInformation,
 				config.type,
 				config.version,
-				undefined,
 				undefined,
 			);
 
@@ -525,7 +512,6 @@ describe("Api class", () => {
 						config.type,
 						config.version,
 						config.referer,
-						config.authorization,
 					);
 					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
 				});
@@ -550,7 +536,6 @@ describe("Api class", () => {
 							config.type,
 							config.version,
 							config.referer,
-							config.authorization,
 						);
 					});
 				});
@@ -570,7 +555,6 @@ describe("Api class", () => {
 				config.type,
 				config.version,
 				config.referer,
-				config.authorization,
 			).then(() => {
 				expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
 				expect(config.api.deviceRegistered).to.be.equal(true);
@@ -581,18 +565,18 @@ describe("Api class", () => {
 	});
 
 	describe("sendMessage()", () => {
-		it("should throw an error when using something other than a String as message", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as message`, () => {
 				expect(() => config.api.sendMessage(set.value))
 					.to.throw(`Expected \`message\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
-		it("should throw an error when using something other than a String as referer", () => {
-			filterPrimitives([
-				"string",
-				"undefined",
-			]).forEach((set) => {
+		filterPrimitives([
+			"string",
+			"undefined",
+		]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as referer`, () => {
 				expect(() => config.api.sendMessage(
 					config.message,
 					set.value,
@@ -647,6 +631,25 @@ describe("Api class", () => {
 	});
 
 	describe("fetchWrapper()", () => {
+		it("should make a request with the default headers", () => {
+			const defaultHeaders = {
+				"x-iris-identification": `${config.accountIdentification}:${config.deviceIdentification}`,
+				authorization: config.authorization,
+			};
+
+			config.api.setDeviceIdentification(config.deviceIdentification);
+			config.api.setAuthorization(config.authorization);
+
+			const testUrl = `${config.apiDomain}/**/devices`;
+			const method = "POST";
+
+			cy.wrap(config.api.fetchWrapper(testUrl, {method}));
+
+			cy.wait("@postDevices").then((interception) => {
+				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(defaultHeaders));
+				expect(Object.values(interception.request.headers)).to.include.members(Object.values(defaultHeaders));
+			});
+		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
 				"x-custom-1": "1",
@@ -663,7 +666,6 @@ describe("Api class", () => {
 				config.type,
 				config.version,
 				config.referer,
-				config.authorization,
 			);
 
 			cy.wait("@postDevices").then((interception) => {
@@ -674,29 +676,29 @@ describe("Api class", () => {
 	});
 
 	describe("getMedia", () => {
-		it("should throw an error when using something other than a String as year", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as year`, () => {
 				expect(() => config.api.getMedia(set.value))
 					.to.throw(`Expected \`year\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
-		it("should throw an error when using something other than a String as month", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as month`, () => {
 				expect(() => config.api.getMedia("2023", set.value))
 					.to.throw(`Expected \`month\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
-		it("should throw an error when using something other than a String as day", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as day`, () => {
 				expect(() => config.api.getMedia("2023", "6", set.value))
 					.to.throw(`Expected \`day\` to be of type \`string\` but received type \`${set.type}\``);
 			});
 		});
 
-		it("should throw an error when using something other than a String as fileName", () => {
-			filterPrimitives(["string"]).forEach((set) => {
+		filterPrimitives(["string"]).forEach((set) => {
+			it(`should throw an error when using '${set.type}' as fileName`, () => {
 				expect(() => config.api.getMedia("2023", "6", "6", set.value))
 					.to.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
 			});

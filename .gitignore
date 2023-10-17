@@ -27,3 +27,6 @@ ssl
 
 # Gitlink plugin
 /.idea/GitLink.xml
+
+# Env variables for cypress tests
+/cypress.env.json

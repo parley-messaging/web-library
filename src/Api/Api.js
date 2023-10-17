@@ -24,7 +24,14 @@ import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
 
 export default class Api {
-	constructor(apiDomain, accountIdentification, deviceIdentification, apiEventTarget, customHeaders) {
+	constructor(
+		apiDomain,
+		accountIdentification,
+		deviceIdentification,
+		apiEventTarget,
+		customHeaders,
+		authorization,
+	) {
 		ow(apiEventTarget, "apiEventTarget", ow.object.instanceOf(EventTarget));
 
 		// Rest of the validation is done in the setX() functions
@@ -32,6 +39,7 @@ export default class Api {
 		this.setAccountIdentification(accountIdentification);
 		this.setDeviceIdentification(deviceIdentification);
 		this.setCustomHeaders(customHeaders);
+		this.setAuthorization(authorization);
 		this.eventTarget = apiEventTarget;
 		this.deviceRegistered = false;
 		this.isDeviceRegistrationPending = false;
@@ -54,6 +62,12 @@ export default class Api {
 		ow(deviceIdentification, "deviceIdentification", ow.string.minLength(MinUdidLength));
 
 		this.deviceIdentification = deviceIdentification;
+	}
+
+	setAuthorization(authorization) {
+		ow(authorization, "authorization", ow.optional.string.nonEmpty);
+
+		this.authorization = authorization;
 	}
 
 	setCustomHeaders(customHeaders) {
@@ -97,7 +111,6 @@ export default class Api {
 	 * @param type
 	 * @param version
 	 * @param referer
-	 * @param authorization
 	 * @return {Promise<unknown>|boolean}
 	 */
 	subscribeDevice(
@@ -108,7 +121,6 @@ export default class Api {
 		type,
 		version,
 		referer,
-		authorization,
 	) {
 		// Validate params
 		ow(pushToken, "pushToken", ow.optional.string.nonEmpty);
@@ -124,7 +136,6 @@ export default class Api {
 		ow(version, "version", ow.string.maxLength(DeviceVersionMaxLength));
 		ow(version, "version", ow.string.matches(DeviceVersionRegex));
 		ow(referer, "referer", ow.optional.string.nonEmpty);
-		ow(authorization, "authorization", ow.optional.string.nonEmpty);
 
 		// If the referer isn't set, set it to the window's url
 		let refererCopy = referer;
@@ -135,10 +146,6 @@ export default class Api {
 
 		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
-			headers: {
-				"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
-				Authorization: authorization || "",
-			},
 			body: JSON.stringify({
 				pushToken,
 				pushType,
@@ -147,7 +154,6 @@ export default class Api {
 				type,
 				version,
 				referer: refererCopy,
-				authorization,
 			}),
 		})
 			.then((data) => {
@@ -182,7 +188,6 @@ export default class Api {
 
 		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
-			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
 			body: JSON.stringify({
 				message,
 				referer: refererCopy,
@@ -202,10 +207,7 @@ export default class Api {
 	}
 
 	getMessages() {
-		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
-			method: "GET",
-			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
-		})
+		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {method: "GET"})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
 				return data;
@@ -225,10 +227,7 @@ export default class Api {
 		ow(day, "day", ow.string.nonEmpty);
 		ow(fileName, "fileName", ow.string.nonEmpty);
 
-		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {
-			method: "GET",
-			headers: {"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`},
-		})
+		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {method: "GET"})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, {
 					errorNotifications,
@@ -239,12 +238,17 @@ export default class Api {
 	}
 
 	fetchWrapper(url, options) {
-		// Merge any custom headers into the already configured headers
 		const extendedOptions = {
 			headers: {}, // Headers must always exist
 			...options,
 		};
-		extendedOptions.headers = Object.assign(extendedOptions.headers, this.customHeaders);
+
+		// Set the user defined custom and default headers that are used for all api calls
+		extendedOptions.headers = Object.assign(extendedOptions.headers, {
+			...this.customHeaders,
+			"x-iris-identification": `${this.accountIdentification}:${this.deviceIdentification}`,
+			Authorization: this.authorization || "",
+		});
 
 		return new Promise((resolve, reject) => {
 			fetch(url, extendedOptions)
