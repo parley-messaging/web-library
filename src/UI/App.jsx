@@ -64,7 +64,11 @@ export default class App extends React.Component {
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
-			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
+			devicePersistence: {
+				domain: window?.parleySettings?.devicePersistence?.domain || undefined,
+				ageUpdateInterval: window?.parleySettings?.devicePersistence?.ageUpdateInterval || undefined,
+				ageUpdateIncrement: window?.parleySettings?.devicePersistence?.ageUpdateIncrement || undefined,
+			},
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 			messengerOpenState: showChat ? MessengerOpenState.open : MessengerOpenState.minimize,
 			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
@@ -86,6 +90,8 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
+		window.parleySettings.devicePersistence
+			= window.parleySettings.devicePersistence ? window.parleySettings.devicePersistence : {};
 
 		// Store library version into window
 		window.parleySettings.version = version;
@@ -106,14 +112,15 @@ export default class App extends React.Component {
 	 * @param cookieDomain {string}
 	 */
 	createDeviceIdentificationCookie = (deviceIdentification, cookieDomain) => {
-		// If we don't have a persistDeviceBetweenDomain (maybe because the setting is not enabled)
+		// If we don't have a devicePersistence.domain (maybe because the setting is not enabled)
 		// we don't want to create the cookie
 		if(!cookieDomain)
 			return;
 
+
 		// Create a new cookie (or override existing) containing the (new) device identification
 		document.cookie = `deviceIdentification=${deviceIdentification}; path=/; Domain=${cookieDomain}`;
-	}
+	};
 
 	/**
 	 * Removes the deviceIdentification cookie, that matches the `cookieDomain`, from the storage
@@ -122,7 +129,7 @@ export default class App extends React.Component {
 	removeDeviceIdentificationCookie = (cookieDomain) => {
 		// Remove old cookie containing the (old) device identification
 		document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${cookieDomain}`;
-	}
+	};
 
 	/**
 	 * Tries to find the device identification cookie and returns its value or `undefined`
@@ -143,7 +150,7 @@ export default class App extends React.Component {
 		}
 
 		return undefined;
-	}
+	};
 
 	/**
 	 * Because we keep the device identification in multiple places we need to decide which ones
@@ -157,19 +164,22 @@ export default class App extends React.Component {
 		if(parleySettingsIdentification)
 			return parleySettingsIdentification;
 
+
 		// Second; Get identification from cookie
 		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
 		if(cookieDeviceIdentification)
 			return cookieDeviceIdentification;
+
 
 		// Third; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
 		if(localStorageIdentification)
 			return localStorageIdentification;
 
+
 		// Last; Create a new identification
 		return ApiOptions.deviceIdentification;
-	}
+	};
 
 	/**
 	 * A wrapper for Api.subscribeDevice which will only register a device if
@@ -227,11 +237,11 @@ export default class App extends React.Component {
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
 				// Also save registration in the device identification cookie
-				// (if the persistDeviceBetweenDomain setting is used)
-				if(this.state.persistDeviceBetweenDomain) {
+				// (if the devicePersistence.domain setting is used)
+				if(this.state.devicePersistence.domain) {
 					this.createDeviceIdentificationCookie(
 						this.state.deviceIdentification,
-						this.state.persistDeviceBetweenDomain,
+						this.state.devicePersistence.domain,
 					);
 				}
 
@@ -241,7 +251,7 @@ export default class App extends React.Component {
 					authorization: this.Api.authorization,
 				});
 			});
-	}
+	};
 
 	// eslint-disable-next-line no-unused-vars
 	shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -254,16 +264,19 @@ export default class App extends React.Component {
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification
 			|| nextState.deviceIdentification !== this.state.deviceIdentification
-			|| nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain
+			|| nextState.devicePersistence.domain !== this.state.devicePersistence.domain
 		) {
 			if(nextState.accountIdentification !== this.state.accountIdentification)
 				Logger.debug("Account identification changed, registering new device");
+
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, registering new device");
-			if(nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain)
+
+			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
 				Logger.debug("Cookie domain changed, registering new device");
 
-			this.removeDeviceIdentificationCookie(this.state.persistDeviceBetweenDomain);
+
+			this.removeDeviceIdentificationCookie(this.state.devicePersistence.domain);
 
 			// Make sure we stop otherwise it will poll for the old device info
 			this.PollingService.stopPolling();
@@ -299,8 +312,10 @@ export default class App extends React.Component {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
 
+
 			if(nextStateUserAdditionalInformation !== stateUserAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
+
 
 			this.subscribeDevice(
 				undefined,
@@ -343,6 +358,7 @@ export default class App extends React.Component {
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 
+
 		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
@@ -356,7 +372,7 @@ export default class App extends React.Component {
 		 else if(messengerOpenState === MessengerOpenState.minimize)
 			this.hideChat();
 		 else
-			this.saveMessengerOpenState(this.state.messengerOpenState); // Save the current state into the localStorage
+			this.saveMessengerOpenState(this.state.messengerOpenState);
 	}
 
 	componentWillUnmount() {
@@ -365,6 +381,7 @@ export default class App extends React.Component {
 
 		if(typeof document.hidden !== "undefined")
 			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
+
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
@@ -411,8 +428,8 @@ export default class App extends React.Component {
 						this.setParleySettingIntoState(fullPath, value);
 					});
 
-				// If it is anything else than an object, we can
-				// directly rename/apply it to the state
+					// If it is anything else than an object, we can
+					// directly rename/apply it to the state
 				} else {
 					this.setParleySettingIntoState(change.path, change.value);
 				}
@@ -420,7 +437,7 @@ export default class App extends React.Component {
 		});
 
 		return proxy;
-	}
+	};
 
 	/**
 	 * This will update the interfaceTexts values in the state
@@ -449,7 +466,7 @@ export default class App extends React.Component {
 				"runOptions", "interfaceTexts", key,
 			], value);
 		});
-	}
+	};
 
 	/**
 	 * This will update the state with the new value
@@ -511,8 +528,13 @@ export default class App extends React.Component {
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
-		} else if(path[layer0] === "persistDeviceBetweenDomain") {
-			objectToSaveIntoState = {persistDeviceBetweenDomain: value};
+		} else if(path[layer0] === "devicePersistence") {
+			if(path[layer1] === "domain")
+				objectToSaveIntoState = {devicePersistence: {domain: value}};
+			 else if(path[layer1] === "ageUpdateInterval")
+				objectToSaveIntoState = {devicePersistence: {ageUpdateInterval: value}};
+			 else if(path[layer1] === "ageUpdateIncrement")
+				objectToSaveIntoState = {devicePersistence: {ageUpdateIncrement: value}};
 		}
 
 		if(objectToSaveIntoState) {
@@ -521,22 +543,22 @@ export default class App extends React.Component {
 		} else {
 			Logger.debug("Found unknown setting:", path.join("."));
 		}
-	}
+	};
 
 	handleFocusWindow = () => {
 		// Restart polling when window receives focus
 		this.PollingService.restartPolling();
-	}
+	};
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
 		if(!document.hidden)
 			this.PollingService.restartPolling();
-	}
+	};
 
 	handleClick = () => {
 		this.toggleChat();
-	}
+	};
 
 	showChat = () => {
 		Logger.debug("Show chat, registering device");
@@ -558,7 +580,7 @@ export default class App extends React.Component {
 			this.state.deviceAuthorization,
 			false,
 		);
-	}
+	};
 
 	hideChat = () => {
 		Logger.debug("Hide chat");
@@ -567,18 +589,18 @@ export default class App extends React.Component {
 			showChat: false,
 			messengerOpenState: MessengerOpenState.minimize,
 		}));
-	}
+	};
 
 	toggleChat = () => {
 		if(this.state.showChat)
 			this.hideChat();
 		 else
 			this.showChat();
-	}
+	};
 
 	restartPolling = () => {
 		this.PollingService.restartPolling();
-	}
+	};
 
 	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs so we can show the
@@ -599,23 +621,23 @@ export default class App extends React.Component {
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
 		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
-	}
+	};
 
 	saveMessengerOpenState = (messengerOpenState) => {
 		Logger.debug(`Saving messengerOpenState value '${messengerOpenState}' into localStorage`);
 		localStorage.setItem("messengerOpenState", messengerOpenState);
-	}
+	};
 
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
-						&& <Launcher
-							icon={this.state.launcherIcon}
-							messengerOpenState={this.state.messengerOpenState}
-							onClick={this.handleClick}
-						   />
+					&& <Launcher
+						icon={this.state.launcherIcon}
+						messengerOpenState={this.state.messengerOpenState}
+						onClick={this.handleClick}
+					   />
 				}
 				<Chat
 					allowEmoji={true}
