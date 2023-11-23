@@ -344,6 +344,21 @@ export default class App extends React.Component {
 			this.saveMessengerOpenState(nextState.messengerOpenState);
 		}
 
+		if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval
+			|| nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement
+		) {
+			// TODO: Write cypress tests
+
+			if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval)
+				Logger.debug("Device persistence age update interval changed, recreating interval");
+
+			if(nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement)
+				Logger.debug("Device persistence age update increment changed, recreating interval");
+
+
+			this.startCookieAgeUpdateInterval();
+		}
+
 		return true;
 	}
 
@@ -379,7 +394,7 @@ export default class App extends React.Component {
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
 
-		window.clearInterval(this.cookieAgeRefreshIntervalId);
+		this.stopCookieAgeUpdateInterval();
 
 		if(typeof document.hidden !== "undefined")
 			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
@@ -621,6 +636,17 @@ export default class App extends React.Component {
 	};
 
 	handleSubscribe = () => {
+		this.startCookieAgeUpdateInterval();
+	};
+
+	startCookieAgeUpdateInterval = () => {
+		// TODO: Write cypress tests
+
+		// Stop previously running interval before we start a new one
+		if(this.cookieAgeRefreshIntervalId !== null)
+			this.stopCookieAgeUpdateInterval();
+
+
 		if(!this.state.devicePersistence.ageUpdateInterval) {
 			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age interval");
 			return;
@@ -631,11 +657,25 @@ export default class App extends React.Component {
 			return;
 		}
 
-		this.cookieAgeRefreshIntervalId = window.setInterval(() => {
-			// Update the cookie
-			this.createDeviceIdentificationCookie();
-		}, this.state.devicePersistence.ageUpdateInterval);
+		// Execute the interval handler once to update the cookie immediately.
+		// If any relevant settings change, they will re-start the interval
+		// but doing so won't execute the interval body before the delay, only after.
+		// So we call it once before we start it.
+		this.cookieAgeUpdateIntervalHandler();
+
+		this.cookieAgeRefreshIntervalId = window.setInterval(
+			this.cookieAgeUpdateIntervalHandler,
+			this.state.devicePersistence.ageUpdateInterval,
+		);
 		Logger.debug(`Cookie age refresh interval started with id ${this.cookieAgeRefreshIntervalId}`);
+	};
+
+	stopCookieAgeUpdateInterval = () => {
+		window.clearInterval(this.cookieAgeRefreshIntervalId); // TODO: Write cypress tests
+	};
+
+	cookieAgeUpdateIntervalHandler = () => {
+		this.createDeviceIdentificationCookie();
 	};
 
 	checkWorkingHours = () => {
