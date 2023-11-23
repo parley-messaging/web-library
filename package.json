@@ -85,6 +85,7 @@
 		"@fortawesome/react-fontawesome": "^0.1.14",
 		"deep-for-each": "^3.0.0",
 		"deepmerge": "^4.2.2",
+		"js-cookie": "^3.0.5",
 		"js-logger": "^1.6.1",
 		"object-observer": "^4.3.2",
 		"ow": "^0.28.1",

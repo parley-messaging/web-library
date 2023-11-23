@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages} from "../Api/Constants/Events";
+import {messages, subscribe} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -26,6 +26,7 @@ import Logger from "js-logger";
 import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
+import Cookies from "js-cookie";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -33,6 +34,8 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
+		this.cookieAgeRefreshIntervalId = null;
+
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		const showChat = false;
@@ -104,31 +107,41 @@ export default class App extends React.Component {
 	}
 
 	/**
-	 * Creates a new cookie with:
-	 * - name: `deviceIdentification`
-	 * - value: the value you provide in `deviceIdentification`
-	 * - domain: the value you provide in `cookieDomain`
-	 * @param deviceIdentification {string}
-	 * @param cookieDomain {string}
+	 * Creates a new cookie with that stores the device identification
 	 */
-	createDeviceIdentificationCookie = (deviceIdentification, cookieDomain) => {
+	createDeviceIdentificationCookie = () => {
 		// If we don't have a devicePersistence.domain (maybe because the setting is not enabled)
 		// we don't want to create the cookie
-		if(!cookieDomain)
+		if(!this.state.devicePersistence.domain) {
+			Logger.debug("Not creating device identification cookie, because setting devicePersistence.domain is not set");
 			return;
+		}
 
+		let expiryDate;
+		if(this.state.devicePersistence.ageUpdateIncrement) {
+			expiryDate = new Date();
+			expiryDate.setSeconds(expiryDate.getSeconds() + this.state.devicePersistence.ageUpdateIncrement);
+		}
 
-		// Create a new cookie (or override existing) containing the (new) device identification
-		document.cookie = `deviceIdentification=${deviceIdentification}; path=/; Domain=${cookieDomain}`;
+		const createdCookie = Cookies.set("deviceIdentification", this.state.deviceIdentification, {
+			path: "/",
+			domain: this.state.devicePersistence.domain,
+			expires: expiryDate,
+		});
+
+		Logger.debug(`Cookie created:`, createdCookie);
 	};
 
 	/**
 	 * Removes the deviceIdentification cookie, that matches the `cookieDomain`, from the storage
-	 * @param cookieDomain {string}
 	 */
-	removeDeviceIdentificationCookie = (cookieDomain) => {
-		// Remove old cookie containing the (old) device identification
-		document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${cookieDomain}`;
+	removeDeviceIdentificationCookie = () => {
+		Cookies.remove("deviceIdentification", {
+			path: "/",
+			domain: this.state.devicePersistence.domain,
+		});
+
+		Logger.debug(`Deleted cookie deviceIdentification cookie`);
 	};
 
 	/**
@@ -136,21 +149,7 @@ export default class App extends React.Component {
 	 * if the cookie is not found
 	 * @return {string|undefined}
 	 */
-	getDeviceIdentificationCookie = () => {
-		const cookies = document.cookie.split(";");
-		for(let i = 0; i < cookies.length; i++) {
-			const [
-				name, value,
-			] = cookies[i].split("=");
-
-			// Make sure to trim any whitespace from the name
-			// Some user agents use ";" and some use "; "
-			if(name.trim() === "deviceIdentification" && value.length > 0)
-				return value;
-		}
-
-		return undefined;
-	};
+	getDeviceIdentificationCookie = () => Cookies.get("deviceIdentification");
 
 	/**
 	 * Because we keep the device identification in multiple places we need to decide which ones
@@ -238,12 +237,9 @@ export default class App extends React.Component {
 
 				// Also save registration in the device identification cookie
 				// (if the devicePersistence.domain setting is used)
-				if(this.state.devicePersistence.domain) {
-					this.createDeviceIdentificationCookie(
-						this.state.deviceIdentification,
-						this.state.devicePersistence.domain,
-					);
-				}
+				if(this.state.devicePersistence.domain)
+					this.createDeviceIdentificationCookie();
+
 
 				Logger.debug("Device registered, ", {
 					accountIdentification: this.Api.accountIdentification,
@@ -269,8 +265,10 @@ export default class App extends React.Component {
 			if(nextState.accountIdentification !== this.state.accountIdentification)
 				Logger.debug("Account identification changed, registering new device");
 
+
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, registering new device");
+
 
 			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
 				Logger.debug("Cookie domain changed, registering new device");
@@ -353,6 +351,7 @@ export default class App extends React.Component {
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -377,7 +376,10 @@ export default class App extends React.Component {
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
+
+		window.clearInterval(this.cookieAgeRefreshIntervalId);
 
 		if(typeof document.hidden !== "undefined")
 			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
@@ -616,7 +618,25 @@ export default class App extends React.Component {
 		// Show the chat when we received a new message
 		if(!this.state.showChat && foundNewMessages)
 			this.showChat();
-	}
+	};
+
+	handleSubscribe = () => {
+		if(!this.state.devicePersistence.ageUpdateInterval) {
+			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age interval");
+			return;
+		}
+
+		if(!this.state.devicePersistence.ageUpdateIncrement) {
+			Logger.debug("Setting devicePersistence.ageUpdateIncrement is not set, so not starting cookie age interval");
+			return;
+		}
+
+		this.cookieAgeRefreshIntervalId = window.setInterval(() => {
+			// Update the cookie
+			this.createDeviceIdentificationCookie();
+		}, this.state.devicePersistence.ageUpdateInterval);
+		Logger.debug(`Cookie age refresh interval started with id ${this.cookieAgeRefreshIntervalId}`);
+	};
 
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));

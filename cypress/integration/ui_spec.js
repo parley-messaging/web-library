@@ -1461,7 +1461,7 @@ describe("UI", () => {
 					});
 			});
 		});
-		describe.only("devicePersistence", () => {
+		describe("devicePersistence", () => {
 			describe("domain", () => {
 				beforeEach(() => {
 					Cypress.Cookies.debug(true);
