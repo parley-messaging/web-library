@@ -1462,10 +1462,10 @@ describe("UI", () => {
 			});
 		});
 		describe("devicePersistence", () => {
+			beforeEach(() => {
+				Cypress.Cookies.debug(true);
+			});
 			describe("domain", () => {
-				beforeEach(() => {
-					Cypress.Cookies.debug(true);
-				});
 				it("should create a cookie, containing the deviceIdentification and with the devicePersistence.domain as domain, upon opening the chat", () => {
 					const parleyConfig = {
 						devicePersistence: {domain: "parley.nu"},
@@ -1619,8 +1619,178 @@ describe("UI", () => {
 					});
 				});
 			});
-			describe("", () => {
+			describe("ageUpdateInterval", () => {
+				it("should not start the interval if ageUpdateInterval is set but not ageUpdateIncrement", () => {
+					const parleyConfig = {
+						devicePersistence: {
+							domain: "parley.nu",
+							ageUpdateInterval: 10000, // in ms
+						},
+						xIrisIdentification: "12345678910",
+					};
 
+					cy.intercept("POST", "*/**/devices")
+						.as("postDevices");
+					cy.intercept("GET", "*/**/messages")
+						.as("getMessages");
+
+					visitHome(parleyConfig);
+
+					clickOnLauncher();
+
+					cy.wait("@postDevices")
+						.then(() => {
+							return cy.wait("@getMessages");
+						});
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("not.exist");
+
+					cy.clock()
+						.tick(parleyConfig.devicePersistence.ageUpdateInterval * 10); // Go 10 times the interval into the future
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
+				});
+			});
+			describe("ageUpdateIncrement", () => {
+				it("should not start the interval if ageUpdateIncrement is set but not ageUpdateInterval", () => {
+					const parleyConfig = {
+						devicePersistence: {
+							domain: "parley.nu",
+							ageUpdateIncrement: 10, // in seconds
+						},
+						xIrisIdentification: "12345678910",
+					};
+
+					cy.intercept("POST", "*/**/devices")
+						.as("postDevices");
+					cy.intercept("GET", "*/**/messages")
+						.as("getMessages");
+
+					visitHome(parleyConfig);
+
+					clickOnLauncher();
+
+					cy.wait("@postDevices")
+						.then(() => {
+							return cy.wait("@getMessages");
+						});
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("not.exist");
+
+					cy.clock()
+						.tick(60 * 60); // Go into the future
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
+				});
+			});
+			describe("ageUpdateInterval + ageUpdateIncrement", () => {
+				it("should start the interval according to ageUpdateInterval's value and increment the cookie's expiry time according to ageUpdateIncrement's value", () => {
+					const parleyConfig = {
+						devicePersistence: {
+							domain: "parley.nu",
+							ageUpdateInterval: 10000, // in ms
+							ageUpdateIncrement: 10, // in seconds
+						},
+						xIrisIdentification: "12345678910",
+					};
+
+					const parleyConfig2 = {
+						...parleyConfig,
+						devicePersistence: {
+							ageUpdateInterval: 1000,
+							ageUpdateIncrement: 1,
+						},
+					};
+
+					cy.intercept("POST", "*/**/devices")
+						.as("postDevices");
+					cy.intercept("GET", "*/**/messages")
+						.as("getMessages");
+
+					cy.clock(new Date().getTime()); // Start the clock override
+
+					visitHome(parleyConfig);
+
+					clickOnLauncher();
+
+					cy.wait("@postDevices");
+					cy.wait("@getMessages");
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("exist")
+						.as("oldExpiryTime");
+
+					// Go X times the interval into the future
+					const amountOfIntervalsToSkip = 10;
+					const future = parleyConfig.devicePersistence.ageUpdateInterval * amountOfIntervalsToSkip; // in ms
+					cy.tick(future);
+
+					// When checking if the expiry time is correctly increased
+					// we might miss a couple seconds due to the test running slow.
+					// To combat this we use a margin around which the expiry time can be for it to be "valid"
+					const matchMargin = 2; // In seconds
+
+					cy.get("@oldExpiryTime")
+						.then((oldExpiryTime) => {
+							return cy.getCookies()
+								.its(0)
+								.its("expiry")
+								.should(
+									"be.closeTo",
+									oldExpiryTime
+									+ (parleyConfig.devicePersistence.ageUpdateIncrement * amountOfIntervalsToSkip),
+									matchMargin,
+								);
+						});
+
+					// Change the settings during runtime and do the same checks
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.devicePersistence.ageUpdateInterval
+								= parleyConfig2.devicePersistence.ageUpdateInterval;
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.devicePersistence.ageUpdateIncrement
+								= parleyConfig2.devicePersistence.ageUpdateIncrement;
+						});
+
+					cy.getCookies()
+						.its(0)
+						.its("expiry")
+						.should("exist")
+						.as("oldExpiryTime2");
+
+					const amountOfIntervalsToSkip2 = 5;
+					const future2 = parleyConfig2.devicePersistence.ageUpdateInterval * amountOfIntervalsToSkip2;
+					cy.tick(future2);
+
+					cy.get("@oldExpiryTime2")
+						.then((oldExpiryTime2) => {
+							return cy.getCookies()
+								.its(0)
+								.its("expiry")
+								.should(
+									"be.closeTo",
+									oldExpiryTime2
+									+ (parleyConfig2.devicePersistence.ageUpdateIncrement * amountOfIntervalsToSkip2),
+									matchMargin,
+								);
+						});
+				});
 			});
 		});
 	});

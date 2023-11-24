@@ -108,26 +108,30 @@ export default class App extends React.Component {
 
 	/**
 	 * Creates a new cookie with that stores the device identification
+	 * @param {string} deviceIdentification
+	 * @param {string} domain
+	 * @param {number} ageUpdateIncrement
 	 */
-	createDeviceIdentificationCookie = () => {
+	createDeviceIdentificationCookie = (deviceIdentification, domain, ageUpdateIncrement = undefined) => {
 		// If we don't have a devicePersistence.domain (maybe because the setting is not enabled)
 		// we don't want to create the cookie
-		if(!this.state.devicePersistence.domain) {
+		if(!domain) {
 			Logger.debug("Not creating device identification cookie, because setting devicePersistence.domain is not set");
 			return;
 		}
 
-		let expiryDate;
-		if(this.state.devicePersistence.ageUpdateIncrement) {
-			expiryDate = new Date();
-			expiryDate.setSeconds(expiryDate.getSeconds() + this.state.devicePersistence.ageUpdateIncrement);
+		const cookieAttributes = {
+			path: "/",
+			domain,
+		};
+
+		if(ageUpdateIncrement) {
+			const expiryDate = new Date();
+			expiryDate.setSeconds(expiryDate.getSeconds() + ageUpdateIncrement);
+			cookieAttributes.expires = expiryDate;
 		}
 
-		const createdCookie = Cookies.set("deviceIdentification", this.state.deviceIdentification, {
-			path: "/",
-			domain: this.state.devicePersistence.domain,
-			expires: expiryDate,
-		});
+		const createdCookie = Cookies.set("deviceIdentification", deviceIdentification, cookieAttributes);
 
 		Logger.debug(`Cookie created:`, createdCookie);
 	};
@@ -235,12 +239,6 @@ export default class App extends React.Component {
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
-				// Also save registration in the device identification cookie
-				// (if the devicePersistence.domain setting is used)
-				if(this.state.devicePersistence.domain)
-					this.createDeviceIdentificationCookie();
-
-
 				Logger.debug("Device registered, ", {
 					accountIdentification: this.Api.accountIdentification,
 					deviceIdentification: this.Api.deviceIdentification,
@@ -344,19 +342,30 @@ export default class App extends React.Component {
 			this.saveMessengerOpenState(nextState.messengerOpenState);
 		}
 
+		// Restart cookie age update interval upon changes to relevant settings
 		if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval
 			|| nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement
+			|| nextState.devicePersistence.domain !== this.state.devicePersistence.domain
+			|| nextState.deviceIdentification !== this.state.deviceIdentification
 		) {
-			// TODO: Write cypress tests
-
 			if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval)
 				Logger.debug("Device persistence age update interval changed, recreating interval");
 
 			if(nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement)
 				Logger.debug("Device persistence age update increment changed, recreating interval");
 
+			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
+				Logger.debug("Device persistence domain changed, recreating interval");
 
-			this.startCookieAgeUpdateInterval();
+			if(nextState.deviceIdentification !== this.state.deviceIdentification)
+				Logger.debug("Device identification changed, recreating interval");
+
+			this.startCookieAgeUpdateInterval(
+				nextState.deviceIdentification,
+				nextState.devicePersistence.domain,
+				nextState.devicePersistence.ageUpdateInterval,
+				nextState.devicePersistence.ageUpdateIncrement,
+			);
 		}
 
 		return true;
@@ -636,46 +645,82 @@ export default class App extends React.Component {
 	};
 
 	handleSubscribe = () => {
-		this.startCookieAgeUpdateInterval();
+		// Save registration in the device identification cookie
+		// (if the devicePersistence.domain setting is used)
+		if(this.state.devicePersistence.domain) {
+			Logger.debug("Subscribe done, saving identification in cookie because setting devicePersistence.domain is set");
+
+			this.createDeviceIdentificationCookie(
+				this.state.deviceIdentification,
+				this.state.devicePersistence.domain,
+			);
+		}
+
+		Logger.debug("Subscribe done, starting cookie age update interval");
+		this.startCookieAgeUpdateInterval(
+			this.state.deviceIdentification,
+			this.state.devicePersistence.domain,
+			this.state.devicePersistence.ageUpdateInterval,
+			this.state.devicePersistence.ageUpdateIncrement,
+		);
 	};
 
-	startCookieAgeUpdateInterval = () => {
-		// TODO: Write cypress tests
-
+	/**
+	 * @param {string} deviceIdentification
+	 * @param {string} domain
+	 * @param {number} interval
+	 * @param {number} increment
+	 */
+	startCookieAgeUpdateInterval = (deviceIdentification, domain, interval, increment) => {
 		// Stop previously running interval before we start a new one
 		if(this.cookieAgeRefreshIntervalId !== null)
 			this.stopCookieAgeUpdateInterval();
 
-
-		if(!this.state.devicePersistence.ageUpdateInterval) {
-			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age interval");
+		if(!interval) {
+			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age update interval");
 			return;
 		}
 
-		if(!this.state.devicePersistence.ageUpdateIncrement) {
-			Logger.debug("Setting devicePersistence.ageUpdateIncrement is not set, so not starting cookie age interval");
+		if(!increment) {
+			Logger.debug("Setting devicePersistence.ageUpdateIncrement is not set, so not starting cookie age update interval");
 			return;
 		}
+
+		const oneSecondInMs = 1000;
+		const intervalInSeconds = interval / oneSecondInMs;
+		if(intervalInSeconds > increment)
+			Logger.warn(`Setting devicePersistence.ageUpdateInterval (${intervalInSeconds} seconds) is greater than devicePersistence.ageUpdateIncrement (${increment} seconds), which will result in the interval not being able to update the cookie in-time before it expires!`);
 
 		// Execute the interval handler once to update the cookie immediately.
 		// If any relevant settings change, they will re-start the interval
 		// but doing so won't execute the interval body before the delay, only after.
 		// So we call it once before we start it.
-		this.cookieAgeUpdateIntervalHandler();
+		this.cookieAgeUpdateIntervalHandler(deviceIdentification, domain, increment);
 
 		this.cookieAgeRefreshIntervalId = window.setInterval(
-			this.cookieAgeUpdateIntervalHandler,
-			this.state.devicePersistence.ageUpdateInterval,
+			() => this.cookieAgeUpdateIntervalHandler(deviceIdentification, domain, increment),
+			interval,
 		);
-		Logger.debug(`Cookie age refresh interval started with id ${this.cookieAgeRefreshIntervalId}`);
+
+		Logger.debug(`Cookie age update interval started with id: ${this.cookieAgeRefreshIntervalId}, interval: ${interval}, increment: ${increment}`);
 	};
 
 	stopCookieAgeUpdateInterval = () => {
 		window.clearInterval(this.cookieAgeRefreshIntervalId); // TODO: Write cypress tests
 	};
 
-	cookieAgeUpdateIntervalHandler = () => {
-		this.createDeviceIdentificationCookie();
+	cookieAgeUpdateIntervalHandler = (deviceIdentification, domain, increment) => {
+		Logger.debug("Updating cookie with: ", {
+			deviceIdentification,
+			domain,
+			increment,
+		});
+
+		this.createDeviceIdentificationCookie(
+			deviceIdentification,
+			domain,
+			increment,
+		);
 	};
 
 	checkWorkingHours = () => {
