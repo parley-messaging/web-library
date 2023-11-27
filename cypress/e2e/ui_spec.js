@@ -1791,6 +1791,110 @@ describe("UI", () => {
 								);
 						});
 				});
+
+				describe.only("subscribing using cookie", () => {
+					// before(() => {
+					// 	// Set the cookie to be used by the test
+					// 	// We can't let the library do this because somehow that cookie always gets removed
+					// 	// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
+					// 	// I think because the cookie is not created in the `before()` but in an `it()`
+					// 	const deviceIdentification = "some-device-identification-string";
+					//
+					// 	cy.setCookie("deviceIdentification", deviceIdentification, {
+					// 		domain: ".parley.nu",
+					// 		path: "/",
+					// 	});
+					// });
+
+					it("should expire the cookie and the deviceIdentification should not be used anymore", () => {
+						const parleyConfig = {
+							devicePersistence: {
+								domain: "parley.nu",
+								ageUpdateInterval: 10000, // in ms
+								ageUpdateIncrement: 10, // in seconds
+							},
+						};
+
+						cy.intercept("POST", "*/**/devices")
+							.as("postDevices");
+						cy.intercept("GET", "*/**/messages")
+							.as("getMessages");
+
+						cy.clock(new Date().getTime()); // Start the clock override
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.wait("@postDevices");
+						cy.wait("@getMessages");
+
+						// Save the identification, so we can check if it is NOT used after it is expired
+						cy.getCookies()
+							.its(0)
+							.its("value")
+							.as("cookieIdentificationValue");
+
+						// Save the expiry time, so we can jump to that time into the future (and a bit further)
+						// to expire the cookie.
+						cy.getCookies()
+							.its(0)
+							.its("expiry")
+							.as("cookieExpiryTime");
+
+						// // DEBUG
+						// cy.getCookies().then((cookies) => {
+						// 	cy.window().then((win) => {
+						// 		console.log(cookies[0].expiry, new Date(win.Date()).getTime() / 1000);
+						// 	});
+						// });
+						//
+						// Go into the future so that the cookie fully expires
+						// (because the interval is not running)
+						cy.get("@cookieExpiryTime")
+							.then((cookieExpiryTime) => {
+								cy.clock((clock) => {
+									clock.setSystemTime(cookieExpiryTime);
+									clock.tick(10);
+								});
+							});
+
+						//
+						// // DEBUG
+						// cy.getCookies().then((cookies) => {
+						// 	cy.window().then((win) => {
+						// 		console.log(cookies[0].expiry, new Date(win.Date()).getTime() / 1000);
+						// 	});
+						// });
+
+						// The cookie expiry time should be extended, so now we can reload to page to
+						// stop the interval from running
+						const parleyConfigWithoutInterval = {
+							...parleyConfig,
+							devicePersistence: {
+								ageUpdateInterval: 0, // TODO: Check if `0` is enough to disable this setting!
+								ageUpdateIncrement: 0, // TODO: Check if `0` is enough to disable this setting!
+							},
+						};
+						visitHome(parleyConfigWithoutInterval);
+
+						// Start the subscribe call
+						clickOnLauncher();
+
+						// Intercept the subscribe call and make sure the identification used is different than the one
+						// from the cookie
+						cy.get("@cookieIdentificationValue")
+							.then((cookieIdentification) => {
+								cy.wait("@postDevices")
+									.then((intercept) => {
+										expect(intercept.request.headers["x-iris-identification"])
+											.to.not.match(new RegExp(`^[A-z0-9]+:${cookieIdentification}`, "u"));
+									});
+							});
+					});
+
+					// TODO: Also test that the cookie is not used if it expires DURING runtime
+				});
 			});
 		});
 	});
