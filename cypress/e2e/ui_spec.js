@@ -1819,7 +1819,9 @@ describe("UI", () => {
 
 						// We destroy the chat to stop the interval from updating the cookie (just like when the
 						// browser window is closed)
-						cy.window().then(win => win.destroyParleyMessenger);
+						cy.window().then((win) => {
+							win.destroyParleyMessenger();
+						});
 
 						// Then we clear the storage so that device identification can not be used (just like
 						// when you open the chat on a different domain)
@@ -1833,23 +1835,17 @@ describe("UI", () => {
 							.its("value")
 							.as("cookieIdentificationValue");
 
-						// Save the expiry time, so we can jump to that time into the future (and a bit further)
-						// to expire the cookie.
+						// Validate that we have successfully set the expiry time on the cookie
 						cy.getCookies()
 							.its(0)
 							.its("expiry")
-							.as("cookieExpiryTime");
+							.should("be.greaterThan", 0);
 
-						// Go into the future so that the cookie fully expires
-						// (because the interval is not running)
-						cy.get("@cookieExpiryTime")
-							.then((cookieExpiryTime) => {
-								cy.clock().then((clock) => {
-									clock.setSystemTime(cookieExpiryTime);
-									console.log(`set system time to ${cookieExpiryTime}`);
-								});
-							});
-						cy.tick(10000);
+						// Simulate the expiration of the cookie by deleting it.
+						// Sadly there is no way in cypress to jump into the future
+						// so that the browser can delete the cookie...
+						// (cy.tick() doesn't work for this)
+						cy.clearCookie("deviceIdentification");
 
 						// The cookie expiry time should be extended, so now we can reload to page to
 						// stop the interval from running
