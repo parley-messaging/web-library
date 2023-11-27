@@ -1791,21 +1791,7 @@ describe("UI", () => {
 								);
 						});
 				});
-
-				describe.only("subscribing using cookie", () => {
-					// before(() => {
-					// 	// Set the cookie to be used by the test
-					// 	// We can't let the library do this because somehow that cookie always gets removed
-					// 	// even with `Cypress.Cookies.preserveOnce("deviceIdentification");`
-					// 	// I think because the cookie is not created in the `before()` but in an `it()`
-					// 	const deviceIdentification = "some-device-identification-string";
-					//
-					// 	cy.setCookie("deviceIdentification", deviceIdentification, {
-					// 		domain: ".parley.nu",
-					// 		path: "/",
-					// 	});
-					// });
-
+				describe("subscribing using cookie", () => {
 					it("should expire the cookie and the deviceIdentification should not be used anymore", () => {
 						const parleyConfig = {
 							devicePersistence: {
@@ -1829,6 +1815,18 @@ describe("UI", () => {
 						cy.wait("@postDevices");
 						cy.wait("@getMessages");
 
+						// region: Simulate opening the chat on a different domain.
+
+						// We destroy the chat to stop the interval from updating the cookie (just like when the
+						// browser window is closed)
+						cy.window().then(win => win.destroyParleyMessenger);
+
+						// Then we clear the storage so that device identification can not be used (just like
+						// when you open the chat on a different domain)
+						cy.clearAllLocalStorage();
+
+						// endregion
+
 						// Save the identification, so we can check if it is NOT used after it is expired
 						cy.getCookies()
 							.its(0)
@@ -1842,38 +1840,24 @@ describe("UI", () => {
 							.its("expiry")
 							.as("cookieExpiryTime");
 
-						// // DEBUG
-						// cy.getCookies().then((cookies) => {
-						// 	cy.window().then((win) => {
-						// 		console.log(cookies[0].expiry, new Date(win.Date()).getTime() / 1000);
-						// 	});
-						// });
-						//
 						// Go into the future so that the cookie fully expires
 						// (because the interval is not running)
 						cy.get("@cookieExpiryTime")
 							.then((cookieExpiryTime) => {
-								cy.clock((clock) => {
+								cy.clock().then((clock) => {
 									clock.setSystemTime(cookieExpiryTime);
-									clock.tick(10);
+									console.log(`set system time to ${cookieExpiryTime}`);
 								});
 							});
-
-						//
-						// // DEBUG
-						// cy.getCookies().then((cookies) => {
-						// 	cy.window().then((win) => {
-						// 		console.log(cookies[0].expiry, new Date(win.Date()).getTime() / 1000);
-						// 	});
-						// });
+						cy.tick(10000);
 
 						// The cookie expiry time should be extended, so now we can reload to page to
 						// stop the interval from running
 						const parleyConfigWithoutInterval = {
 							...parleyConfig,
 							devicePersistence: {
-								ageUpdateInterval: 0, // TODO: Check if `0` is enough to disable this setting!
-								ageUpdateIncrement: 0, // TODO: Check if `0` is enough to disable this setting!
+								ageUpdateInterval: 0,
+								ageUpdateIncrement: 0,
 							},
 						};
 						visitHome(parleyConfigWithoutInterval);
@@ -1883,17 +1867,17 @@ describe("UI", () => {
 
 						// Intercept the subscribe call and make sure the identification used is different than the one
 						// from the cookie
-						cy.get("@cookieIdentificationValue")
-							.then((cookieIdentification) => {
-								cy.wait("@postDevices")
-									.then((intercept) => {
-										expect(intercept.request.headers["x-iris-identification"])
-											.to.not.match(new RegExp(`^[A-z0-9]+:${cookieIdentification}`, "u"));
+						cy.wait("@postDevices")
+							.then((intercept) => {
+								const header = intercept.request.headers["x-iris-identification"];
+								const identification = header.split(":")[1];
+								cy.get("@cookieIdentificationValue")
+									.then((cookieIdentification) => {
+										expect(identification)
+											.to.not.equal(cookieIdentification);
 									});
 							});
 					});
-
-					// TODO: Also test that the cookie is not used if it expires DURING runtime
 				});
 			});
 		});

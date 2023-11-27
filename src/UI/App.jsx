@@ -164,23 +164,32 @@ export default class App extends React.Component {
 	getDeviceIdentification = () => {
 		// First; If parleySettings has an identification, always use that
 		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
-		if(parleySettingsIdentification)
+		if(parleySettingsIdentification) {
+			Logger.debug("Found device identification in window.parleySettings.xIrisIdentification, so using that.");
 			return parleySettingsIdentification;
+		}
 
 
 		// Second; Get identification from cookie
+		// NOTE: It is not possible to check the expiry time from the cookie, so if it is expired
+		// and the browser has not yet removed the cookie we can't do anything about that.
 		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
-		if(cookieDeviceIdentification)
+		if(cookieDeviceIdentification) {
+			Logger.debug("Found device identification in the device identification cookie, so using that.");
 			return cookieDeviceIdentification;
+		}
 
 
 		// Third; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
-		if(localStorageIdentification)
+		if(localStorageIdentification) {
+			Logger.debug("Found device identification in the localStorage, so using that.");
 			return localStorageIdentification;
+		}
 
 
 		// Last; Create a new identification
+		Logger.debug("No existing device identifications found, so creating a new one.");
 		return ApiOptions.deviceIdentification;
 	};
 
@@ -706,7 +715,7 @@ export default class App extends React.Component {
 	};
 
 	stopCookieAgeUpdateInterval = () => {
-		window.clearInterval(this.cookieAgeRefreshIntervalId); // TODO: Write cypress tests
+		window.clearInterval(this.cookieAgeRefreshIntervalId);
 	};
 
 	cookieAgeUpdateIntervalHandler = (deviceIdentification, domain, increment) => {
