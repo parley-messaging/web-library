@@ -42,7 +42,7 @@
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",
 		"release": "rm -rf ./dist/ui && npm run build && npm run build-cdn-demo && npm run zip",
 		"ci:server": "npx parcel serve --host chat-dev.parley.nu --no-autoinstall --port 8181 --target ui-sourcemapped index.html",
-		"ci:tests": "NO_COLOR=1 cypress run --config-file cypress.ci.json",
+		"ci:tests": "NO_COLOR=1 cypress run --config-file cypress.config.ci.js",
 		"ci:merge-results": "mochawesome-merge ./mochawesome-report/*.json -o ./mochawesome-report/merged.json"
 	},
 	"repository": {
@@ -112,6 +112,7 @@
 		"babel-plugin-istanbul": "^6.1.1",
 		"cypress": "^13.6.0",
 		"eslint": "^7.32.0",
+		"eslint-formatter-github-checks": "^1.0.0",
 		"eslint-plugin-compat": "^3.9.0",
 		"eslint-plugin-cypress": "^2.11.3",
 		"eslint-plugin-jsx-a11y": "^6.4.1",
