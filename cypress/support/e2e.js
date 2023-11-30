@@ -23,6 +23,7 @@ import "@cypress/code-coverage/support";
 
 Cypress.on("window:before:load", (win) => {
 	// this lets React DevTools "see" components inside application's iframe
+	// eslint-disable-next-line no-param-reassign
 	win.__REACT_DEVTOOLS_GLOBAL_HOOK__ = window.top.__REACT_DEVTOOLS_GLOBAL_HOOK__;
 
 	// Create an array to store the captured debug messages
@@ -30,6 +31,7 @@ Cypress.on("window:before:load", (win) => {
 
 	// Capture console.debug messages
 	const originalConsoleDebug = win.console.debug;
+	// eslint-disable-next-line no-param-reassign
 	win.console.debug = (...args) => {
 		const message = args.join(" ");
 
@@ -41,5 +43,6 @@ Cypress.on("window:before:load", (win) => {
 	};
 
 	// Expose the capturedDebugMessages array globally
+	// eslint-disable-next-line no-param-reassign
 	win.__capturedDebugMessages = capturedDebugMessages;
 });
