@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages} from "../Api/Constants/Events";
+import {messages, subscribe} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -26,6 +26,7 @@ import Logger from "js-logger";
 import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
+import Cookies from "js-cookie";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -33,6 +34,8 @@ export default class App extends React.Component {
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
+		this.cookieAgeRefreshIntervalId = null;
+
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
 		const showChat = false;
@@ -64,7 +67,11 @@ export default class App extends React.Component {
 			workingHours: window?.parleySettings?.weekdays || undefined,
 			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
-			persistDeviceBetweenDomain: window?.parleySettings?.persistDeviceBetweenDomain || undefined,
+			devicePersistence: {
+				domain: window?.parleySettings?.devicePersistence?.domain || undefined,
+				ageUpdateInterval: window?.parleySettings?.devicePersistence?.ageUpdateInterval || undefined,
+				ageUpdateIncrement: window?.parleySettings?.devicePersistence?.ageUpdateIncrement || undefined,
+			},
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 			messengerOpenState: showChat ? MessengerOpenState.open : MessengerOpenState.minimize,
 			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
@@ -86,6 +93,8 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions ? window.parleySettings.runOptions : {};
 		window.parleySettings.runOptions.interfaceTexts
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
+		window.parleySettings.devicePersistence
+			= window.parleySettings.devicePersistence ? window.parleySettings.devicePersistence : {};
 
 		// Store library version into window
 		window.parleySettings.version = version;
@@ -98,52 +107,53 @@ export default class App extends React.Component {
 	}
 
 	/**
-	 * Creates a new cookie with:
-	 * - name: `deviceIdentification`
-	 * - value: the value you provide in `deviceIdentification`
-	 * - domain: the value you provide in `cookieDomain`
-	 * @param deviceIdentification {string}
-	 * @param cookieDomain {string}
+	 * Creates a new cookie with that stores the device identification
+	 * @param {string} deviceIdentification
+	 * @param {string} domain
+	 * @param {number} ageUpdateIncrement
 	 */
-	createDeviceIdentificationCookie = (deviceIdentification, cookieDomain) => {
-		// If we don't have a persistDeviceBetweenDomain (maybe because the setting is not enabled)
+	createDeviceIdentificationCookie = (deviceIdentification, domain, ageUpdateIncrement = undefined) => {
+		// If we don't have a devicePersistence.domain (maybe because the setting is not enabled)
 		// we don't want to create the cookie
-		if(!cookieDomain)
+		if(!domain) {
+			Logger.debug("Not creating device identification cookie, because setting devicePersistence.domain is not set");
 			return;
+		}
 
-		// Create a new cookie (or override existing) containing the (new) device identification
-		document.cookie = `deviceIdentification=${deviceIdentification}; path=/; Domain=${cookieDomain}`;
-	}
+		const cookieAttributes = {
+			path: "/",
+			domain,
+		};
+
+		if(ageUpdateIncrement) {
+			const expiryDate = new Date();
+			expiryDate.setSeconds(expiryDate.getSeconds() + ageUpdateIncrement);
+			cookieAttributes.expires = expiryDate;
+		}
+
+		const createdCookie = Cookies.set("deviceIdentification", deviceIdentification, cookieAttributes);
+
+		Logger.debug(`Cookie created:`, createdCookie);
+	};
 
 	/**
 	 * Removes the deviceIdentification cookie, that matches the `cookieDomain`, from the storage
-	 * @param cookieDomain {string}
 	 */
-	removeDeviceIdentificationCookie = (cookieDomain) => {
-		// Remove old cookie containing the (old) device identification
-		document.cookie = `deviceIdentification=; expires=${new Date().toUTCString()}; path=/; Domain=${cookieDomain}`;
-	}
+	removeDeviceIdentificationCookie = () => {
+		Cookies.remove("deviceIdentification", {
+			path: "/",
+			domain: this.state.devicePersistence.domain,
+		});
+
+		Logger.debug(`Deleted cookie deviceIdentification cookie`);
+	};
 
 	/**
 	 * Tries to find the device identification cookie and returns its value or `undefined`
 	 * if the cookie is not found
 	 * @return {string|undefined}
 	 */
-	getDeviceIdentificationCookie = () => {
-		const cookies = document.cookie.split(";");
-		for(let i = 0; i < cookies.length; i++) {
-			const [
-				name, value,
-			] = cookies[i].split("=");
-
-			// Make sure to trim any whitespace from the name
-			// Some user agents use ";" and some use "; "
-			if(name.trim() === "deviceIdentification" && value.length > 0)
-				return value;
-		}
-
-		return undefined;
-	}
+	getDeviceIdentificationCookie = () => Cookies.get("deviceIdentification");
 
 	/**
 	 * Because we keep the device identification in multiple places we need to decide which ones
@@ -154,22 +164,34 @@ export default class App extends React.Component {
 	getDeviceIdentification = () => {
 		// First; If parleySettings has an identification, always use that
 		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
-		if(parleySettingsIdentification)
+		if(parleySettingsIdentification) {
+			Logger.debug("Found device identification in window.parleySettings.xIrisIdentification, so using that.");
 			return parleySettingsIdentification;
+		}
+
 
 		// Second; Get identification from cookie
+		// NOTE: It is not possible to check the expiry time from the cookie, so if it is expired
+		// and the browser has not yet removed the cookie we can't do anything about that.
 		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
-		if(cookieDeviceIdentification)
+		if(cookieDeviceIdentification) {
+			Logger.debug("Found device identification in the device identification cookie, so using that.");
 			return cookieDeviceIdentification;
+		}
+
 
 		// Third; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
-		if(localStorageIdentification)
+		if(localStorageIdentification) {
+			Logger.debug("Found device identification in the localStorage, so using that.");
 			return localStorageIdentification;
+		}
+
 
 		// Last; Create a new identification
+		Logger.debug("No existing device identifications found, so creating a new one.");
 		return ApiOptions.deviceIdentification;
-	}
+	};
 
 	/**
 	 * A wrapper for Api.subscribeDevice which will only register a device if
@@ -226,22 +248,13 @@ export default class App extends React.Component {
 				// Save registration in local storage
 				localStorage.setItem("deviceInformation", storeIntoLocalStorage);
 
-				// Also save registration in the device identification cookie
-				// (if the persistDeviceBetweenDomain setting is used)
-				if(this.state.persistDeviceBetweenDomain) {
-					this.createDeviceIdentificationCookie(
-						this.state.deviceIdentification,
-						this.state.persistDeviceBetweenDomain,
-					);
-				}
-
 				Logger.debug("Device registered, ", {
 					accountIdentification: this.Api.accountIdentification,
 					deviceIdentification: this.Api.deviceIdentification,
 					authorization: this.Api.authorization,
 				});
 			});
-	}
+	};
 
 	// eslint-disable-next-line no-unused-vars
 	shouldComponentUpdate(nextProps, nextState, nextContext) {
@@ -254,16 +267,21 @@ export default class App extends React.Component {
 		// Create a new Api instance and register a new device when accountIdentification has changed
 		if(nextState.accountIdentification !== this.state.accountIdentification
 			|| nextState.deviceIdentification !== this.state.deviceIdentification
-			|| nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain
+			|| nextState.devicePersistence.domain !== this.state.devicePersistence.domain
 		) {
 			if(nextState.accountIdentification !== this.state.accountIdentification)
 				Logger.debug("Account identification changed, registering new device");
+
+
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, registering new device");
-			if(nextState.persistDeviceBetweenDomain !== this.state.persistDeviceBetweenDomain)
+
+
+			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
 				Logger.debug("Cookie domain changed, registering new device");
 
-			this.removeDeviceIdentificationCookie(this.state.persistDeviceBetweenDomain);
+
+			this.removeDeviceIdentificationCookie(this.state.devicePersistence.domain);
 
 			// Make sure we stop otherwise it will poll for the old device info
 			this.PollingService.stopPolling();
@@ -299,8 +317,10 @@ export default class App extends React.Component {
 			if(nextState.deviceAuthorization !== this.state.deviceAuthorization)
 				Logger.debug("Device authorization changed, registering new device");
 
+
 			if(nextStateUserAdditionalInformation !== stateUserAdditionalInformation)
 				Logger.debug("User additional information changed, registering new device");
+
 
 			this.subscribeDevice(
 				undefined,
@@ -331,6 +351,32 @@ export default class App extends React.Component {
 			this.saveMessengerOpenState(nextState.messengerOpenState);
 		}
 
+		// Restart cookie age update interval upon changes to relevant settings
+		if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval
+			|| nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement
+			|| nextState.devicePersistence.domain !== this.state.devicePersistence.domain
+			|| nextState.deviceIdentification !== this.state.deviceIdentification
+		) {
+			if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval)
+				Logger.debug("Device persistence age update interval changed, recreating interval");
+
+			if(nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement)
+				Logger.debug("Device persistence age update increment changed, recreating interval");
+
+			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
+				Logger.debug("Device persistence domain changed, recreating interval");
+
+			if(nextState.deviceIdentification !== this.state.deviceIdentification)
+				Logger.debug("Device identification changed, recreating interval");
+
+			this.startCookieAgeUpdateInterval(
+				nextState.deviceIdentification,
+				nextState.devicePersistence.domain,
+				nextState.devicePersistence.ageUpdateInterval,
+				nextState.devicePersistence.ageUpdateIncrement,
+			);
+		}
+
 		return true;
 	}
 
@@ -338,10 +384,12 @@ export default class App extends React.Component {
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
+
 
 		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
@@ -356,15 +404,19 @@ export default class App extends React.Component {
 		 else if(messengerOpenState === MessengerOpenState.minimize)
 			this.hideChat();
 		 else
-			this.saveMessengerOpenState(this.state.messengerOpenState); // Save the current state into the localStorage
+			this.saveMessengerOpenState(this.state.messengerOpenState);
 	}
 
 	componentWillUnmount() {
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
+		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
+
+		this.stopCookieAgeUpdateInterval();
 
 		if(typeof document.hidden !== "undefined")
 			document.removeEventListener(this.visibilityChange, this.handleVisibilityChange);
+
 
 		// Stop polling and remove any event listeners created by the Polling Service
 		this.PollingService.stopPolling();
@@ -411,8 +463,8 @@ export default class App extends React.Component {
 						this.setParleySettingIntoState(fullPath, value);
 					});
 
-				// If it is anything else than an object, we can
-				// directly rename/apply it to the state
+					// If it is anything else than an object, we can
+					// directly rename/apply it to the state
 				} else {
 					this.setParleySettingIntoState(change.path, change.value);
 				}
@@ -420,7 +472,7 @@ export default class App extends React.Component {
 		});
 
 		return proxy;
-	}
+	};
 
 	/**
 	 * This will update the interfaceTexts values in the state
@@ -449,7 +501,7 @@ export default class App extends React.Component {
 				"runOptions", "interfaceTexts", key,
 			], value);
 		});
-	}
+	};
 
 	/**
 	 * This will update the state with the new value
@@ -511,8 +563,13 @@ export default class App extends React.Component {
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
-		} else if(path[layer0] === "persistDeviceBetweenDomain") {
-			objectToSaveIntoState = {persistDeviceBetweenDomain: value};
+		} else if(path[layer0] === "devicePersistence") {
+			if(path[layer1] === "domain")
+				objectToSaveIntoState = {devicePersistence: {domain: value}};
+			 else if(path[layer1] === "ageUpdateInterval")
+				objectToSaveIntoState = {devicePersistence: {ageUpdateInterval: value}};
+			 else if(path[layer1] === "ageUpdateIncrement")
+				objectToSaveIntoState = {devicePersistence: {ageUpdateIncrement: value}};
 		}
 
 		if(objectToSaveIntoState) {
@@ -521,22 +578,22 @@ export default class App extends React.Component {
 		} else {
 			Logger.debug("Found unknown setting:", path.join("."));
 		}
-	}
+	};
 
 	handleFocusWindow = () => {
 		// Restart polling when window receives focus
 		this.PollingService.restartPolling();
-	}
+	};
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
 		if(!document.hidden)
 			this.PollingService.restartPolling();
-	}
+	};
 
 	handleClick = () => {
 		this.toggleChat();
-	}
+	};
 
 	showChat = () => {
 		Logger.debug("Show chat, registering device");
@@ -558,7 +615,7 @@ export default class App extends React.Component {
 			this.state.deviceAuthorization,
 			false,
 		);
-	}
+	};
 
 	hideChat = () => {
 		Logger.debug("Hide chat");
@@ -567,18 +624,18 @@ export default class App extends React.Component {
 			showChat: false,
 			messengerOpenState: MessengerOpenState.minimize,
 		}));
-	}
+	};
 
 	toggleChat = () => {
 		if(this.state.showChat)
 			this.hideChat();
 		 else
 			this.showChat();
-	}
+	};
 
 	restartPolling = () => {
 		this.PollingService.restartPolling();
-	}
+	};
 
 	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs so we can show the
@@ -594,28 +651,107 @@ export default class App extends React.Component {
 		// Show the chat when we received a new message
 		if(!this.state.showChat && foundNewMessages)
 			this.showChat();
-	}
+	};
+
+	handleSubscribe = () => {
+		// Save registration in the device identification cookie
+		// (if the devicePersistence.domain setting is used)
+		if(this.state.devicePersistence.domain) {
+			Logger.debug("Subscribe done, saving identification in cookie because setting devicePersistence.domain is set");
+
+			this.createDeviceIdentificationCookie(
+				this.state.deviceIdentification,
+				this.state.devicePersistence.domain,
+			);
+		}
+
+		Logger.debug("Subscribe done, starting cookie age update interval");
+		this.startCookieAgeUpdateInterval(
+			this.state.deviceIdentification,
+			this.state.devicePersistence.domain,
+			this.state.devicePersistence.ageUpdateInterval,
+			this.state.devicePersistence.ageUpdateIncrement,
+		);
+	};
+
+	/**
+	 * @param {string} deviceIdentification
+	 * @param {string} domain
+	 * @param {number} interval
+	 * @param {number} increment
+	 */
+	startCookieAgeUpdateInterval = (deviceIdentification, domain, interval, increment) => {
+		// Stop previously running interval before we start a new one
+		if(this.cookieAgeRefreshIntervalId !== null)
+			this.stopCookieAgeUpdateInterval();
+
+		if(!interval) {
+			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age update interval");
+			return;
+		}
+
+		if(!increment) {
+			Logger.debug("Setting devicePersistence.ageUpdateIncrement is not set, so not starting cookie age update interval");
+			return;
+		}
+
+		const oneSecondInMs = 1000;
+		const intervalInSeconds = interval / oneSecondInMs;
+		if(intervalInSeconds > increment)
+			Logger.warn(`Setting devicePersistence.ageUpdateInterval (${intervalInSeconds} seconds) is greater than devicePersistence.ageUpdateIncrement (${increment} seconds), which will result in the interval not being able to update the cookie in-time before it expires!`);
+
+		// Execute the interval handler once to update the cookie immediately.
+		// If any relevant settings change, they will re-start the interval
+		// but doing so won't execute the interval body before the delay, only after.
+		// So we call it once before we start it.
+		this.cookieAgeUpdateIntervalHandler(deviceIdentification, domain, increment);
+
+		this.cookieAgeRefreshIntervalId = window.setInterval(
+			() => this.cookieAgeUpdateIntervalHandler(deviceIdentification, domain, increment),
+			interval,
+		);
+
+		Logger.debug(`Cookie age update interval started with id: ${this.cookieAgeRefreshIntervalId}, interval: ${interval}, increment: ${increment}`);
+	};
+
+	stopCookieAgeUpdateInterval = () => {
+		window.clearInterval(this.cookieAgeRefreshIntervalId);
+	};
+
+	cookieAgeUpdateIntervalHandler = (deviceIdentification, domain, increment) => {
+		Logger.debug("Updating cookie with: ", {
+			deviceIdentification,
+			domain,
+			increment,
+		});
+
+		this.createDeviceIdentificationCookie(
+			deviceIdentification,
+			domain,
+			increment,
+		);
+	};
 
 	checkWorkingHours = () => {
 		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
 		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
-	}
+	};
 
 	saveMessengerOpenState = (messengerOpenState) => {
 		Logger.debug(`Saving messengerOpenState value '${messengerOpenState}' into localStorage`);
 		localStorage.setItem("messengerOpenState", messengerOpenState);
-	}
+	};
 
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
-						&& <Launcher
-							icon={this.state.launcherIcon}
-							messengerOpenState={this.state.messengerOpenState}
-							onClick={this.handleClick}
-						   />
+					&& <Launcher
+						icon={this.state.launcherIcon}
+						messengerOpenState={this.state.messengerOpenState}
+						onClick={this.handleClick}
+					   />
 				}
 				<Chat
 					allowEmoji={true}

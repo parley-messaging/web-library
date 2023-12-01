@@ -9,7 +9,8 @@
 		"development": {
 			"plugins": [
 				["istanbul", {
-					"coverageGlobalScopeFunc": false
+					"coverageGlobalScopeFunc": false,
+					"coverageGlobalScope": "window"
 				}]
 			]
 		}
