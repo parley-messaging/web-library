@@ -44,6 +44,8 @@
 	background-color: var(--parley-error-background-color, #4A5E83);
 	color: var(--parley-error-text-color, #FFF);
 	text-align: center;
+	display: flex;
+	flex-direction: row;
 }
 
 .closeButton {

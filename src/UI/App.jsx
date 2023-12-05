@@ -199,22 +199,27 @@ export default class App extends React.Component {
 	/**
 	 * A wrapper for Api.subscribeDevice which will only register a device if
 	 * the current device is not yet registered.
-	 * @param pushToken
-	 * @param pushType
-	 * @param pushEnabled
 	 * @param userAdditionalInformation
-	 * @param type
-	 * @param deviceVersion
-	 * @param referer
 	 * @param authorization
-	 * @param force bool If true, it will not check for any existing registrations and force a new one
+	 * @param forceNewRegistration bool If true, it will not check for any existing registrations and force a new one
+	 * @param forceNewIdentification bool If true, it will create a new device identification
 	 */
 	subscribeDevice = (
-		pushToken, pushType, pushEnabled,
-		userAdditionalInformation, type, deviceVersion,
-		referer, authorization, force,
+		userAdditionalInformation = this.state.userAdditionalInformation,
+		authorization = this.state.deviceAuthorization,
+		forceNewRegistration = false,
+		forceNewIdentification = false,
 	) => {
-		if(!force) {
+		const pushToken = undefined; // Not supported yet
+		const pushType = undefined; // Not supported yet
+		const pushEnabled = undefined; // Not supported yet
+		const referer = undefined; // Not supported yet
+		const type = DeviceTypes.Web;
+		const {deviceVersion} = this.state;
+
+		Logger.debug("Registering new device");
+
+		if(!forceNewRegistration) {
 			if(this.Api.deviceRegistered) {
 				Logger.debug("Device is already registered, not registering a new one");
 				return; // Don't register if we already are registered
@@ -233,7 +238,14 @@ export default class App extends React.Component {
 			this.Api.setAuthorization(authorization);
 		}
 
-		Logger.debug("Registering new device");
+		const potentialNewDeviceIdentification = this.getDeviceIdentification(forceNewIdentification);
+		if(potentialNewDeviceIdentification !== this.Api.deviceIdentification) {
+			Logger.debug("Using new Identification from now on", {
+				oldIdentification: this.Api.deviceIdentification,
+				newIdentification: potentialNewDeviceIdentification,
+			});
+			this.Api.setDeviceIdentification(potentialNewDeviceIdentification);
+		}
 
 		// Store the device identification, so we don't generate a new one on each registration
 		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
@@ -297,13 +309,7 @@ export default class App extends React.Component {
 			);
 			this.PollingService = new PollingService(this.Api);
 			this.subscribeDevice(
-				undefined,
-				undefined,
-				undefined,
 				nextState.userAdditionalInformation,
-				DeviceTypes.Web,
-				this.state.deviceVersion,
-				undefined,
 				nextState.deviceAuthorization,
 				true,
 			);
@@ -326,13 +332,7 @@ export default class App extends React.Component {
 
 
 			this.subscribeDevice(
-				undefined,
-				undefined,
-				undefined,
 				nextState.userAdditionalInformation || undefined,
-				DeviceTypes.Web,
-				this.state.deviceVersion,
-				undefined,
 				nextState.deviceAuthorization || undefined,
 				true,
 			);
@@ -363,14 +363,18 @@ export default class App extends React.Component {
 			if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval)
 				Logger.debug("Device persistence age update interval changed, recreating interval");
 
+
 			if(nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement)
 				Logger.debug("Device persistence age update increment changed, recreating interval");
+
 
 			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
 				Logger.debug("Device persistence domain changed, recreating interval");
 
+
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, recreating interval");
+
 
 			this.startCookieAgeUpdateInterval(
 				nextState.deviceIdentification,
@@ -607,17 +611,7 @@ export default class App extends React.Component {
 		}));
 
 		// Try to re-register the device if it is not yet registered
-		this.subscribeDevice(
-			undefined,
-			undefined,
-			undefined,
-			this.state.userAdditionalInformation,
-			DeviceTypes.Web,
-			this.state.deviceVersion,
-			undefined,
-			this.state.deviceAuthorization,
-			false,
-		);
+		this.subscribeDevice();
 	};
 
 	hideChat = () => {
@@ -641,7 +635,7 @@ export default class App extends React.Component {
 	};
 
 	handleNewMessage = (eventData) => {
-		// Keep track of all the message IDs so we can show the
+		// Keep track of all the message IDs, so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
 		eventData.detail.data?.forEach((message) => {
@@ -688,6 +682,7 @@ export default class App extends React.Component {
 		if(this.cookieAgeRefreshIntervalId !== null)
 			this.stopCookieAgeUpdateInterval();
 
+
 		if(!interval) {
 			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age update interval");
 			return;
@@ -702,6 +697,7 @@ export default class App extends React.Component {
 		const intervalInSeconds = interval / oneSecondInMs;
 		if(intervalInSeconds > increment)
 			Logger.warn(`Setting devicePersistence.ageUpdateInterval (${intervalInSeconds} seconds) is greater than devicePersistence.ageUpdateIncrement (${increment} seconds), which will result in the interval not being able to update the cookie in-time before it expires!`);
+
 
 		// Execute the interval handler once to update the cookie immediately.
 		// If any relevant settings change, they will re-start the interval
@@ -766,6 +762,7 @@ export default class App extends React.Component {
 					onMinimizeClick={this.handleClick}
 					restartPolling={this.restartPolling}
 					showChat={this.state.showChat}
+					subscribeDevice={this.subscribeDevice}
 					title={this.state.interfaceTexts.title}
 					welcomeMessage={this.state.interfaceTexts.welcomeMessage}
 				/>

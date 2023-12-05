@@ -27,7 +27,10 @@ class Chat extends Component {
 		this.chatRef = React.createRef();
 		this.replyTextRef = React.createRef();
 
-		this.state = {errorNotification: ""};
+		this.state = {
+			errorNotification: "",
+			subscribeDevice: this.props.subscribeDevice,
+		};
 	}
 
 	startCorrection(correction, chatNode) {
@@ -77,6 +80,7 @@ class Chat extends Component {
 		if(!this.isiOSDevice)
 			return;
 
+
 		const chatNode = this.chatRef.current;
 
 		// On focus/blur
@@ -116,40 +120,59 @@ class Chat extends Component {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
-	}
+	};
 
 	handleMessages = (event) => {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.retrievingMessagesFailedError);
-	}
+	};
 
 	handleSubscribe = (event) => {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
-	}
+	};
 
 	setErrorNotifications = (event, defaultError) => {
 		// Choose the default error if set
 		// otherwise take the first error, from the notifications, as the default
 		let error = defaultError || event.detail.errorNotifications[0];
 
-		// Check if this is a generic error
-		if(event.detail.errorNotifications[0] === ApiGenericError)
+		if(event.detail.errorNotifications[0] === ApiGenericError) {
 			error = ApiGenericError;
-
-		// Check if this is an error due to the service being unreachable
-		else if(event.detail.errorNotifications[0] === ApiFetchFailed)
+		} else if(event.detail.errorNotifications[0] === ApiFetchFailed) {
+			// This is an error due to the service being unreachable
 			error = this.context.serviceUnreachableError;
+		} else if(event.detail.errorNotifications[0] === "device_requires_authorization") {
+			// This is an error due to trying to downgrade a logged-in device
+			// to an anonymous device
 
-		// Save the error in the state so we can show it in the next update
+			// Mark this device as unregistered so the ReplyActions will create a new subscription
+			this.props.api.deviceRegistered = false;
+
+			// Overwrite the subscribe function so it forces a new registration
+			this.setState(() => ({
+				subscribeDevice: () => {
+					this.props.subscribeDevice(
+						undefined, // userAdditionalInformation
+						undefined, // authorization
+						true, // forceNewRegistration
+						true, // forceNewIdentification
+					);
+				},
+			}));
+
+			error = this.context.deviceRequiresAuthorizationError;
+		}
+
+		// Save the error in the state, so we can show it in the next update
 		this.setState(() => ({errorNotification: error}));
-	}
+	};
 
 	handleErrorCloseButtonClick = () => {
 		this.setState(() => ({errorNotification: undefined}));
-	}
+	};
 
 	render() {
 		let classNames = styles.chat;
@@ -174,6 +197,7 @@ class Chat extends Component {
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
+						{this.state.errorNotification}
 						<button
 							aria-label={this.context.ariaLabelButtonErrorClose}
 							className={styles.closeButton}
@@ -182,7 +206,6 @@ class Chat extends Component {
 						>
 							<FontAwesomeIcon icon={faTimes} />
 						</button>
-						{this.state.errorNotification}
 					</div>
 				}
 				<ReplyActions
@@ -193,6 +216,7 @@ class Chat extends Component {
 					isMobile={this.isMobile}
 					replyTextRef={this.replyTextRef}
 					restartPolling={this.props.restartPolling}
+					subscribeDevice={this.state.subscribeDevice}
 				/>
 			</div>
 		);
@@ -210,6 +234,7 @@ Chat.propTypes = {
 	onMinimizeClick: PropTypes.func,
 	restartPolling: PropTypes.func,
 	showChat: PropTypes.bool,
+	subscribeDevice: PropTypes.func,
 	title: PropTypes.string,
 	welcomeMessage: PropTypes.string,
 };

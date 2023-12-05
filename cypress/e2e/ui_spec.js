@@ -136,7 +136,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong, please try again later");
 		});
-
 		it("should show the `serviceUnreachableNotification` error when the fetch request fails", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -154,7 +153,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "The service is unreachable at the moment, please try again later");
 		});
-
 		it("should show the `messageSendFailed` error when sending a message fails", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -183,7 +181,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 		});
-
 		it("should show the `subscribeDeviceFailedError` error when subscribing fails", () => {
 			cy.intercept("POST", "*/**/devices", {
 				statusCode: 400,
@@ -219,7 +216,6 @@ describe("UI", () => {
 				.its("response")
 				.should("have.property", "statusCode", 400);
 		});
-
 		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
 			cy.intercept("GET", "*/**/messages", {
 				statusCode: 400,
@@ -245,7 +241,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
 		});
-
 		it("should hide the error when clicking the close error button", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -293,7 +288,6 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("not.exist");
 		});
-
 		it("should re-enable the input field after sending the message is successful", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -330,7 +324,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should re-enable the input field after sending the message is unsuccessful", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -377,7 +370,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should not disable the input field when trying to send an empty message", () => {
 			const testMessage = "";
 
@@ -401,7 +393,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should keep the input field disabled, after submitting a message, while device registration is not finished", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -438,7 +429,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should keep the input field disabled, after submitting a message and closing/opening the chat window, while device registration is not finished", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -490,6 +480,54 @@ describe("UI", () => {
 				.find("textarea")
 				.should("be.visible")
 				.should("be.enabled");
+		});
+		it("should re-register after receiving the `deviceRequiresAuthorizationError` error", () => {
+			const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
+			const testMessage = `Test message ${Date.now()}`;
+
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "device_requires_authorization",
+						},
+					],
+				},
+			});
+
+			visitHome(parleyConfig);
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
+			cy.intercept("GET", "*/**/messages", req => req.continue()); // Reset the previous interceptor
+
+			// Test that the identification changed and does not match the old identification
+			// anymore
+			cy.intercept("POST", "*/**/devices", (req) => {
+				expect(req.headers)
+					.to
+					.have
+					.deep
+					.property("x-iris-identification");
+				expect(req.headers["x-iris-identification"])
+					.to
+					.not
+					.match(new RegExp(`^.*:${parleyConfig.xIrisIdentification}`, "u"));
+			})
+				.as("createDevice");
+
+			sendMessage(testMessage);
+			cy.wait("@createDevice");
+			findMessage(testMessage);
 		});
 	});
 	describe("receiving messages", () => {
@@ -547,6 +585,31 @@ describe("UI", () => {
 				.should("be.visible")
 				.find("p")
 				.should("have.text", "Unable to load media");
+		});
+		it("should show the `deviceRequiresAuthorizationError` error when we receive the `device_requires_authorization` api error", () => {
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "device_requires_authorization",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
 	});
 	describe("parley config settings", () => {
@@ -1819,9 +1882,10 @@ describe("UI", () => {
 
 						// We destroy the chat to stop the interval from updating the cookie (just like when the
 						// browser window is closed)
-						cy.window().then((win) => {
-							win.destroyParleyMessenger();
-						});
+						cy.window()
+							.then((win) => {
+								win.destroyParleyMessenger();
+							});
 
 						// Then we clear the storage so that device identification can not be used (just like
 						// when you open the chat on a different domain)
@@ -1870,7 +1934,9 @@ describe("UI", () => {
 								cy.get("@cookieIdentificationValue")
 									.then((cookieIdentification) => {
 										expect(identification)
-											.to.not.equal(cookieIdentification);
+											.to
+											.not
+											.equal(cookieIdentification);
 									});
 							});
 					});

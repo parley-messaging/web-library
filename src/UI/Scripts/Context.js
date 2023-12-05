@@ -24,6 +24,7 @@ export const InterfaceTexts = {
 		messageRetrieveFailed: "Something went wrong while retrieving your messages, please try again later",
 		deviceRegistrationFailed: "Something went wrong while registering your device, please try again later",
 		serviceGenericError: "Something went wrong, please try again later",
+		deviceRequiresAuthorizationError: "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
@@ -45,6 +46,7 @@ export const InterfaceTexts = {
 		messageRetrieveFailed: "Er ging iets fout bij het ophalen van je berichten, probeer het later opnieuw",
 		deviceRegistrationFailed: "Er ging iets fout bij het registreren van je apparaat, probeer het later opnieuw",
 		serviceGenericError: "Er ging iets fout, probeer het later opnieuw",
+		deviceRequiresAuthorizationError: "Dit gesprek is verdergegaan in een ingelogde omgeving, wil je verder met dat gesprek ga dan terug naar die omgeving. Wil je een nieuw gesprek starten, stuur dan hieronder je bericht.",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`

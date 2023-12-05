@@ -33,6 +33,8 @@ class ReplyActions extends Component {
 		} else {
 			// Wait until device is subscribed before trying to send a message
 			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+
+			this.props.subscribeDevice();
 		}
 	}
 
@@ -95,6 +97,7 @@ ReplyActions.propTypes = {
 	isMobile: PropTypes.bool,
 	replyTextRef: PropTypes.object,
 	restartPolling: PropTypes.func,
+	subscribeDevice: PropTypes.func,
 };
 
 export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);
