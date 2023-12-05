@@ -159,16 +159,21 @@ export default class App extends React.Component {
 	 * Because we keep the device identification in multiple places we need to decide which ones
 	 * have priority over the other locations. This function returns the device identification
 	 * from the place with the highest priority first and goes down in the list if needed
+	 * @param forceNew bool If true, it will create a new device identification
 	 * @return {string|*|string}
 	 */
-	getDeviceIdentification = () => {
+	getDeviceIdentification = (forceNew = false) => {
+		if(forceNew) {
+			Logger.debug("Forcing new device identification, so creating a new one.");
+			return ApiOptions.generateDeviceIdentification();
+		}
+
 		// First; If parleySettings has an identification, always use that
 		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
 		if(parleySettingsIdentification) {
 			Logger.debug("Found device identification in window.parleySettings.xIrisIdentification, so using that.");
 			return parleySettingsIdentification;
 		}
-
 
 		// Second; Get identification from cookie
 		// NOTE: It is not possible to check the expiry time from the cookie, so if it is expired
@@ -179,7 +184,6 @@ export default class App extends React.Component {
 			return cookieDeviceIdentification;
 		}
 
-
 		// Third; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
 		if(localStorageIdentification) {
@@ -187,10 +191,9 @@ export default class App extends React.Component {
 			return localStorageIdentification;
 		}
 
-
 		// Last; Create a new identification
 		Logger.debug("No existing device identifications found, so creating a new one.");
-		return ApiOptions.deviceIdentification;
+		return ApiOptions.generateDeviceIdentification();
 	};
 
 	/**

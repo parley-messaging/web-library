@@ -4,7 +4,7 @@ import {v4 as uuidv4} from "uuid";
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0cce5bfcdbf07978b269",
-	deviceIdentification: JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification || uuidv4(),
+	generateDeviceIdentification: uuidv4,
 	apiDomain: "https://api.parley.nu",
 	autHeader: undefined,
 };
