@@ -34,7 +34,7 @@ class ReplyActions extends Component {
 			// Wait until device is subscribed before trying to send a message
 			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 
-			this.props.subscribeDevice();
+			this.props.onDeviceNeedsSubscribing();
 		}
 	}
 
@@ -51,6 +51,8 @@ class ReplyActions extends Component {
 		.then(() => {
 			// Reset state
 			this.setState(() => ({reply: ""}));
+
+			this.props.onSentSuccessfully();
 		})
 		.finally(() => {
 			this.props.replyTextRef.current.textArea.current.disabled = false;
@@ -95,9 +97,10 @@ ReplyActions.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
+	onDeviceNeedsSubscribing: PropTypes.func,
+	onSentSuccessfully: PropTypes.func,
 	replyTextRef: PropTypes.object,
 	restartPolling: PropTypes.func,
-	subscribeDevice: PropTypes.func,
 };
 
 export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);

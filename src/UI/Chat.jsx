@@ -27,10 +27,7 @@ class Chat extends Component {
 		this.chatRef = React.createRef();
 		this.replyTextRef = React.createRef();
 
-		this.state = {
-			errorNotification: "",
-			subscribeDevice: this.props.subscribeDevice,
-		};
+		this.state = {errorNotification: ""};
 	}
 
 	startCorrection(correction, chatNode) {
@@ -147,23 +144,12 @@ class Chat extends Component {
 		} else if(event.detail.errorNotifications[0] === "device_requires_authorization") {
 			// This is an error due to trying to downgrade a logged-in device
 			// to an anonymous device
-
-			// Mark this device as unregistered so the ReplyActions will create a new subscription
-			this.props.api.deviceRegistered = false;
-
-			// Overwrite the subscribe function so it forces a new registration
-			this.setState(() => ({
-				subscribeDevice: () => {
-					this.props.subscribeDevice(
-						undefined, // userAdditionalInformation
-						undefined, // authorization
-						true, // forceNewRegistration
-						true, // forceNewIdentification
-					);
-				},
-			}));
-
 			error = this.context.deviceRequiresAuthorizationError;
+
+			// Mark the device as unregistered, so that the ReplyActions
+			// will trigger a new subscribe event.
+			// This will also stop the polling.
+			this.props.api.deviceRegistered = false;
 		}
 
 		// Save the error in the state, so we can show it in the next update
@@ -173,6 +159,24 @@ class Chat extends Component {
 	handleErrorCloseButtonClick = () => {
 		this.setState(() => ({errorNotification: undefined}));
 	};
+
+	handleDeviceNeedsSubscribing = () => {
+		if(this.state.errorNotification === this.context.deviceRequiresAuthorizationError) {
+			// Device is not subscribed and needs to be, but it HAS to be a new identification
+			this.props.onDeviceNeedsNewIdentification();
+		} else {
+			// Device is not subscribed and needs to be
+			this.props.onDeviceNeedsSubscribing();
+		}
+	}
+
+	handleSentSuccessfully = () => {
+		if(this.state.errorNotification === this.context.deviceRequiresAuthorizationError) {
+			// After the message was submitted, we should close this specific error
+			// because it is no longer relevant
+			this.handleErrorCloseButtonClick();
+		}
+	}
 
 	render() {
 		let classNames = styles.chat;
@@ -214,9 +218,10 @@ class Chat extends Component {
 					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
+					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
+					onSentSuccessfully={this.handleSentSuccessfully}
 					replyTextRef={this.replyTextRef}
 					restartPolling={this.props.restartPolling}
-					subscribeDevice={this.state.subscribeDevice}
 				/>
 			</div>
 		);
@@ -230,11 +235,12 @@ Chat.propTypes = {
 	isiOSMobile: PropTypes.bool,
 	isMobile: PropTypes.bool,
 	onCloseClick: PropTypes.func,
+	onDeviceNeedsNewIdentification: PropTypes.func,
+	onDeviceNeedsSubscribing: PropTypes.func,
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,
 	restartPolling: PropTypes.func,
 	showChat: PropTypes.bool,
-	subscribeDevice: PropTypes.func,
 	title: PropTypes.string,
 	welcomeMessage: PropTypes.string,
 };

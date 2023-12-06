@@ -202,13 +202,11 @@ export default class App extends React.Component {
 	 * @param userAdditionalInformation
 	 * @param authorization
 	 * @param forceNewRegistration bool If true, it will not check for any existing registrations and force a new one
-	 * @param forceNewIdentification bool If true, it will create a new device identification
 	 */
 	subscribeDevice = (
 		userAdditionalInformation = this.state.userAdditionalInformation,
 		authorization = this.state.deviceAuthorization,
 		forceNewRegistration = false,
-		forceNewIdentification = false,
 	) => {
 		const pushToken = undefined; // Not supported yet
 		const pushType = undefined; // Not supported yet
@@ -236,15 +234,6 @@ export default class App extends React.Component {
 				newAuthorization: authorization,
 			});
 			this.Api.setAuthorization(authorization);
-		}
-
-		const potentialNewDeviceIdentification = this.getDeviceIdentification(forceNewIdentification);
-		if(potentialNewDeviceIdentification !== this.Api.deviceIdentification) {
-			Logger.debug("Using new Identification from now on", {
-				oldIdentification: this.Api.deviceIdentification,
-				newIdentification: potentialNewDeviceIdentification,
-			});
-			this.Api.setDeviceIdentification(potentialNewDeviceIdentification);
 		}
 
 		// Store the device identification, so we don't generate a new one on each registration
@@ -311,7 +300,6 @@ export default class App extends React.Component {
 			this.subscribeDevice(
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,
-				true,
 			);
 			this.PollingService.restartPolling();
 		}
@@ -741,6 +729,31 @@ export default class App extends React.Component {
 		localStorage.setItem("messengerOpenState", messengerOpenState);
 	};
 
+	/**
+	 * Called when a device needs a new identification. This can happen when
+	 * the current identification is previously used in a logged-in environment
+	 * using an authorization, but now doesn't have that authorization anymore.
+	 * The client has chosen to start a new conversation (= new device) by sending
+	 * a new message in the Chat.
+	 */
+	handleDeviceNeedsNewIdentification = () => {
+		Logger.debug("Device needs a new identification!");
+
+		// Mark this device as unregistered so that we can subscribe a new device
+		this.Api.deviceRegistered = false;
+
+		// This will trigger a new subscribe due to state.deviceIdentification being updated
+		this.getDeviceIdentification(true);
+	}
+
+	/**
+	 * Called when, somehow, the device is not yet registered when trying to send
+	 * a message in the Chat.
+	 */
+	handleDeviceNeedsSubscribing = () => {
+		this.subscribeDevice();
+	};
+
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
@@ -759,10 +772,11 @@ export default class App extends React.Component {
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}
 					isiOSMobile={this.state.isiOSMobile}
+					onDeviceNeedsNewIdentification={this.handleDeviceNeedsNewIdentification}
+					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onMinimizeClick={this.handleClick}
 					restartPolling={this.restartPolling}
 					showChat={this.state.showChat}
-					subscribeDevice={this.subscribeDevice}
 					title={this.state.interfaceTexts.title}
 					welcomeMessage={this.state.interfaceTexts.welcomeMessage}
 				/>

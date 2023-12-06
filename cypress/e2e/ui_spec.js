@@ -481,7 +481,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-		it("should re-register after receiving the `deviceRequiresAuthorizationError` error", () => {
+		it("should re-register after receiving the `deviceRequiresAuthorizationError` error and close the error", () => {
 			const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -506,6 +506,7 @@ describe("UI", () => {
 				.find("[class^=chat__]")
 				.should("be.visible")
 				.find("[class^=error__]")
+				.as("error")
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 			cy.intercept("GET", "*/**/messages", req => req.continue()); // Reset the previous interceptor
@@ -528,6 +529,9 @@ describe("UI", () => {
 			sendMessage(testMessage);
 			cy.wait("@createDevice");
 			findMessage(testMessage);
+
+			cy.get("@error")
+				.should("not.exist");
 		});
 	});
 	describe("receiving messages", () => {
