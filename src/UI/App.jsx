@@ -30,11 +30,14 @@ import Cookies from "js-cookie";
 
 export default class App extends React.Component {
 	constructor(props) {
+		Logger.debug("Initializing app");
+
 		super(props);
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
 		this.cookieAgeRefreshIntervalId = null;
+		this.isMounted = false;
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -165,35 +168,49 @@ export default class App extends React.Component {
 	getDeviceIdentification = (forceNew = false) => {
 		if(forceNew) {
 			Logger.debug("Forcing new device identification, so creating a new one.");
-			return ApiOptions.generateDeviceIdentification();
+			const newDeviceIdentification = ApiOptions.generateDeviceIdentification();
+			this.isMounted && this.setState(() => ({deviceIdentification: newDeviceIdentification}));
+			return newDeviceIdentification;
 		}
 
-		// First; If parleySettings has an identification, always use that
+		// First; Get it from the state
+		const stateIdentification = this.state?.deviceIdentification;
+		if(stateIdentification) {
+			Logger.debug("Found device identification in the state, so using that.");
+			return stateIdentification;
+		}
+
+		// Second; If parleySettings has an identification, use that
 		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
 		if(parleySettingsIdentification) {
 			Logger.debug("Found device identification in window.parleySettings.xIrisIdentification, so using that.");
+			this.isMounted && this.setState(() => ({deviceIdentification: parleySettingsIdentification}));
 			return parleySettingsIdentification;
 		}
 
-		// Second; Get identification from cookie
+		// Third; Get identification from cookie
 		// NOTE: It is not possible to check the expiry time from the cookie, so if it is expired
 		// and the browser has not yet removed the cookie we can't do anything about that.
 		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
 		if(cookieDeviceIdentification) {
 			Logger.debug("Found device identification in the device identification cookie, so using that.");
+			this.isMounted && this.setState(() => ({deviceIdentification: cookieDeviceIdentification}));
 			return cookieDeviceIdentification;
 		}
 
-		// Third; Get identification from localStorage
+		// Fourth; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
 		if(localStorageIdentification) {
 			Logger.debug("Found device identification in the localStorage, so using that.");
+			this.isMounted && this.setState(() => ({deviceIdentification: localStorageIdentification}));
 			return localStorageIdentification;
 		}
 
 		// Last; Create a new identification
+		const newDeviceIdentification = ApiOptions.generateDeviceIdentification();
 		Logger.debug("No existing device identifications found, so creating a new one.");
-		return ApiOptions.generateDeviceIdentification();
+		this.isMounted && this.setState(() => ({deviceIdentification: newDeviceIdentification}));
+		return newDeviceIdentification;
 	};
 
 	/**
@@ -376,6 +393,7 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount() {
+		this.isMounted = true;
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
@@ -403,6 +421,8 @@ export default class App extends React.Component {
 	}
 
 	componentWillUnmount() {
+		this.isMounted = false;
+
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
