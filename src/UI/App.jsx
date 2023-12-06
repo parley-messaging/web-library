@@ -50,6 +50,7 @@ export default class App extends React.Component {
 			interfaceLanguage,
 			interfaceTexts: {
 				...interfaceTextsDefaults,
+				...window?.parleySettings?.runOptions?.interfaceTexts,
 				title: window?.parleySettings?.runOptions?.interfaceTexts
 					?.desc || interfaceTextsDefaults.title,
 				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts

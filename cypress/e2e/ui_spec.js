@@ -893,6 +893,58 @@ describe("UI", () => {
 							.should("have.attr", "placeholder", newPlaceholder);
 					});
 				});
+				describe("deviceRequiresAuthorizationError", () => {
+					it("should change the error message", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {deviceRequiresAuthorizationError: "This is the deviceRequiresAuthorizationError text"}}};
+
+						cy.intercept("GET", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "device_requires_authorization",
+									},
+								],
+							},
+						});
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						// Validate that api error is visible
+						cy.get("@app")
+							.find("[class^=chat__]")
+							.should("be.visible")
+							.find("[class^=error__]")
+							.as("error")
+							.should("be.visible")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.deviceRequiresAuthorizationError)
+							.find("button")
+							.click(); // Close the error
+
+						// Test if it changes during runtime
+						const newErrorText = "This is the error deviceRequiresAuthorizationError text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.deviceRequiresAuthorizationError
+									= newErrorText;
+							});
+
+						// It is reactive like other texts. This error text is not set directly in the render.
+						// It lives in the state, which is not directly linked to the context provider.
+						// This means we have to trigger the thing that caused the error again,
+						// in this case its retrieving the messages.
+						clickOnLauncher(); // Close the chat
+						clickOnLauncher(); // Reopen the chat to trigger the retrieval of messages
+
+						cy.get("@error")
+							.should("be.visible")
+							.should("have.text", newErrorText);
+					});
+				});
 			});
 			describe("country", () => {
 				it("should change the language of interface texts", () => {
