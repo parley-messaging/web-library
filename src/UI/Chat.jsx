@@ -201,7 +201,9 @@ class Chat extends Component {
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
-						{this.state.errorNotification}
+						<span className={styles.errorText}>
+							{this.state.errorNotification}
+						</span>
 						<button
 							aria-label={this.context.ariaLabelButtonErrorClose}
 							className={styles.closeButton}
