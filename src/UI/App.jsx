@@ -50,7 +50,9 @@ export default class App extends React.Component {
 			interfaceLanguage,
 			interfaceTexts: {
 				...interfaceTextsDefaults,
-				...window?.parleySettings?.runOptions?.interfaceTexts,
+				...this.loadInterfaceTextOverrides(Object.keys(interfaceTextsDefaults)),
+
+				// Below are all the overrides which have deprecated names
 				title: window?.parleySettings?.runOptions?.interfaceTexts
 					?.desc || interfaceTextsDefaults.title,
 				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
@@ -108,6 +110,36 @@ export default class App extends React.Component {
 		window.showParleyMessenger = this.showChat;
 
 		Logger.debug("App initialized");
+	}
+
+	/**
+	 * Returns the `window.parleySettings.runOptions.interfaceTexts`, but only with the
+	 * texts that are overridable. The texts that are overridable are given by
+	 * the `overridableTextsKeys` param.
+	 *
+	 * The problem this function solves is when you load in all
+	 * `window.parleySettings.runOptions.interfaceTexts` you will also load in their deprecated
+	 * names (if used). These deprecated names are not used anymore internally in the state,
+	 * so we have separate import rules for these texts.
+	 *
+	 * An example is `window.parleySettings.runOptions.interfaceTexts.desc`, this is internally
+	 * used as `state.interfaceTexts.title`, so we can't just import it without renaming it.
+	 * `desc` will be seen as non-overridable and thus won't be returned by this function.
+	 * @param {[]} overridableTextsKeys
+	 * @return {[]} An object containing the interfaceTexts (and their values) which can be used
+	 * to override the default texts.
+	 */
+	loadInterfaceTextOverrides = (overridableTextsKeys) => {
+		const overridesFromWindow = {...window?.parleySettings?.runOptions?.interfaceTexts};
+
+		// Remove all keys that are not overridable
+		Object.keys(overridesFromWindow).forEach((key) => {
+			if(!overridableTextsKeys.includes(key))
+				delete overridesFromWindow[key];
+		});
+
+		console.log(overridesFromWindow);
+		return overridesFromWindow;
 	}
 
 	/**

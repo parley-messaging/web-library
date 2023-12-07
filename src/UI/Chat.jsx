@@ -137,7 +137,7 @@ class Chat extends Component {
 		let error = defaultError || event.detail.errorNotifications[0];
 
 		if(event.detail.errorNotifications[0] === ApiGenericError) {
-			error = ApiGenericError;
+			error = this.context.serviceGenericError;
 		} else if(event.detail.errorNotifications[0] === ApiFetchFailed) {
 			// This is an error due to the service being unreachable
 			error = this.context.serviceUnreachableError;

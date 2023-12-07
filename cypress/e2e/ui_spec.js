@@ -893,6 +893,243 @@ describe("UI", () => {
 							.should("have.attr", "placeholder", newPlaceholder);
 					});
 				});
+				describe("ariaLabelButtonMenu", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonMinimize: "Custom text"}}};
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class*=minimize__]")
+							.as("minimizeButton")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonMinimize);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonMinimize = newValue;
+							});
+
+						cy.get("@minimizeButton")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelButtonLauncher", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonLauncher: "Custom text"}}};
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("#launcher")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonLauncher);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonLauncher = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelButtonErrorClose", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonErrorClose: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {status: "ERROR"},
+						});
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage("test message");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.find("button")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonErrorClose);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonErrorClose = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelTextInput", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelTextInput: "Custom text"}}};
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=text__]")
+							.find("textarea")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelTextInput);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelTextInput = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("retrievingMessagesFailedError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {retrievingMessagesFailedError: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						}).as("getMessages");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.wait("@getMessages");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.retrievingMessagesFailedError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.retrievingMessagesFailedError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
+				describe("subscribeDeviceFailedError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {subscribeDeviceFailedError: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/devices", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						})
+							.as("postDevices");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						cy.wait("@postDevices");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.subscribeDeviceFailedError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.subscribeDeviceFailedError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.find("button")
+							.click(); // Close alert first
+						clickOnLauncher(); // Close chat
+						clickOnLauncher(); // Open chat
+						cy.wait("@postDevices");
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
+				describe("serviceGenericError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {serviceGenericError: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {status: "ERROR"},
+						}).as("postMessage");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage("test message");
+						cy.wait("@postMessage");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.serviceGenericError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.serviceGenericError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.find("button")
+							.click(); // Close alert first
+						clickOnLauncher(); // Close chat
+						clickOnLauncher(); // Open chat
+						sendMessage("test message 2");
+						cy.wait("@postMessage");
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
 				describe("deviceRequiresAuthorizationError", () => {
 					it("should change the error message", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {deviceRequiresAuthorizationError: "This is the deviceRequiresAuthorizationError text"}}};
