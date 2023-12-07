@@ -1,4 +1,5 @@
 .header {
+	width: inherit;
 	top: 0;
 	display: grid;
 	margin: 0;

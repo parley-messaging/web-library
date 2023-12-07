@@ -39,13 +39,15 @@
 }
 
 .error {
-	max-width: 100%;
+	width: inherit;
+	box-sizing: border-box; /* Prevents padding from growing outward */
 	padding: 0.25em;
 	background-color: var(--parley-error-background-color, #4A5E83);
 	color: var(--parley-error-text-color, #FFF);
 	text-align: center;
 	display: flex;
 	flex-direction: row;
+	overflow-wrap: anywhere;
 }
 
 .closeButton {
@@ -58,4 +60,5 @@
 	cursor: pointer;
 	float: right;
 	font-size: 24px;
+	margin-left: auto; /* Makes sure the button is always completely to the right */
 }
