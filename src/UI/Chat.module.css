@@ -39,30 +39,30 @@
 }
 
 .error {
+	display: flex;
 	width: inherit;
 	box-sizing: border-box; /* Prevents padding from growing outward */
+	flex-direction: row;
+	align-items: center;
 	padding: 0.25em;
 	background-color: var(--parley-error-background-color, #4A5E83);
 	color: var(--parley-error-text-color, #FFF);
-	text-align: center;
-	display: flex;
-	flex-direction: row;
 	overflow-wrap: anywhere;
-	align-items: center;
+	text-align: center;
 }
 
 .closeButton {
-	flex: initial;
 	display: block;
 	width: 36px;
 	height: 100%;
+	flex: initial;
 	border: none;
+	margin-left: auto; /* Makes sure the button is always completely to the right */
 	background-color: transparent;
 	color: var(--parley-button-label-color, #FFF);
 	cursor: pointer;
 	float: right;
 	font-size: 24px;
-	margin-left: auto; /* Makes sure the button is always completely to the right */
 }
 
 .errorText {

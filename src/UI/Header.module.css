@@ -1,7 +1,7 @@
 .header {
-	width: inherit;
 	top: 0;
 	display: grid;
+	width: inherit;
 	margin: 0;
 	background-color: var(--parley-nav-background-color, #4A5E83);
 	border-radius: 5px 5px 0 0;
