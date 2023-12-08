@@ -511,8 +511,7 @@ describe("UI", () => {
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 			cy.intercept("GET", "*/**/messages", req => req.continue()); // Reset the previous interceptor
 
-			// Test that the identification changed and does not match the old identification
-			// anymore
+			// Test that the identification changed and does not match the old identification anymore
 			cy.intercept("POST", "*/**/devices", (req) => {
 				expect(req.headers)
 					.to
@@ -893,7 +892,7 @@ describe("UI", () => {
 							.should("have.attr", "placeholder", newPlaceholder);
 					});
 				});
-				describe("ariaLabelButtonMenu", () => {
+				describe("ariaLabelButtonMinimize", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonMinimize: "Custom text"}}};
 
