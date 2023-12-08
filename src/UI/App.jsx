@@ -138,7 +138,6 @@ export default class App extends React.Component {
 				delete overridesFromWindow[key];
 		});
 
-		console.log(overridesFromWindow);
 		return overridesFromWindow;
 	}
 
