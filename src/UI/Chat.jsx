@@ -77,6 +77,7 @@ class Chat extends Component {
 		if(!this.isiOSDevice)
 			return;
 
+
 		const chatNode = this.chatRef.current;
 
 		// On focus/blur
@@ -116,39 +117,65 @@ class Chat extends Component {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.sendingMessageFailedError);
-	}
+	};
 
 	handleMessages = (event) => {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.retrievingMessagesFailedError);
-	}
+	};
 
 	handleSubscribe = (event) => {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
-	}
+	};
 
 	setErrorNotifications = (event, defaultError) => {
 		// Choose the default error if set
 		// otherwise take the first error, from the notifications, as the default
 		let error = defaultError || event.detail.errorNotifications[0];
 
-		// Check if this is a generic error
-		if(event.detail.errorNotifications[0] === ApiGenericError)
-			error = ApiGenericError;
-
-		// Check if this is an error due to the service being unreachable
-		else if(event.detail.errorNotifications[0] === ApiFetchFailed)
+		if(event.detail.errorNotifications[0] === ApiGenericError) {
+			error = this.context.serviceGenericError;
+		} else if(event.detail.errorNotifications[0] === ApiFetchFailed) {
+			// This is an error due to the service being unreachable
 			error = this.context.serviceUnreachableError;
+		} else if(event.detail.errorNotifications[0] === "device_requires_authorization") {
+			// This is an error due to trying to downgrade a logged-in device
+			// to an anonymous device
+			error = this.context.deviceRequiresAuthorizationError;
 
-		// Save the error in the state so we can show it in the next update
+			// Mark the device as unregistered, so that the ReplyActions
+			// will trigger a new subscribe event.
+			// This will also stop the polling.
+			this.props.api.deviceRegistered = false;
+		}
+
+		// Save the error in the state, so we can show it in the next update
 		this.setState(() => ({errorNotification: error}));
-	}
+	};
 
 	handleErrorCloseButtonClick = () => {
 		this.setState(() => ({errorNotification: undefined}));
+	};
+
+	handleDeviceNeedsSubscribing = () => {
+		if(this.state.errorNotification === this.context.deviceRequiresAuthorizationError) {
+			// Device is not subscribed and needs to be, but it HAS to be a new identification
+			this.props.onDeviceNeedsNewIdentification();
+		} else {
+			// Device is not subscribed and needs to be
+			this.props.onDeviceNeedsSubscribing();
+		}
+	}
+
+	handleSentSuccessfully = () => {
+		if(this.state.errorNotification === this.context.deviceRequiresAuthorizationError) {
+			// After the message was submitted, we should close this specific error
+			// because it is no longer relevant
+			this.handleErrorCloseButtonClick();
+		}
 	}
 
 	render() {
@@ -174,6 +201,9 @@ class Chat extends Component {
 				{
 					this.state.errorNotification && this.state.errorNotification.length > 0
 					&& <div className={styles.error}>
+						<span className={styles.errorText}>
+							{this.state.errorNotification}
+						</span>
 						<button
 							aria-label={this.context.ariaLabelButtonErrorClose}
 							className={styles.closeButton}
@@ -182,7 +212,6 @@ class Chat extends Component {
 						>
 							<FontAwesomeIcon icon={faTimes} />
 						</button>
-						{this.state.errorNotification}
 					</div>
 				}
 				<ReplyActions
@@ -191,6 +220,8 @@ class Chat extends Component {
 					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
+					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
+					onSentSuccessfully={this.handleSentSuccessfully}
 					replyTextRef={this.replyTextRef}
 					restartPolling={this.props.restartPolling}
 				/>
@@ -206,6 +237,8 @@ Chat.propTypes = {
 	isiOSMobile: PropTypes.bool,
 	isMobile: PropTypes.bool,
 	onCloseClick: PropTypes.func,
+	onDeviceNeedsNewIdentification: PropTypes.func,
+	onDeviceNeedsSubscribing: PropTypes.func,
 	onMenuClick: PropTypes.func,
 	onMinimizeClick: PropTypes.func,
 	restartPolling: PropTypes.func,

@@ -30,11 +30,14 @@ import Cookies from "js-cookie";
 
 export default class App extends React.Component {
 	constructor(props) {
+		Logger.debug("Initializing app");
+
 		super(props);
 
 		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
 		this.cookieAgeRefreshIntervalId = null;
+		this._isMounted = false;
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -47,6 +50,9 @@ export default class App extends React.Component {
 			interfaceLanguage,
 			interfaceTexts: {
 				...interfaceTextsDefaults,
+				...this.loadInterfaceTextOverrides(Object.keys(interfaceTextsDefaults)),
+
+				// Below are all the overrides which have deprecated names
 				title: window?.parleySettings?.runOptions?.interfaceTexts
 					?.desc || interfaceTextsDefaults.title,
 				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
@@ -107,6 +113,35 @@ export default class App extends React.Component {
 	}
 
 	/**
+	 * Returns the `window.parleySettings.runOptions.interfaceTexts`, but only with the
+	 * texts that are overridable. The texts that are overridable are given by
+	 * the `overridableTextsKeys` param.
+	 *
+	 * The problem this function solves is when you load in all
+	 * `window.parleySettings.runOptions.interfaceTexts` you will also load in their deprecated
+	 * names (if used). These deprecated names are not used anymore internally in the state,
+	 * so we have separate import rules for these texts.
+	 *
+	 * An example is `window.parleySettings.runOptions.interfaceTexts.desc`, this is internally
+	 * used as `state.interfaceTexts.title`, so we can't just import it without renaming it.
+	 * `desc` will be seen as non-overridable and thus won't be returned by this function.
+	 * @param {[]} overridableTextsKeys
+	 * @return {[]} An object containing the interfaceTexts (and their values) which can be used
+	 * to override the default texts.
+	 */
+	loadInterfaceTextOverrides = (overridableTextsKeys) => {
+		const overridesFromWindow = {...window?.parleySettings?.runOptions?.interfaceTexts};
+
+		// Remove all keys that are not overridable
+		Object.keys(overridesFromWindow).forEach((key) => {
+			if(!overridableTextsKeys.includes(key))
+				delete overridesFromWindow[key];
+		});
+
+		return overridesFromWindow;
+	}
+
+	/**
 	 * Creates a new cookie with that stores the device identification
 	 * @param {string} deviceIdentification
 	 * @param {string} domain
@@ -159,59 +194,79 @@ export default class App extends React.Component {
 	 * Because we keep the device identification in multiple places we need to decide which ones
 	 * have priority over the other locations. This function returns the device identification
 	 * from the place with the highest priority first and goes down in the list if needed
+	 * @param forceNew bool If true, it will create a new device identification
 	 * @return {string|*|string}
 	 */
-	getDeviceIdentification = () => {
-		// First; If parleySettings has an identification, always use that
+	getDeviceIdentification = (forceNew = false) => {
+		if(forceNew) {
+			Logger.debug("Forcing new device identification, so creating a new one.");
+			const newDeviceIdentification = ApiOptions.generateDeviceIdentification();
+			this._isMounted && this.setState(() => ({deviceIdentification: newDeviceIdentification}));
+			return newDeviceIdentification;
+		}
+
+		// First; Get it from the state
+		const stateIdentification = this.state?.deviceIdentification;
+		if(stateIdentification) {
+			Logger.debug("Found device identification in the state, so using that.");
+			return stateIdentification;
+		}
+
+		// Second; If parleySettings has an identification, use that
 		const parleySettingsIdentification = window?.parleySettings?.xIrisIdentification;
 		if(parleySettingsIdentification) {
 			Logger.debug("Found device identification in window.parleySettings.xIrisIdentification, so using that.");
+			this._isMounted && this.setState(() => ({deviceIdentification: parleySettingsIdentification}));
 			return parleySettingsIdentification;
 		}
 
-
-		// Second; Get identification from cookie
+		// Third; Get identification from cookie
 		// NOTE: It is not possible to check the expiry time from the cookie, so if it is expired
 		// and the browser has not yet removed the cookie we can't do anything about that.
 		const cookieDeviceIdentification = this.getDeviceIdentificationCookie();
 		if(cookieDeviceIdentification) {
 			Logger.debug("Found device identification in the device identification cookie, so using that.");
+			this._isMounted && this.setState(() => ({deviceIdentification: cookieDeviceIdentification}));
 			return cookieDeviceIdentification;
 		}
 
-
-		// Third; Get identification from localStorage
+		// Fourth; Get identification from localStorage
 		const localStorageIdentification = JSON.parse(localStorage.getItem("deviceInformation"))?.deviceIdentification;
 		if(localStorageIdentification) {
 			Logger.debug("Found device identification in the localStorage, so using that.");
+			this._isMounted && this.setState(() => ({deviceIdentification: localStorageIdentification}));
 			return localStorageIdentification;
 		}
 
-
 		// Last; Create a new identification
+		const newDeviceIdentification = ApiOptions.generateDeviceIdentification();
 		Logger.debug("No existing device identifications found, so creating a new one.");
-		return ApiOptions.deviceIdentification;
+		this._isMounted && this.setState(() => ({deviceIdentification: newDeviceIdentification}));
+		return newDeviceIdentification;
 	};
 
 	/**
 	 * A wrapper for Api.subscribeDevice which will only register a device if
 	 * the current device is not yet registered.
-	 * @param pushToken
-	 * @param pushType
-	 * @param pushEnabled
 	 * @param userAdditionalInformation
-	 * @param type
-	 * @param deviceVersion
-	 * @param referer
 	 * @param authorization
-	 * @param force bool If true, it will not check for any existing registrations and force a new one
+	 * @param forceNewRegistration bool If true, it will not check for any existing registrations and force a new one
 	 */
 	subscribeDevice = (
-		pushToken, pushType, pushEnabled,
-		userAdditionalInformation, type, deviceVersion,
-		referer, authorization, force,
+		userAdditionalInformation = this.state.userAdditionalInformation,
+		authorization = this.state.deviceAuthorization,
+		forceNewRegistration = false,
 	) => {
-		if(!force) {
+		const pushToken = undefined; // Not supported yet
+		const pushType = undefined; // Not supported yet
+		const pushEnabled = undefined; // Not supported yet
+		const referer = undefined; // Not supported yet
+		const type = DeviceTypes.Web;
+		const {deviceVersion} = this.state;
+
+		Logger.debug("Registering new device");
+
+		if(!forceNewRegistration) {
 			if(this.Api.deviceRegistered) {
 				Logger.debug("Device is already registered, not registering a new one");
 				return; // Don't register if we already are registered
@@ -229,8 +284,6 @@ export default class App extends React.Component {
 			});
 			this.Api.setAuthorization(authorization);
 		}
-
-		Logger.debug("Registering new device");
 
 		// Store the device identification, so we don't generate a new one on each registration
 		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
@@ -294,15 +347,8 @@ export default class App extends React.Component {
 			);
 			this.PollingService = new PollingService(this.Api);
 			this.subscribeDevice(
-				undefined,
-				undefined,
-				undefined,
 				nextState.userAdditionalInformation,
-				DeviceTypes.Web,
-				this.state.deviceVersion,
-				undefined,
 				nextState.deviceAuthorization,
-				true,
 			);
 			this.PollingService.restartPolling();
 		}
@@ -323,13 +369,7 @@ export default class App extends React.Component {
 
 
 			this.subscribeDevice(
-				undefined,
-				undefined,
-				undefined,
 				nextState.userAdditionalInformation || undefined,
-				DeviceTypes.Web,
-				this.state.deviceVersion,
-				undefined,
 				nextState.deviceAuthorization || undefined,
 				true,
 			);
@@ -360,14 +400,18 @@ export default class App extends React.Component {
 			if(nextState.devicePersistence.ageUpdateInterval !== this.state.devicePersistence.ageUpdateInterval)
 				Logger.debug("Device persistence age update interval changed, recreating interval");
 
+
 			if(nextState.devicePersistence.ageUpdateIncrement !== this.state.devicePersistence.ageUpdateIncrement)
 				Logger.debug("Device persistence age update increment changed, recreating interval");
+
 
 			if(nextState.devicePersistence.domain !== this.state.devicePersistence.domain)
 				Logger.debug("Device persistence domain changed, recreating interval");
 
+
 			if(nextState.deviceIdentification !== this.state.deviceIdentification)
 				Logger.debug("Device identification changed, recreating interval");
+
 
 			this.startCookieAgeUpdateInterval(
 				nextState.deviceIdentification,
@@ -381,6 +425,7 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount() {
+		this._isMounted = true;
 		this.checkWorkingHours();
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
@@ -408,6 +453,8 @@ export default class App extends React.Component {
 	}
 
 	componentWillUnmount() {
+		this._isMounted = false;
+
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		window.removeEventListener("focus", this.handleFocusWindow);
@@ -604,17 +651,7 @@ export default class App extends React.Component {
 		}));
 
 		// Try to re-register the device if it is not yet registered
-		this.subscribeDevice(
-			undefined,
-			undefined,
-			undefined,
-			this.state.userAdditionalInformation,
-			DeviceTypes.Web,
-			this.state.deviceVersion,
-			undefined,
-			this.state.deviceAuthorization,
-			false,
-		);
+		this.subscribeDevice();
 	};
 
 	hideChat = () => {
@@ -638,7 +675,7 @@ export default class App extends React.Component {
 	};
 
 	handleNewMessage = (eventData) => {
-		// Keep track of all the message IDs so we can show the
+		// Keep track of all the message IDs, so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
 		eventData.detail.data?.forEach((message) => {
@@ -685,6 +722,7 @@ export default class App extends React.Component {
 		if(this.cookieAgeRefreshIntervalId !== null)
 			this.stopCookieAgeUpdateInterval();
 
+
 		if(!interval) {
 			Logger.debug("Setting devicePersistence.ageUpdateInterval is not set, so not starting cookie age update interval");
 			return;
@@ -699,6 +737,7 @@ export default class App extends React.Component {
 		const intervalInSeconds = interval / oneSecondInMs;
 		if(intervalInSeconds > increment)
 			Logger.warn(`Setting devicePersistence.ageUpdateInterval (${intervalInSeconds} seconds) is greater than devicePersistence.ageUpdateIncrement (${increment} seconds), which will result in the interval not being able to update the cookie in-time before it expires!`);
+
 
 		// Execute the interval handler once to update the cookie immediately.
 		// If any relevant settings change, they will re-start the interval
@@ -742,6 +781,31 @@ export default class App extends React.Component {
 		localStorage.setItem("messengerOpenState", messengerOpenState);
 	};
 
+	/**
+	 * Called when a device needs a new identification. This can happen when
+	 * the current identification is previously used in a logged-in environment
+	 * using an authorization, but now doesn't have that authorization anymore.
+	 * The client has chosen to start a new conversation (= new device) by sending
+	 * a new message in the Chat.
+	 */
+	handleDeviceNeedsNewIdentification = () => {
+		Logger.debug("Device needs a new identification!");
+
+		// Mark this device as unregistered so that we can subscribe a new device
+		this.Api.deviceRegistered = false;
+
+		// This will trigger a new subscribe due to state.deviceIdentification being updated
+		this.getDeviceIdentification(true);
+	}
+
+	/**
+	 * Called when, somehow, the device is not yet registered when trying to send
+	 * a message in the Chat.
+	 */
+	handleDeviceNeedsSubscribing = () => {
+		this.subscribeDevice();
+	};
+
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
@@ -760,6 +824,8 @@ export default class App extends React.Component {
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}
 					isiOSMobile={this.state.isiOSMobile}
+					onDeviceNeedsNewIdentification={this.handleDeviceNeedsNewIdentification}
+					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onMinimizeClick={this.handleClick}
 					restartPolling={this.restartPolling}
 					showChat={this.state.showChat}

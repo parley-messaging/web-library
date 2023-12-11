@@ -33,6 +33,8 @@ class ReplyActions extends Component {
 		} else {
 			// Wait until device is subscribed before trying to send a message
 			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+
+			this.props.onDeviceNeedsSubscribing();
 		}
 	}
 
@@ -49,6 +51,8 @@ class ReplyActions extends Component {
 		.then(() => {
 			// Reset state
 			this.setState(() => ({reply: ""}));
+
+			this.props.onSentSuccessfully();
 		})
 		.finally(() => {
 			this.props.replyTextRef.current.textArea.current.disabled = false;
@@ -93,6 +97,8 @@ ReplyActions.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,
+	onDeviceNeedsSubscribing: PropTypes.func,
+	onSentSuccessfully: PropTypes.func,
 	replyTextRef: PropTypes.object,
 	restartPolling: PropTypes.func,
 };

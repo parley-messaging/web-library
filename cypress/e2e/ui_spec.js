@@ -136,7 +136,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong, please try again later");
 		});
-
 		it("should show the `serviceUnreachableNotification` error when the fetch request fails", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -154,7 +153,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "The service is unreachable at the moment, please try again later");
 		});
-
 		it("should show the `messageSendFailed` error when sending a message fails", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -183,7 +181,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 		});
-
 		it("should show the `subscribeDeviceFailedError` error when subscribing fails", () => {
 			cy.intercept("POST", "*/**/devices", {
 				statusCode: 400,
@@ -219,7 +216,6 @@ describe("UI", () => {
 				.its("response")
 				.should("have.property", "statusCode", 400);
 		});
-
 		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
 			cy.intercept("GET", "*/**/messages", {
 				statusCode: 400,
@@ -245,7 +241,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
 		});
-
 		it("should hide the error when clicking the close error button", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -293,7 +288,6 @@ describe("UI", () => {
 				.find("[class^=error__]")
 				.should("not.exist");
 		});
-
 		it("should re-enable the input field after sending the message is successful", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -330,7 +324,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should re-enable the input field after sending the message is unsuccessful", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -377,7 +370,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should not disable the input field when trying to send an empty message", () => {
 			const testMessage = "";
 
@@ -401,7 +393,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should keep the input field disabled, after submitting a message, while device registration is not finished", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -438,7 +429,6 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("be.enabled");
 		});
-
 		it("should keep the input field disabled, after submitting a message and closing/opening the chat window, while device registration is not finished", () => {
 			const testMessage = `Test message ${Date.now()}`;
 
@@ -490,6 +480,57 @@ describe("UI", () => {
 				.find("textarea")
 				.should("be.visible")
 				.should("be.enabled");
+		});
+		it("should re-register after receiving the `deviceRequiresAuthorizationError` error and close the error", () => {
+			const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
+			const testMessage = `Test message ${Date.now()}`;
+
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "device_requires_authorization",
+						},
+					],
+				},
+			});
+
+			visitHome(parleyConfig);
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.as("error")
+				.should("be.visible")
+				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
+			cy.intercept("GET", "*/**/messages", req => req.continue()); // Reset the previous interceptor
+
+			// Test that the identification changed and does not match the old identification anymore
+			cy.intercept("POST", "*/**/devices", (req) => {
+				expect(req.headers)
+					.to
+					.have
+					.deep
+					.property("x-iris-identification");
+				expect(req.headers["x-iris-identification"])
+					.to
+					.not
+					.match(new RegExp(`^.*:${parleyConfig.xIrisIdentification}`, "u"));
+			})
+				.as("createDevice");
+
+			sendMessage(testMessage);
+			cy.wait("@createDevice");
+			findMessage(testMessage);
+
+			cy.get("@error")
+				.should("not.exist");
 		});
 	});
 	describe("receiving messages", () => {
@@ -547,6 +588,31 @@ describe("UI", () => {
 				.should("be.visible")
 				.find("p")
 				.should("have.text", "Unable to load media");
+		});
+		it("should show the `deviceRequiresAuthorizationError` error when we receive the `device_requires_authorization` api error", () => {
+			cy.intercept("GET", "*/**/messages", {
+				statusCode: 400,
+				body: {
+					status: "ERROR",
+					notifications: [
+						{
+							type: "error",
+							message: "device_requires_authorization",
+						},
+					],
+				},
+			});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Validate that api error is visible
+			cy.get("@app")
+				.find("[class^=chat__]")
+				.should("be.visible")
+				.find("[class^=error__]")
+				.should("be.visible")
+				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
 	});
 	describe("parley config settings", () => {
@@ -824,6 +890,295 @@ describe("UI", () => {
 							.find("[class^=text__]")
 							.find("textarea")
 							.should("have.attr", "placeholder", newPlaceholder);
+					});
+				});
+				describe("ariaLabelButtonMinimize", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonMinimize: "Custom text"}}};
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class*=minimize__]")
+							.as("minimizeButton")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonMinimize);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonMinimize = newValue;
+							});
+
+						cy.get("@minimizeButton")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelButtonLauncher", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonLauncher: "Custom text"}}};
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("#launcher")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonLauncher);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonLauncher = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelButtonErrorClose", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelButtonErrorClose: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {status: "ERROR"},
+						});
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage("test message");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.find("button")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonErrorClose);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelButtonErrorClose = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelTextInput", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelTextInput: "Custom text"}}};
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=text__]")
+							.find("textarea")
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelTextInput);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelTextInput = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("retrievingMessagesFailedError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {retrievingMessagesFailedError: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						}).as("getMessages");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.wait("@getMessages");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.retrievingMessagesFailedError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.retrievingMessagesFailedError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
+				describe("subscribeDeviceFailedError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {subscribeDeviceFailedError: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/devices", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						})
+							.as("postDevices");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						cy.wait("@postDevices");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.subscribeDeviceFailedError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.subscribeDeviceFailedError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.find("button")
+							.click(); // Close alert first
+						clickOnLauncher(); // Close chat
+						clickOnLauncher(); // Open chat
+						cy.wait("@postDevices");
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
+				describe("serviceGenericError", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {serviceGenericError: "Custom text"}}};
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {status: "ERROR"},
+						}).as("postMessage");
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage("test message");
+						cy.wait("@postMessage");
+
+						cy.get("@app")
+							.find("[class^=error__]")
+							.as("elementUnderTest")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.serviceGenericError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.serviceGenericError = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.find("button")
+							.click(); // Close alert first
+						clickOnLauncher(); // Close chat
+						clickOnLauncher(); // Open chat
+						sendMessage("test message 2");
+						cy.wait("@postMessage");
+
+						cy.get("@elementUnderTest")
+							.should("have.text", newValue);
+					});
+				});
+				describe("deviceRequiresAuthorizationError", () => {
+					it("should change the error message", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {deviceRequiresAuthorizationError: "This is the deviceRequiresAuthorizationError text"}}};
+
+						cy.intercept("GET", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "device_requires_authorization",
+									},
+								],
+							},
+						});
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						// Validate that api error is visible
+						cy.get("@app")
+							.find("[class^=chat__]")
+							.should("be.visible")
+							.find("[class^=error__]")
+							.as("error")
+							.should("be.visible")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.deviceRequiresAuthorizationError)
+							.find("button")
+							.click(); // Close the error
+
+						// Test if it changes during runtime
+						const newErrorText = "This is the error deviceRequiresAuthorizationError text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.deviceRequiresAuthorizationError
+									= newErrorText;
+							});
+
+						// It is reactive like other texts. This error text is not set directly in the render.
+						// It lives in the state, which is not directly linked to the context provider.
+						// This means we have to trigger the thing that caused the error again,
+						// in this case its retrieving the messages.
+						clickOnLauncher(); // Close the chat
+						clickOnLauncher(); // Reopen the chat to trigger the retrieval of messages
+
+						cy.get("@error")
+							.should("be.visible")
+							.should("have.text", newErrorText);
 					});
 				});
 			});
@@ -1819,9 +2174,10 @@ describe("UI", () => {
 
 						// We destroy the chat to stop the interval from updating the cookie (just like when the
 						// browser window is closed)
-						cy.window().then((win) => {
-							win.destroyParleyMessenger();
-						});
+						cy.window()
+							.then((win) => {
+								win.destroyParleyMessenger();
+							});
 
 						// Then we clear the storage so that device identification can not be used (just like
 						// when you open the chat on a different domain)
@@ -1870,7 +2226,9 @@ describe("UI", () => {
 								cy.get("@cookieIdentificationValue")
 									.then((cookieIdentification) => {
 										expect(identification)
-											.to.not.equal(cookieIdentification);
+											.to
+											.not
+											.equal(cookieIdentification);
 									});
 							});
 					});
