@@ -2394,20 +2394,20 @@ describe("UI", () => {
 			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
 				visitHome();
 				cy.get("#app")
-					.find("div[class*=\"state-minimize\"]")
+					.find("div[class*=parleychat-state-minimize__]")
 					.should("exist");
 				cy.get("#app")
-					.find("div[class*=\"state-open\"]")
+					.find("div[class*=parleychat-state-open__]")
 					.should("not.exist");
 			});
 			it("should contain the class name 'state-open' when the chat has been opened'", () => {
 				visitHome();
 				clickOnLauncher();
 				cy.get("#app")
-					.find("div[class*=\"state-open\"]")
+					.find("div[class*=parleychat-state-open]")
 					.should("exist");
 				cy.get("#app")
-					.find("div[class*=\"state-minimize\"]")
+					.find("div[class*=parleychat-state-minimize]")
 					.should("not.exist");
 			});
 		});

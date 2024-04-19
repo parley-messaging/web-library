@@ -3,12 +3,14 @@ import PropTypes from "prop-types";
 import * as styles from "./Launcher.module.css";
 import LauncherSVG from "./Resources/launcher.svg";
 import {InterfaceTextsContext} from "./Scripts/Context";
+import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 
 class Launcher extends Component {
 	render() {
 		const buttonType = "button";
 		const buttonId = "launcher";
-		const launcherClasses = `${styles.launcher} state-${this.props.messengerOpenState}`;
+		const stateClass = this.props.messengerOpenState === MessengerOpenState.open ? styles["state-open"] : styles["state-minimize"];
+		const launcherClasses = `${styles.launcher} ${stateClass}`;
 		const imgAltText = "icon";
 
 		return (
