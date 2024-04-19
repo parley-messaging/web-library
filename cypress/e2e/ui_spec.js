@@ -23,7 +23,7 @@ function visitHome(parleyConfig) {
 
 function clickOnLauncher() {
 	return cy.get("@app")
-		.find("[class^=parleychat-launcher__]")
+		.find("[class^=parley-messaginglauncher__]")
 		.find("button")
 		.should("be.visible")
 		.click();
@@ -31,11 +31,11 @@ function clickOnLauncher() {
 
 function sendMessage(testMessage) {
 	return cy.get("@app")
-		.find("[class^=parleychat-chat__]")
+		.find("[class^=parley-messagingchat__]")
 		.should("be.visible")
-		.find("[class^=parleychat-footer__]")
+		.find("[class^=parley-messagingfooter__]")
 		.should("be.visible")
-		.find("[class^=parleychat-text__]")
+		.find("[class^=parley-messagingtext__]")
 		.should("be.visible")
 		.find("textarea")
 		.should("have.focus")
@@ -44,9 +44,9 @@ function sendMessage(testMessage) {
 
 function findMessage(testMessage) {
 	return cy.get("@app")
-		.find("[class^=parleychat-wrapper__]")
+		.find("[class^=parley-messagingwrapper__]")
 		.should("be.visible")
-		.find("[class^=parleychat-body__]")
+		.find("[class^=parley-messagingbody__]")
 		.should("be.visible")
 		.contains(testMessage)
 		.should("be.visible");
@@ -130,9 +130,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong, please try again later");
 		});
@@ -147,9 +147,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "The service is unreachable at the moment, please try again later");
 		});
@@ -175,9 +175,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 		});
@@ -201,9 +201,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while registering your device, please re-open the chat to try again");
 
@@ -235,9 +235,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening");
 		});
@@ -263,9 +263,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
 
@@ -273,19 +273,19 @@ describe("UI", () => {
 
 			// Click the error close button
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
-				.find("[class^=parleychat-closeButton__]")
+				.find("[class^=parley-messagingcloseButton__]")
 				.should("be.visible")
 				.click();
 
 			// Validate that the error disappeared
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("not.exist");
 		});
 		it("should re-enable the input field after sending the message is successful", () => {
@@ -299,11 +299,11 @@ describe("UI", () => {
 
 			// Validate that the text area is disabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -314,11 +314,11 @@ describe("UI", () => {
 
 			// Validate that the textarea is enabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -347,11 +347,11 @@ describe("UI", () => {
 
 			// Validate that the text area is disabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -360,11 +360,11 @@ describe("UI", () => {
 
 			// Validate that the text area is enabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -383,11 +383,11 @@ describe("UI", () => {
 
 			// Validate that the textarea is enabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -404,11 +404,11 @@ describe("UI", () => {
 
 			// Validate that the text area is disabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -419,11 +419,11 @@ describe("UI", () => {
 
 			// Validate that the textarea is enabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -440,11 +440,11 @@ describe("UI", () => {
 
 			// Validate that the text area is disabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -456,11 +456,11 @@ describe("UI", () => {
 			// Validate that the text area is still disabled
 			// and then continue the subscribe call
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -471,11 +471,11 @@ describe("UI", () => {
 
 			// Validate that the textarea is enabled
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-footer__]")
+				.find("[class^=parley-messagingfooter__]")
 				.should("be.visible")
-				.find("[class^=parleychat-text__]")
+				.find("[class^=parley-messagingtext__]")
 				.should("be.visible")
 				.find("textarea")
 				.should("be.visible")
@@ -503,9 +503,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.as("error")
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
@@ -546,7 +546,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.get("@app")
-				.find("[class^=parleychat-message__]")
+				.find("[class^=parley-messagingmessage__]")
 				.should("have.length", 2)
 				.find("input[type=image]")
 				.should("have.length", 2)
@@ -564,7 +564,7 @@ describe("UI", () => {
 			cy.wait("@getMessages");
 
 			cy.get("@app")
-				.find("[class^=parleychat-message__]")
+				.find("[class^=parley-messagingmessage__]")
 				.should("be.visible")
 				.find("p")
 				.should("have.text", "Unsupported media");
@@ -583,7 +583,7 @@ describe("UI", () => {
 			cy.wait("@getMessages");
 
 			cy.get("@app")
-				.find("[class^=parleychat-message__]")
+				.find("[class^=parley-messagingmessage__]")
 				.first()
 				.should("be.visible")
 				.find("p")
@@ -608,9 +608,9 @@ describe("UI", () => {
 
 			// Validate that api error is visible
 			cy.get("@app")
-				.find("[class^=parleychat-chat__]")
+				.find("[class^=parley-messagingchat__]")
 				.should("be.visible")
-				.find("[class^=parleychat-error__]")
+				.find("[class^=parley-messagingerror__]")
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
@@ -751,7 +751,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class^=parleychat-title__]")
+							.find("[class^=parley-messagingtitle__]")
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
 
 						// Test if it changes during runtime
@@ -763,7 +763,7 @@ describe("UI", () => {
 							});
 
 						cy.get("@app")
-							.find("[class^=parleychat-title__]")
+							.find("[class^=parley-messagingtitle__]")
 							.should("have.text", newTitle);
 					});
 				});
@@ -789,7 +789,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class*=parleychat-announcement__]")
+							.find("[class*=parley-messagingannouncement__]")
 							.first()
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.infoText);
 
@@ -802,7 +802,7 @@ describe("UI", () => {
 							});
 
 						cy.get("@app")
-							.find("[class*=parleychat-announcement__]")
+							.find("[class*=parley-messagingannouncement__]")
 							.first()
 							.should("have.text", newInfoText);
 					});
@@ -828,7 +828,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class*=parleychat-announcement__]")
+							.find("[class*=parley-messagingannouncement__]")
 							.first()
 							.should("have.text", welcomeMessage);
 					});
@@ -858,7 +858,7 @@ describe("UI", () => {
 
 						// We should not see any announcements while the request is "busy"
 						cy.get("@app")
-							.find("[class*=parleychat-announcement__]")
+							.find("[class*=parley-messagingannouncement__]")
 							.should("not.exist");
 					});
 				});
@@ -874,7 +874,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class^=parleychat-text__]")
+							.find("[class^=parley-messagingtext__]")
 							.find("textarea")
 							.should("have.attr", "placeholder", parleyConfig.runOptions.interfaceTexts.placeholderMessenger);
 
@@ -887,7 +887,7 @@ describe("UI", () => {
 							});
 
 						cy.get("@app")
-							.find("[class^=parleychat-text__]")
+							.find("[class^=parley-messagingtext__]")
 							.find("textarea")
 							.should("have.attr", "placeholder", newPlaceholder);
 					});
@@ -900,7 +900,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class*=parleychat-minimize__]")
+							.find("[class*=parley-messagingminimize__]")
 							.as("minimizeButton")
 							.should("have.attr", "aria-label")
 							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelButtonMinimize);
@@ -958,7 +958,7 @@ describe("UI", () => {
 						sendMessage("test message");
 
 						cy.get("@app")
-							.find("[class^=parleychat-error__]")
+							.find("[class^=parley-messagingerror__]")
 							.find("button")
 							.as("elementUnderTest")
 							.should("have.attr", "aria-label")
@@ -986,7 +986,7 @@ describe("UI", () => {
 						clickOnLauncher();
 
 						cy.get("@app")
-							.find("[class^=parleychat-text__]")
+							.find("[class^=parley-messagingtext__]")
 							.find("textarea")
 							.as("elementUnderTest")
 							.should("have.attr", "aria-label")
@@ -1028,7 +1028,7 @@ describe("UI", () => {
 						cy.wait("@getMessages");
 
 						cy.get("@app")
-							.find("[class^=parleychat-error__]")
+							.find("[class^=parley-messagingerror__]")
 							.as("elementUnderTest")
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.retrievingMessagesFailedError);
 
@@ -1067,7 +1067,7 @@ describe("UI", () => {
 						cy.wait("@postDevices");
 
 						cy.get("@app")
-							.find("[class^=parleychat-error__]")
+							.find("[class^=parley-messagingerror__]")
 							.as("elementUnderTest")
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.subscribeDeviceFailedError);
 
@@ -1105,7 +1105,7 @@ describe("UI", () => {
 						cy.wait("@postMessage");
 
 						cy.get("@app")
-							.find("[class^=parleychat-error__]")
+							.find("[class^=parley-messagingerror__]")
 							.as("elementUnderTest")
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.serviceGenericError);
 
@@ -1151,9 +1151,9 @@ describe("UI", () => {
 
 						// Validate that api error is visible
 						cy.get("@app")
-							.find("[class^=parleychat-chat__]")
+							.find("[class^=parley-messagingchat__]")
 							.should("be.visible")
-							.find("[class^=parleychat-error__]")
+							.find("[class^=parley-messagingerror__]")
 							.as("error")
 							.should("be.visible")
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.deviceRequiresAuthorizationError)
@@ -1199,7 +1199,7 @@ describe("UI", () => {
 					clickOnLauncher();
 
 					cy.get("@app")
-						.find("[class^=parleychat-text__]")
+						.find("[class^=parley-messagingtext__]")
 						.find("textarea")
 						.should("have.attr", "placeholder", InterfaceTexts.english.inputPlaceholder);
 
@@ -1211,14 +1211,14 @@ describe("UI", () => {
 						});
 
 					cy.get("@app")
-						.find("[class^=parleychat-text__]")
+						.find("[class^=parley-messagingtext__]")
 						.find("textarea")
 						.should("have.attr", "placeholder", InterfaceTexts.dutch.inputPlaceholder);
 
 					// Extra test to validate that custom interface texts (desc we set above)
 					// have not been overwritten by the new language's defaults
 					cy.get("@app")
-						.find("[class^=parleychat-title__]")
+						.find("[class^=parley-messagingtitle__]")
 						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
 				});
 			});
@@ -1285,9 +1285,9 @@ describe("UI", () => {
 					});
 
 				cy.get("@app")
-					.find("[class^=parleychat-wrapper__]")
+					.find("[class^=parley-messagingwrapper__]")
 					.should("be.visible")
-					.find("[class^=parleychat-body__]")
+					.find("[class^=parley-messagingbody__]")
 					.should("be.visible")
 					.should("not.contain", testMessage);
 			});
@@ -1454,7 +1454,7 @@ describe("UI", () => {
 					// Launcher is not rendered because we are offline
 					// and outside working hours
 					cy.get("@app")
-						.get("[class^=parleychat-launcher__]")
+						.get("[class^=parley-messaginglauncher__]")
 						.should("not.exist");
 
 					// Test if it changes during runtime
@@ -1516,7 +1516,7 @@ describe("UI", () => {
 					// Launcher is not rendered because we are offline
 					// and outside working hours
 					cy.get("@app")
-						.get("[class^=parleychat-launcher__]")
+						.get("[class^=parley-messaginglauncher__]")
 						.should("not.exist");
 
 					// Test if it changes during runtime
@@ -1583,7 +1583,7 @@ describe("UI", () => {
 					// Launcher is not rendered because we are offline
 					// and outside working hours
 					cy.get("@app")
-						.get("[class^=parleychat-launcher__]")
+						.get("[class^=parley-messaginglauncher__]")
 						.should("not.exist");
 
 					// Test if it changes during runtime
@@ -1641,7 +1641,7 @@ describe("UI", () => {
 					// Launcher is not rendered because we are offline
 					// and outside working hours
 					cy.get("@app")
-						.get("[class^=parleychat-launcher__]")
+						.get("[class^=parley-messaginglauncher__]")
 						.should("not.exist");
 
 					// Test if it changes during runtime
@@ -1685,7 +1685,7 @@ describe("UI", () => {
 					// Launcher is not rendered because we are offline
 					// and outside working hours
 					cy.get("@app")
-						.get("[class^=parleychat-launcher__]")
+						.get("[class^=parley-messaginglauncher__]")
 						.should("not.exist");
 
 					// Test if it changes during runtime
@@ -1720,7 +1720,7 @@ describe("UI", () => {
 
 				// Make sure app exists
 				cy.get("@app")
-					.get("[class^=parleychat-launcher__]")
+					.get("[class^=parley-messaginglauncher__]")
 					.should("exist");
 
 				cy.window()
@@ -2251,7 +2251,7 @@ describe("UI", () => {
 		describe("launcher", () => {
 			it("should have an id", () => {
 				cy.get("@app")
-					.find("[class^=parleychat-launcher__]")
+					.find("[class^=parley-messaginglauncher__]")
 					.find("button")
 					.should("have.id", "launcher");
 			});
@@ -2382,7 +2382,7 @@ describe("UI", () => {
 			// Otherwise the "#chat should not exist" will pass
 			// immediately before the chat has been initialized
 			cy.get("#app")
-				.find("[class^=parleychat-launcher__]")
+				.find("[class^=parley-messaginglauncher__]")
 				.find("button")
 				.should("be.visible");
 
@@ -2394,20 +2394,20 @@ describe("UI", () => {
 			it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
 				visitHome();
 				cy.get("#app")
-					.find("div[class*=parleychat-state-minimize__]")
+					.find("div[class*=parley-messagingstate-minimize__]")
 					.should("exist");
 				cy.get("#app")
-					.find("div[class*=parleychat-state-open__]")
+					.find("div[class*=parley-messagingstate-open__]")
 					.should("not.exist");
 			});
 			it("should contain the class name 'state-open' when the chat has been opened'", () => {
 				visitHome();
 				clickOnLauncher();
 				cy.get("#app")
-					.find("div[class*=parleychat-state-open]")
+					.find("div[class*=parley-messagingstate-open]")
 					.should("exist");
 				cy.get("#app")
-					.find("div[class*=parleychat-state-minimize]")
+					.find("div[class*=parley-messagingstate-minimize]")
 					.should("not.exist");
 			});
 		});
@@ -2426,7 +2426,7 @@ describe("UI", () => {
 
 			// Find image and click on it
 			cy.get("@app")
-				.find("[class^=parleychat-message__]")
+				.find("[class^=parley-messagingmessage__]")
 				.find("input[type=image]")
 				.first()
 				.click();
@@ -2434,18 +2434,18 @@ describe("UI", () => {
 			// Find fullscreen image container
 			// and close it
 			cy.get("@app")
-				.find("[class^=parleychat-container__]")
+				.find("[class^=parley-messagingcontainer__]")
 				.should("be.visible")
-				.find("img[class^=parleychat-image]")
+				.find("img[class^=parley-messagingimage]")
 				.should("be.visible")
 				.parent()
-				.find("button[class^=parleychat-closeButton__]")
+				.find("button[class^=parley-messagingcloseButton__]")
 				.should("be.visible")
 				.click();
 
 			// Make sure image container is gone
 			cy.get("@app")
-				.find("[class^=parleychat-container__]")
+				.find("[class^=parley-messagingcontainer__]")
 				.should("not.exist");
 		});
 	});
