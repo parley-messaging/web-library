@@ -7,7 +7,7 @@
 		"ui-for-watcher": {
 			"distDir": "dist/",
 			"optimize": false,
-			"sourceMap": false
+			"sourceMap": true
 		},
 		"ui-minimized": {
 			"distDir": "dist/ui/minified",

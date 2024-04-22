@@ -26,3 +26,9 @@
 	height: 35px;
 	padding: 10px 0 10px 0; /* Makes sure the img is centered correctly in the round button */
 }
+
+.launcher.state-open {
+}
+
+.launcher.state-minimize {
+}
