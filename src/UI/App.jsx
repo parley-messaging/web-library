@@ -133,13 +133,14 @@ export default class App extends React.Component {
 		const overridesFromWindow = {...window?.parleySettings?.runOptions?.interfaceTexts};
 
 		// Remove all keys that are not overridable
-		Object.keys(overridesFromWindow).forEach((key) => {
-			if(!overridableTextsKeys.includes(key))
-				delete overridesFromWindow[key];
-		});
+		Object.keys(overridesFromWindow)
+			.forEach((key) => {
+				if(!overridableTextsKeys.includes(key))
+					delete overridesFromWindow[key];
+			});
 
 		return overridesFromWindow;
-	}
+	};
 
 	/**
 	 * Creates a new cookie with that stores the device identification
@@ -594,6 +595,22 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "authHeader") {
 			objectToSaveIntoState = {deviceAuthorization: value};
 		} else if(path[layer0] === "weekdays") {
+			// Find existing weekdays that have the same day name as the new value
+			// If we find any we delete them so the new setting can override them.
+			value.forEach((newWeekday) => {
+				const existingWeekday = this.state.workingHours?.find((stateWeekday) => {
+					if(stateWeekday[0].toLowerCase !== undefined) {
+						// Dealing with ["Day", start, end]
+						return stateWeekday[0].toLowerCase() === newWeekday[0].toLowerCase();
+					}
+
+					// Dealing with [startTimestamp, endTimestamp]
+					return stateWeekday[0] === newWeekday[0];
+				});
+				if(existingWeekday)
+					this.state.workingHours.splice(this.state.workingHours.indexOf(existingWeekday), 1);
+			});
+
 			objectToSaveIntoState = {workingHours: value};
 		} else if(path[layer0] === "xIrisIdentification") {
 			objectToSaveIntoState = {deviceIdentification: value};
@@ -796,7 +813,7 @@ export default class App extends React.Component {
 
 		// This will trigger a new subscribe due to state.deviceIdentification being updated
 		this.getDeviceIdentification(true);
-	}
+	};
 
 	/**
 	 * Called when, somehow, the device is not yet registered when trying to send
