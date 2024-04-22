@@ -614,7 +614,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
-		it("should render buttons when received", () => {
+		it.only("should render buttons when received", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with buttons in it

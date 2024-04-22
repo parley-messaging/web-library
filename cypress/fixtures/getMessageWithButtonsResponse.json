@@ -15,7 +15,7 @@
 			"buttons": [
 				{
 					"title": "open app",
-					"payload": "open-app://website.com",
+					"payload": "https://developers.parley.nu",
 					"type": "webUrl"
 				},
 				{
@@ -31,8 +31,8 @@
 			]
 		},
 		{
-			"id": 10696,
-			"time": 1713788310,
+			"id": 10697,
+			"time": 1713788312,
 			"message": "Buttons and Text!",
 			"image": null,
 			"typeId": 2,
@@ -45,7 +45,7 @@
 			"buttons": [
 				{
 					"title": "open app",
-					"payload": "open-app://website.com",
+					"payload": "https://developers.parley.nu",
 					"type": "webUrl"
 				},
 				{

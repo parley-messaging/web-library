@@ -4,11 +4,11 @@ import * as styles from "./Message.module.css";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import MessageTypes from "../Api/Constants/MessageTypes";
-
-// components
 import Image from "./Image";
 import Api from "../Api/Api";
 import MessageButtonTypes from "../Api/Constants/MessageButtonTypes";
+import ReplyButton from "./MessageButtons/ReplyButton";
+import WebUrlButton from "./MessageButtons/WebUrlButton";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -33,6 +33,7 @@ class Message extends Component {
 		} else {
 			return null;
 		}
+		const buttonRenderError = "_Unable to show unsupported button_";
 
 		return (
 			<div className={classNames}>
@@ -50,12 +51,21 @@ class Message extends Component {
 					</ReactMarkdown>
 					{
 						this.props.message.buttons
-						&& this.props.message.buttons.map((button, index) => (
-							/* eslint-disable-next-line react/no-array-index-key */
-							<button className={styles.button} key={index}>
-								{button.title}
-							</button>
-						))
+						&& this.props.message.buttons.map((button, index) => {
+							switch (button.type) {
+							case MessageButtonTypes.Reply:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <ReplyButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+							case MessageButtonTypes.WebUrl:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <WebUrlButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+							case MessageButtonTypes.PhoneNumber:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <WebUrlButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+							default:
+								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
+							}
+						})
 					}
 					{
 						this.props.message.media
