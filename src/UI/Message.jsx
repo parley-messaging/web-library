@@ -8,6 +8,7 @@ import MessageTypes from "../Api/Constants/MessageTypes";
 // components
 import Image from "./Image";
 import Api from "../Api/Api";
+import MessageButtonTypes from "../Api/Constants/MessageButtonTypes";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -17,7 +18,7 @@ class Message extends Component {
 			minute: "2-digit",
 			hour12: false,
 		});
-	}
+	};
 
 	render() {
 		let classNames = styles.messageBubble;
@@ -39,17 +40,26 @@ class Message extends Component {
 					this.props.showAgent
 					&& this.props.message.agent
 					&& this.props.message.agent.name.length > 0
-						&& <div className={styles.name}>
-							{this.props.message.agent.name}
-						   </div>
+					&& <div className={styles.name}>
+						{this.props.message.agent.name}
+					</div>
 				}
 				<div className={styles.message}>
+					<ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
+						{this.props.message.message}
+					</ReactMarkdown>
+					{
+						this.props.message.buttons
+						&& this.props.message.buttons.map((button, index) => (
+							/* eslint-disable-next-line react/no-array-index-key */
+							<button className={styles.button} key={index}>
+								{button.title}
+							</button>
+						))
+					}
 					{
 						this.props.message.media
-							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-							: <ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
-								{this.props.message.message}
-							  </ReactMarkdown>
+						&& <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
@@ -68,6 +78,11 @@ Message.propTypes = {
 			id: PropTypes.number,
 			name: PropTypes.string.isRequired,
 		}),
+		buttons: PropTypes.arrayOf(PropTypes.shape({
+			payload: PropTypes.string.isRequired,
+			title: PropTypes.string,
+			type: PropTypes.oneOf(MessageButtonTypes),
+		})),
 		id: PropTypes.number,
 		media: PropTypes.shape({
 			description: PropTypes.string,

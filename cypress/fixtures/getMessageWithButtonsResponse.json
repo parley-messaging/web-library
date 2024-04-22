@@ -1,0 +1,79 @@
+{
+	"data": [
+		{
+			"id": 10696,
+			"time": 1713788310,
+			"message": null,
+			"image": null,
+			"typeId": 2,
+			"agent": null,
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": [
+				{
+					"title": "open app",
+					"payload": "open-app://website.com",
+					"type": "webUrl"
+				},
+				{
+					"title": "Call us",
+					"payload": "tel://+31123456789",
+					"type": "phoneNumber"
+				},
+				{
+					"title": "Vraag over meubels",
+					"payload": "Ik heb een vraag over meubels",
+					"type": "reply"
+				}
+			]
+		},
+		{
+			"id": 10696,
+			"time": 1713788310,
+			"message": "Buttons and Text!",
+			"image": null,
+			"typeId": 2,
+			"agent": null,
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": [
+				{
+					"title": "open app",
+					"payload": "open-app://website.com",
+					"type": "webUrl"
+				},
+				{
+					"title": "Call us",
+					"payload": "tel://+31123456789",
+					"type": "phoneNumber"
+				},
+				{
+					"title": "Vraag over meubels",
+					"payload": "Ik heb een vraag over meubels",
+					"type": "reply"
+				}
+			]
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}
