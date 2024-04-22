@@ -789,8 +789,9 @@ export default class App extends React.Component {
 	};
 
 	checkWorkingHours = () => {
-		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
-		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
+		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}), () => {
+			Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
+		});
 	};
 
 	saveMessengerOpenState = (messengerOpenState) => {
