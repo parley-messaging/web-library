@@ -9,6 +9,7 @@ import Api from "../Api/Api";
 import MessageButtonTypes from "../Api/Constants/MessageButtonTypes";
 import ReplyButton from "./MessageButtons/ReplyButton";
 import WebUrlButton from "./MessageButtons/WebUrlButton";
+import CallButton from "./MessageButtons/CallButton";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -61,7 +62,7 @@ class Message extends Component {
 								return <WebUrlButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
 							case MessageButtonTypes.PhoneNumber:
 								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <WebUrlButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+								return <CallButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
 							default:
 								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
 							}

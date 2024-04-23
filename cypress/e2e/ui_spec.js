@@ -665,6 +665,33 @@ describe("UI", () => {
 						.should("be.calledWith", fixture.data[0].buttons[0].payload);
 				});
 			});
+			it("should open a new page when clicking on the Call button", () => {
+				visitHome({}, (window) => {
+					cy.stub(window, "open").as("windowOpen"); // Mock window.open function
+				});
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json").as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture").then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='CallButton']")
+					.first()
+					.click();
+
+				cy.get("@getMessageWithButtonFixture").then((fixture) => {
+					cy.get("@windowOpen")
+						.should("be.calledWith", fixture.data[0].buttons[1].payload);
+				});
+			});
 		});
 	});
 	describe("parley config settings", () => {

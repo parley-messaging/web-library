@@ -1,13 +1,14 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 
-// TODO: Write cypress tests
-
 export default class CallButton extends Component {
 	handleClick = (e) => {
 		e.preventDefault();
 
-		document.location.href = `tel://${this.props.payload}`;
+		// There is no need to open this in a new tab,
+		// as this will only confuse the client because an empty tab will open
+		// So that is why we use target "_self"
+		window.open(`${this.props.payload}`, "_self");
 	};
 
 	render() {
