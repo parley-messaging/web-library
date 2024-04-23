@@ -15,8 +15,8 @@ class ReplyActions extends Component {
 		this.state = {reply: ""};
 	}
 
-	setReplyValue = (newReply) => {
-		this.setState({reply: newReply});
+	setReplyValue = (newReply, callback = () => {}) => {
+		this.setState({reply: newReply}, callback);
 	}
 
 	handleChange = (event) => {

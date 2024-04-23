@@ -180,7 +180,7 @@ class Chat extends Component {
 	}
 
 	handleReplyButtonClick = (newReplyText) => {
-		this.replyActionsRef.current.setReplyValue(newReplyText);
+		this.replyActionsRef.current.setReplyValue(newReplyText, this.replyActionsRef.current.handleSubmit);
 		this.replyTextRef.current.textArea.current.focus();
 	}
 

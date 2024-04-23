@@ -723,13 +723,21 @@ describe("UI", () => {
 					.first()
 					.click();
 
+				// Disable the interception so we can send the message from the reply button
+				// and also receive it.
+				cy.intercept("GET", "*/**/messages", (req) => {
+					req.continue();
+				});
+
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-text__]")
 							.find("textarea")
-							.should("have.text", fixture.data[0].buttons[2].payload)
 							.should("have.focus");
+
+						// Check to see if the message is rendered correctly
+						findMessage(fixture.data[0].buttons[2].payload);
 					});
 			});
 		});
