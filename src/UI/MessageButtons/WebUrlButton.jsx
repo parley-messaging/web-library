@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 
-// TODO: Write cypress tests
-
 export default class WebUrlButton extends Component {
 	handleClick = (e) => {
 		e.preventDefault();
@@ -11,8 +9,10 @@ export default class WebUrlButton extends Component {
 	};
 
 	render() {
+		const name = "WebUrlButton";
+
 		return (
-			<button className={this.props.className} onClick={this.handleClick}>
+			<button className={this.props.className} name={name} onClick={this.handleClick}>
 				{this.props.title}
 			</button>
 		);

@@ -11,8 +11,10 @@ export default class CallButton extends Component {
 	};
 
 	render() {
+		const name = "CallButton";
+
 		return (
-			<button className={this.props.className} onClick={this.handleClick}>
+			<button className={this.props.className} name={name} onClick={this.handleClick}>
 				{this.props.title}
 			</button>
 		);

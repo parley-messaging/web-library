@@ -4,7 +4,7 @@ import {interceptIndefinitely} from "../support/utils";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 
-function visitHome(parleyConfig) {
+function visitHome(parleyConfig, onBeforeLoad) {
 	cy.visit("/", {
 		onBeforeLoad: (window) => {
 			// eslint-disable-next-line no-param-reassign
@@ -12,6 +12,7 @@ function visitHome(parleyConfig) {
 				...defaultParleyConfig, // Always set default config
 				...parleyConfig,
 			};
+			onBeforeLoad(window);
 		},
 		onLoad: (window) => {
 			window.initParleyMessenger();
@@ -614,20 +615,56 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
-		it.only("should render buttons when received", () => {
-			visitHome();
+		describe.only("message buttons", () => {
+			it("should render buttons when received", () => {
+				visitHome();
 
-			// Intercept GET messages and return a fixture message with buttons in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse.json"});
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse.json"});
 
-			clickOnLauncher();
+				clickOnLauncher();
 
-			cy.get("@app")
-				.find("[class^=parley-messaging-messageBubble__]")
-				.should("have.length", 3) // 2 messages + date "message" (date is also inside a messageBubble..)
-				.find("[class^=parley-messaging-button__]")
-				.should("have.length", 6) // 2 messages * 3 buttons
-				.should("exist");
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.should("have.length", 3) // 2 messages + date "message" (date is also inside a messageBubble..)
+					.find("[class^=parley-messaging-button__]")
+					.should("have.length", 6) // 2 messages * 3 buttons
+					.should("exist");
+			});
+			it("should open a new page when clicking on the WebUrl button", () => {
+				visitHome({}, (window) => {
+					cy.stub(window, "open")
+						.returns({
+							// Window.open returns an object on which we call focus.
+							// If we don't mock the focus() method the chat would throw an error
+							// eslint-disable-next-line no-empty-function
+							focus: () => {},
+						}); // Mock window.open function
+				});
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json").as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture").then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='WebUrlButton']")
+					.first()
+					.click();
+
+				cy.get("@getMessageWithButtonFixture").then((fixture) => {
+					cy.window()
+						.its("open")
+						.should("be.calledWith", fixture.data[0].buttons[0].payload);
+				});
+			});
 		});
 	});
 	describe("parley config settings", () => {
@@ -1035,7 +1072,8 @@ describe("UI", () => {
 									},
 								],
 							},
-						}).as("getMessages");
+						})
+							.as("getMessages");
 
 						visitHome(parleyConfig);
 						clickOnLauncher();
@@ -1112,7 +1150,8 @@ describe("UI", () => {
 						cy.intercept("POST", "*/**/messages", {
 							statusCode: 400,
 							body: {status: "ERROR"},
-						}).as("postMessage");
+						})
+							.as("postMessage");
 
 						visitHome(parleyConfig);
 						clickOnLauncher();
