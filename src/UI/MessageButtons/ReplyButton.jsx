@@ -23,5 +23,5 @@ ReplyButton.propTypes = {
 	className: PropTypes.string,
 	onClick: PropTypes.func.isRequired,
 	payload: PropTypes.string.isRequired,
-	title: PropTypes.string,
+	title: PropTypes.string.isRequired,
 };

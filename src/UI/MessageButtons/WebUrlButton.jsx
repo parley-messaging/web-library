@@ -22,5 +22,5 @@ export default class WebUrlButton extends Component {
 WebUrlButton.propTypes = {
 	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
-	title: PropTypes.string,
+	title: PropTypes.string.isRequired,
 };

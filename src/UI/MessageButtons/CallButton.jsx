@@ -25,5 +25,5 @@ export default class CallButton extends Component {
 CallButton.propTypes = {
 	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
-	title: PropTypes.string,
+	title: PropTypes.string.isRequired,
 };
