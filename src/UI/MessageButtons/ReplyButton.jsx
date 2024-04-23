@@ -5,7 +5,7 @@ export default class ReplyButton extends Component {
 	handleClick = (e) => {
 		e.preventDefault();
 
-		// TODO: somehow set the props.payload in the reply text field...
+		this.props.onClick(this.props.payload);
 	};
 
 	render() {
@@ -21,6 +21,7 @@ export default class ReplyButton extends Component {
 
 ReplyButton.propTypes = {
 	className: PropTypes.string,
+	onClick: PropTypes.func.isRequired,
 	payload: PropTypes.string.isRequired,
 	title: PropTypes.string,
 };

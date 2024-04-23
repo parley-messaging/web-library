@@ -26,6 +26,7 @@ class Chat extends Component {
 		this.correctionTimeoutID = null;
 		this.chatRef = React.createRef();
 		this.replyTextRef = React.createRef();
+		this.replyActionsRef = React.createRef();
 
 		this.state = {errorNotification: ""};
 	}
@@ -178,6 +179,11 @@ class Chat extends Component {
 		}
 	}
 
+	handleReplyButtonClick = (newReplyText) => {
+		this.replyActionsRef.current.setReplyValue(newReplyText);
+		this.replyTextRef.current.textArea.current.focus();
+	}
+
 	render() {
 		let classNames = styles.chat;
 		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
@@ -196,6 +202,7 @@ class Chat extends Component {
 				<Conversation
 					api={this.props.api}
 					defaultWelcomeMessage={this.props.welcomeMessage}
+					onReplyButtonClick={this.handleReplyButtonClick}
 					restartPolling={this.props.restartPolling}
 				/>
 				{
@@ -222,6 +229,7 @@ class Chat extends Component {
 					isMobile={this.isMobile}
 					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onSentSuccessfully={this.handleSentSuccessfully}
+					ref={this.replyActionsRef}
 					replyTextRef={this.replyTextRef}
 					restartPolling={this.props.restartPolling}
 				/>

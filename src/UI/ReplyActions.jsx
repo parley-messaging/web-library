@@ -15,6 +15,10 @@ class ReplyActions extends Component {
 		this.state = {reply: ""};
 	}
 
+	setReplyValue = (newReply) => {
+		this.setState({reply: newReply});
+	}
+
 	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
@@ -103,4 +107,4 @@ ReplyActions.propTypes = {
 	restartPolling: PropTypes.func,
 };
 
-export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);
+export default ReplyActions;

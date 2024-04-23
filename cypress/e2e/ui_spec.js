@@ -12,7 +12,8 @@ function visitHome(parleyConfig, onBeforeLoad) {
 				...defaultParleyConfig, // Always set default config
 				...parleyConfig,
 			};
-			onBeforeLoad(window);
+			if(onBeforeLoad)
+				onBeforeLoad(window);
 		},
 		onLoad: (window) => {
 			window.initParleyMessenger();
@@ -638,18 +639,21 @@ describe("UI", () => {
 							// Window.open returns an object on which we call focus.
 							// If we don't mock the focus() method the chat would throw an error
 							// eslint-disable-next-line no-empty-function
-							focus: () => {},
+							focus: () => {
+							},
 						}); // Mock window.open function
 				});
 
 				// Intercept GET messages and return a fixture message with buttons in it
-				cy.fixture("getMessageWithButtonsResponse.json").as("getMessageWithButtonFixture");
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
 
-				cy.get("@getMessageWithButtonFixture").then((fixture) => {
-					cy.intercept("GET", "*/**/messages", (req) => {
-						req.reply(fixture);
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
 					});
-				});
 
 				clickOnLauncher();
 
@@ -659,25 +663,29 @@ describe("UI", () => {
 					.first()
 					.click();
 
-				cy.get("@getMessageWithButtonFixture").then((fixture) => {
-					cy.window()
-						.its("open")
-						.should("be.calledWith", fixture.data[0].buttons[0].payload);
-				});
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.window()
+							.its("open")
+							.should("be.calledWith", fixture.data[0].buttons[0].payload);
+					});
 			});
-			it("should open a new page when clicking on the Call button", () => {
+			it("should open the phone app in the current page when clicking on the Call button", () => {
 				visitHome({}, (window) => {
-					cy.stub(window, "open").as("windowOpen"); // Mock window.open function
+					cy.stub(window, "open")
+						.as("windowOpen"); // Mock window.open function
 				});
 
 				// Intercept GET messages and return a fixture message with buttons in it
-				cy.fixture("getMessageWithButtonsResponse.json").as("getMessageWithButtonFixture");
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
 
-				cy.get("@getMessageWithButtonFixture").then((fixture) => {
-					cy.intercept("GET", "*/**/messages", (req) => {
-						req.reply(fixture);
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
 					});
-				});
 
 				clickOnLauncher();
 
@@ -687,10 +695,42 @@ describe("UI", () => {
 					.first()
 					.click();
 
-				cy.get("@getMessageWithButtonFixture").then((fixture) => {
-					cy.get("@windowOpen")
-						.should("be.calledWith", fixture.data[0].buttons[1].payload);
-				});
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.get("@windowOpen")
+							.should("be.calledWith", fixture.data[0].buttons[1].payload);
+					});
+			});
+			it("should set the input field text when clicking on the Reply button", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='ReplyButton']")
+					.first()
+					.click();
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.get("@app")
+							.find("[class^=parley-messaging-text__]")
+							.find("textarea")
+							.should("have.text", fixture.data[0].buttons[2].payload)
+							.should("have.focus");
+					});
 			});
 		});
 	});
