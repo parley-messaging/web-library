@@ -17,7 +17,7 @@ class Message extends Component {
 			minute: "2-digit",
 			hour12: false,
 		});
-	}
+	};
 
 	render() {
 		let classNames = styles.messageBubble;
@@ -39,17 +39,17 @@ class Message extends Component {
 					this.props.showAgent
 					&& this.props.message.agent
 					&& this.props.message.agent.name.length > 0
-						&& <div className={styles.name}>
-							{this.props.message.agent.name}
-						   </div>
+					&& <div className={styles.name}>
+						{this.props.message.agent.name}
+					</div>
 				}
 				<div className={styles.message}>
+					<ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
+						{this.props.message.message}
+					</ReactMarkdown>
 					{
 						this.props.message.media
-							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-							: <ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
-								{this.props.message.message}
-							  </ReactMarkdown>
+						&& <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
@@ -60,6 +60,11 @@ class Message extends Component {
 	}
 }
 
+const mediaShape = {
+	description: PropTypes.string,
+	id: PropTypes.string.isRequired,
+};
+
 Message.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	message: PropTypes.shape({
@@ -69,10 +74,7 @@ Message.propTypes = {
 			name: PropTypes.string.isRequired,
 		}),
 		id: PropTypes.number,
-		media: PropTypes.shape({
-			description: PropTypes.string,
-			id: PropTypes.string.isRequired,
-		}),
+		media: PropTypes.shape(mediaShape),
 		message: PropTypes.string,
 		quickReplies: PropTypes.arrayOf(PropTypes.string),
 		time: PropTypes.number.isRequired,
