@@ -2,33 +2,9 @@ import React, {Component} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPaperclip} from "@fortawesome/free-solid-svg-icons/faPaperclip";
 import PropTypes from "prop-types";
-const SUPPORTED_MEDIA_TYPES = {
-	images:
-	[
-		"image/jpeg",
-		"image/png",
-		"image/gif",
-	],
-	files:
-	[
-		"application/pdf",
-		"text/plain",
-		"text/csv",
-		"text/comma-separated-values",
-		"application/csv",
-		"application/msword",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-		"application/vnd.ms-excel",
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-		"application/vnd.ms-powerpoint",
-	],
-	media:
-	[
-		"video/*", "audio/*",
-	],
-};
+import {SUPPORTED_MEDIA_TYPES} from "../../Api/Constants/SupportedMediaTypes";
+
 class UploadMedia extends Component {
-	// experiment
 	constructor(props) {
 		super(props);
 		this.fileInputRef = React.createRef();
@@ -38,7 +14,7 @@ class UploadMedia extends Component {
 	handleFileChange = (event) => {
 		const file = event.target.files[0];
 		this.setState({selectedFile: file});
-		this.props.onFileSelect(file); // Call the callback function with the selected file
+		this.props.onFileSelect(file);
 	};
 
 	handleClick = () => {
@@ -46,20 +22,14 @@ class UploadMedia extends Component {
 			this.fileInputRef.current.click();
 	};
 
-	mimeTypes = Object.values(SUPPORTED_MEDIA_TYPES)
-		.reduce((acc, group) => acc.concat(group), [])
-		.join(",");
-
 	render() {
 		const typeInput = "file";
 		const ariaLabel = "upload";
 		const htmlForType = "fileInput";
-		const {selectedFile} = this.state;
-
 		return (
 			<>
 				<input
-					accept={this.mimeTypes}
+					accept={SUPPORTED_MEDIA_TYPES.join(",")}
 					onChange={this.handleFileChange}
 					ref={this.fileInputRef}
 					style={{display: "none"}}
@@ -73,8 +43,6 @@ class UploadMedia extends Component {
 				>
 					<FontAwesomeIcon icon={faPaperclip} />
 				</label>
-				// ToDo @bouke: Gebruikt voor het testen tijdelijk
-				{selectedFile && <p>{selectedFile.name}</p>}
 			</>
 
 		);
