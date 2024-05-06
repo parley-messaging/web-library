@@ -2,11 +2,12 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
-import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {subscribe} from "../Api/Constants/Events";
+import MobileSubmit from "./Buttons/MobileSubmit";
+import UploadMedia from "./Buttons/UploadMedia";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -18,6 +19,13 @@ class ReplyActions extends Component {
 	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
+
+	// ToDo @bouke: Hiermee bezig
+	handleMediaUploader = (file) => {
+		// upload file to API
+
+		// send message with media file attached user must have a device registrered
+	};
 
 	handleSubmit = () => {
 		if(this.state.reply === "")
@@ -80,7 +88,9 @@ class ReplyActions extends Component {
 							<div className={styles.actions}>
 								{
 									this.props.isMobile && this.state.reply !== ""
-									&& <MobileSubmit onClick={this.handleSubmit} />
+									? <MobileSubmit onClick={this.handleSubmit} />
+
+									: <UploadMedia onFileSelect={this.handleMediaUploader} />
 								}
 							</div>
 						</div>
