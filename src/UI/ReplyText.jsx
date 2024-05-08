@@ -4,8 +4,6 @@ import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
 import {InterfaceTextsContext} from "./Scripts/Context";
 
-// TODO: Write cypress tests
-
 class ReplyText extends Component {
 	constructor(props) {
 		super(props);
