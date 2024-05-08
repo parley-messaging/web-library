@@ -621,16 +621,74 @@ describe("UI", () => {
 				visitHome();
 
 				// Intercept GET messages and return a fixture message with buttons in it
-				cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse.json"});
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonsResponseFixture");
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
 
 				clickOnLauncher();
 
-				cy.get("@app")
-					.find("[class^=parley-messaging-messageBubble__]")
-					.should("have.length", 3) // 2 messages + date "message" (date is also inside a messageBubble..)
-					.find("[class^=parley-messaging-button__]")
-					.should("have.length", 6) // 2 messages * 3 buttons
-					.should("exist");
+				// Check that every button rendered correctly
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						fixture.data.forEach((message, messageIndex) => {
+							message.buttons.forEach((button, buttonIndex) => {
+								cy.get("@app")
+									.find("[class^=parley-messaging-messageBubble__]")
+									.its(messageIndex + 1) // +1 to skip the date "message"
+									.find("[class^=parley-messaging-button__]")
+									.its(buttonIndex)
+									.should("have.text", button.title);
+							});
+						});
+					});
+			});
+			it("should show the payload as the button title if no title is supplied", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonsResponseFixture");
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						const fixtureWithoutTitles = fixture;
+						fixtureWithoutTitles.data = fixtureWithoutTitles.data.map((message) => {
+							const updatedMessage = message;
+							updatedMessage.buttons.map((button) => {
+								const updatedButton = button;
+								updatedButton.title = "";
+								return updatedButton;
+							});
+							return updatedMessage;
+						});
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixtureWithoutTitles);
+						})
+							.as("getMessages");
+					});
+
+				clickOnLauncher();
+
+				cy.wait("@getMessages");
+
+				// Check that every button rendered correctly
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						fixture.data.forEach((message, messageIndex) => {
+							message.buttons.forEach((button, buttonIndex) => {
+								cy.get("@app")
+									.find("[class^=parley-messaging-messageBubble__]")
+									.its(messageIndex + 1) // +1 to skip the date "message"
+									.find("[class^=parley-messaging-button__]")
+									.its(buttonIndex)
+									.should("have.text", button.payload);
+							});
+						});
+					});
 			});
 			it("should open a new page when clicking on the WebUrl button", () => {
 				visitHome({}, (window) => {
@@ -723,7 +781,7 @@ describe("UI", () => {
 					.first()
 					.click();
 
-				// Disable the interception so we can send the message from the reply button
+				// Disable the interception, so we can send the message from the reply button
 				// and also receive it.
 				cy.intercept("GET", "*/**/messages", (req) => {
 					req.continue();
