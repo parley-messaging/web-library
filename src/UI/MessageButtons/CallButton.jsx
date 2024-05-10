@@ -16,7 +16,7 @@ export default class CallButton extends Component {
 
 		return (
 			<button className={this.props.className} name={name} onClick={this.handleClick}>
-				{this.props.title}
+				{this.props.title || this.props.payload}
 			</button>
 		);
 	}
@@ -25,5 +25,5 @@ export default class CallButton extends Component {
 CallButton.propTypes = {
 	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
-	title: PropTypes.string.isRequired,
+	title: PropTypes.string,
 };

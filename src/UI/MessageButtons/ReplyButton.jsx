@@ -23,7 +23,7 @@ export default class ReplyButton extends Component {
 
 		return (
 			<button className={this.props.className} disabled={this.state.disabled} name={name} onClick={this.handleClick}>
-				{this.props.title}
+				{this.props.title || this.props.payload}
 			</button>
 		);
 	}
@@ -33,5 +33,5 @@ ReplyButton.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
-	title: PropTypes.string.isRequired,
+	title: PropTypes.string,
 };
