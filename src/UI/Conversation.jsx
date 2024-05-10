@@ -141,7 +141,6 @@ class Conversation extends Component {
 								<Message
 									api={this.props.api}
 									message={message}
-									onReplyButtonClick={this.props.onReplyButtonClick}
 									showAgent={this.shouldRenderAgentName(index, index - 1)}
 								/>
 								{
@@ -168,7 +167,6 @@ class Conversation extends Component {
 Conversation.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	defaultWelcomeMessage: PropTypes.string,
-	onReplyButtonClick: PropTypes.func.isRequired,
 	restartPolling: PropTypes.func,
 };
 

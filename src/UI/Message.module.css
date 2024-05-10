@@ -95,6 +95,10 @@
 	width: 100%;
 }
 
+.button[disabled] {
+	opacity: 0.4;
+}
+
 /* endregion */
 
 /* region Time */

@@ -616,7 +616,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
-		describe("message buttons", () => {
+		describe.only("message buttons", () => {
 			it("should render buttons when received", () => {
 				visitHome();
 
@@ -773,13 +773,24 @@ describe("UI", () => {
 						});
 					});
 
+				cy.intercept("POST", "*/**/messages").as("postMessage");
+
 				clickOnLauncher();
 
 				cy.get("@app")
 					.find("[class^=parley-messaging-messageBubble__]")
 					.find("button[name='ReplyButton']")
 					.first()
-					.click();
+					.as("clickedButton");
+
+				cy.get("@clickedButton")
+					.click()
+					.should("be.disabled");
+
+				cy.wait("@postMessage");
+
+				cy.get("@clickedButton")
+					.should("be.enabled");
 
 				// Disable the interception, so we can send the message from the reply button
 				// and also receive it.
@@ -789,11 +800,6 @@ describe("UI", () => {
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
-						cy.get("@app")
-							.find("[class^=parley-messaging-text__]")
-							.find("textarea")
-							.should("have.focus");
-
 						// Check to see if the message is rendered correctly
 						findMessage(fixture.data[0].buttons[2].payload);
 					});

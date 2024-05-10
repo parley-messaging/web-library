@@ -179,11 +179,6 @@ class Chat extends Component {
 		}
 	}
 
-	handleReplyButtonClick = (newReplyText) => {
-		this.replyActionsRef.current.setReplyValue(newReplyText, this.replyActionsRef.current.handleSubmit);
-		this.replyTextRef.current.textArea.current.focus();
-	}
-
 	render() {
 		let classNames = styles.chat;
 		classNames += ` ${this.isMobile ? styles.mobile : ""}`;
@@ -202,7 +197,6 @@ class Chat extends Component {
 				<Conversation
 					api={this.props.api}
 					defaultWelcomeMessage={this.props.welcomeMessage}
-					onReplyButtonClick={this.handleReplyButtonClick}
 					restartPolling={this.props.restartPolling}
 				/>
 				{
