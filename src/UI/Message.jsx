@@ -51,6 +51,10 @@ class Message extends Component {
 						{this.props.message.message}
 					</ReactMarkdown>
 					{
+						this.props.message.media
+						&& <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
+					}
+					{
 						this.props.message.buttons
 						&& this.props.message.buttons.map((button, index) => {
 							switch (button.type) {
@@ -67,10 +71,6 @@ class Message extends Component {
 								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
 							}
 						})
-					}
-					{
-						this.props.message.media
-						&& <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
