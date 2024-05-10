@@ -5,7 +5,7 @@ export default class WebUrlButton extends Component {
 	handleClick = (e) => {
 		e.preventDefault();
 
-		window.open(this.props.payload, "_blank").focus();
+		window.open(this.props.payload, "_blank", "noopener").focus();
 	};
 
 	render() {
