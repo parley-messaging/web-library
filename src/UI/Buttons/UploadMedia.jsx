@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPaperclip} from "@fortawesome/free-solid-svg-icons/faPaperclip";
 import PropTypes from "prop-types";
 import {SUPPORTED_MEDIA_TYPES} from "../../Api/Constants/SupportedMediaTypes";
-
+import * as styles from "./UploadMedia.module.css";
 class UploadMedia extends Component {
 	constructor(props) {
 		super(props);
@@ -11,16 +11,9 @@ class UploadMedia extends Component {
 		this.state = {selectedFile: null};
 	}
 
-	handleFileChange = (event) => {
-		const file = event.target.files[0];
-		this.setState({selectedFile: file});
-		this.props.onFileSelect(file);
-	};
-
-	handleClick = () => {
-		if(this.fileInputRef.current)
-			this.fileInputRef.current.click();
-	};
+	handleFileChange = (e) => {
+		this.props.onChange(e.target.files[0]);
+	}
 
 	render() {
 		const typeInput = "file";
@@ -31,14 +24,15 @@ class UploadMedia extends Component {
 				<input
 					accept={SUPPORTED_MEDIA_TYPES.join(",")}
 					onChange={this.handleFileChange}
-					ref={this.fileInputRef}
+					ref={this.props.fileInputRef}
 					style={{display: "none"}}
 					type={typeInput}
 				/>
 				<label
 					aria-label={ariaLabel}
+					className={styles.paperclip}
 					htmlFor={htmlForType}
-					onClick={this.handleClick}
+					onClick={this.props.onFileSelect}
 					style={{cursor: "pointer"}}
 				>
 					<FontAwesomeIcon icon={faPaperclip} />
@@ -49,5 +43,9 @@ class UploadMedia extends Component {
 	}
 }
 
-UploadMedia.propTypes = {onFileSelect: PropTypes.func.isRequired};
+UploadMedia.propTypes = {
+	fileInputRef: PropTypes.func.isRequired,
+	onChange: PropTypes.func.isRequired,
+	onFileSelect: PropTypes.func.isRequired,
+};
 export default UploadMedia;

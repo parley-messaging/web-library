@@ -1,1 +1,8 @@
-// ToDo @bouke: CSS styling placed in here
+.paperclip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--parley-reply-color, #535353);
+	cursor: pointer;
+	font-size: 18px;
+}

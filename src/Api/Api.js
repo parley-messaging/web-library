@@ -13,7 +13,7 @@ import {
 	MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {media, messages, messageSent, subscribe} from "./Constants/Events";
+import {media, mediaUploaded, messages, messageSent, subscribe} from "./Constants/Events";
 import PushTypes from "./Constants/PushTypes";
 import DeviceTypes from "./Constants/DeviceTypes";
 import {
@@ -230,6 +230,60 @@ export default class Api {
 		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {method: "GET"})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	uploadMedia(file) {
+		const formData = new FormData();
+		formData.append("media", file);
+
+		return this.fetchWrapper(`${this.config.apiUrl}/media`, {
+			method: "POST",
+			body: formData,
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(mediaUploaded, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(mediaUploaded, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	sendMedia(mediaResponse, fileName, referer) {
+		ow(referer, "referer", ow.optional.string.nonEmpty);
+
+		// Alternatively, you can define an object with initial properties
+		const mediaBody = {
+			id: mediaResponse.data.media,
+			description: fileName.name,
+		};
+
+		let refererCopy = referer;
+		if(!refererCopy)
+			refererCopy = window.location.href;
+
+		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
+			method: "POST",
+			body: JSON.stringify({
+				mediaBody,
+				referer: refererCopy,
+			}),
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {
 					errorNotifications,
 					warningNotifications,
 					data: null,

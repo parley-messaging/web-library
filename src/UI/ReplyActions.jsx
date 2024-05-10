@@ -13,19 +13,57 @@ class ReplyActions extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {reply: ""};
+		this.state = {
+			reply: "",
+			selectedFile: null,
+		};
+		this.fileInputRef = React.createRef();
 	}
+
+	handleFileChange = (file) => {
+		this.setState({selectedFile: file});
+		if(file)
+			this.handleMediaUploader(file);
+	};
 
 	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
 
-	// ToDo @bouke: Hiermee bezig
-	handleMediaUploader = (file) => {
-		// upload file to API
+	openFileDialog = () => {
+		this.fileInputRef.current.click();
+	}
 
-		// send message with media file attached user must have a device registrered
+	handleMediaUploader = (file) => {
+		this.props.replyTextRef.current.textArea.current.disabled = true;
+		if(this.props.api.deviceRegistered) {
+			this.uploadMedia(file);
+		} else {
+			// Wait until device is subscribed before trying to send a message
+			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+
+			this.props.onDeviceNeedsSubscribing();
+		}
 	};
+
+	uploadMedia = file => this.props.api.uploadMedia(file)
+		.then((data) => {
+			if(data && data.length === 0)
+				return; // Don't send empty message since we have no media
+			this.props.api.sendMedia(data, this.state.selectedFile)
+				.then(() => {
+					// Reset state
+					this.setState(() => ({reply: ""}));
+
+					this.props.onSentSuccessfully();
+				})
+				.finally(() => {
+					this.props.replyTextRef.current.textArea.current.disabled = false;
+
+					// After re-enabling the focus must be set again
+					this.props.replyTextRef.current.textArea.current.focus();
+				});
+		})
 
 	handleSubmit = () => {
 		if(this.state.reply === "")
@@ -90,7 +128,11 @@ class ReplyActions extends Component {
 									this.props.isMobile && this.state.reply !== ""
 									? <MobileSubmit onClick={this.handleSubmit} />
 
-									: <UploadMedia onFileSelect={this.handleMediaUploader} />
+									: <UploadMedia
+											fileInputRef={this.fileInputRef}
+											onChange={this.handleFileChange}
+											onFileSelect={this.openFileDialog}
+									  />
 								}
 							</div>
 						</div>
