@@ -1,3 +1,5 @@
+import {SUPPORTED_MEDIA_TYPES} from "./SupportedMediaTypes";
+
 // This file contains un-categorized constants used by the library
 
 // Error message when the Fetch() request failed (separate from non-200 status codes)
@@ -16,3 +18,7 @@ export const DeviceVersionMaxLength = 8;
 export const DeviceVersionRegex = /^[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}|[0-9]{6}/u;
 
 export const CustomHeaderBlacklistError = "This is a blacklisted header, please use a different header name";
+
+export function isSupportedMediaType(contentType) {
+	return SUPPORTED_MEDIA_TYPES.some(type => contentType.includes(type));
+}

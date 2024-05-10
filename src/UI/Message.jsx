@@ -6,8 +6,8 @@ import gfm from "remark-gfm";
 import MessageTypes from "../Api/Constants/MessageTypes";
 
 // components
-import Image from "./Image";
 import Api from "../Api/Api";
+import Media from "./Media";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -39,17 +39,18 @@ class Message extends Component {
 					this.props.showAgent
 					&& this.props.message.agent
 					&& this.props.message.agent.name.length > 0
-						&& <div className={styles.name}>
-							{this.props.message.agent.name}
-						   </div>
+					&& <div className={styles.name}>
+						{this.props.message.agent.name}
+					</div>
 				}
 				<div className={styles.message}>
+					<ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
+						{this.props.message.message}
+					</ReactMarkdown>
 					{
 						this.props.message.media
-							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-							: <ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
-								{this.props.message.message}
-							  </ReactMarkdown>
+						&& <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />
+
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}

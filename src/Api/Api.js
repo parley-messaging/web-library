@@ -9,7 +9,7 @@ import ow from "ow";
 import {
 	ApiFetchFailed, ApiGenericError, CustomHeaderBlacklistError,
 	DeviceVersionMaxLength,
-	DeviceVersionMinLength, DeviceVersionRegex,
+	DeviceVersionMinLength, DeviceVersionRegex, isSupportedMediaType,
 	MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
@@ -311,7 +311,7 @@ export default class Api {
 
 					if(contentType && contentType.includes("application/json"))
 						return response.json(); // Handle JSON response
-					 else if(contentType && contentType.includes("image"))
+					 else if(contentType && isSupportedMediaType(contentType))
 						return response.blob(); // Handle image binary response
 					 throw new Error("Unsupported response type");
 				})
