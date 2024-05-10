@@ -22,7 +22,12 @@ export default class ReplyButton extends Component {
 		const name = "ReplyButton";
 
 		return (
-			<button className={this.props.className} disabled={this.state.disabled} name={name} onClick={this.handleClick}>
+			<button
+				className={this.props.className}
+				disabled={this.state.disabled}
+				name={name}
+				onClick={this.handleClick}
+			>
 				{this.props.title || this.props.payload}
 			</button>
 		);
