@@ -242,8 +242,9 @@ export default class Api {
 			});
 	}
 
-	// TODO: @gerben; unit tests?
 	uploadMedia(file) {
+		ow(file, "file", ow.object.instanceOf(File));
+
 		const formData = new FormData();
 		formData.append("media", file);
 

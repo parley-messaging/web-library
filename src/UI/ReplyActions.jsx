@@ -20,6 +20,9 @@ class ReplyActions extends Component {
 		this.fileInputRef = React.createRef();
 	}
 
+	/**
+	 * @param {File} file
+	 */
 	handleFileChange = (file) => {
 		if(this.props.api.deviceRegistered) {
 			this.uploadMedia(file);
