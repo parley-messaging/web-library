@@ -13,10 +13,7 @@ class ReplyActions extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-			reply: "",
-			selectedFile: null,
-		};
+		this.state = {reply: ""};
 		this.fileInputRef = React.createRef();
 	}
 
@@ -123,7 +120,6 @@ class ReplyActions extends Component {
 								{
 									this.props.isMobile && this.state.reply !== ""
 									? <MobileSubmit onClick={this.handleSubmit} />
-
 									: <UploadMedia
 											fileInputRef={this.fileInputRef}
 											onChange={this.handleFileChange}

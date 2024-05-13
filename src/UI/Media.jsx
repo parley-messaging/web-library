@@ -25,7 +25,7 @@ class Media extends Component {
 	handleDownload = () => {
 		const link = document.createElement("a");
 		link.href = this.state.fileDownloadUrl;
-		link.download = this.props.media.description;
+		link.download = this.props.media.filename;
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
@@ -127,7 +127,10 @@ class Media extends Component {
 			<div className={styles.messageBoxMedia}>
 				<span>{icon}</span>
 				<label>
-					{this.props.media.description}
+					{
+
+						/* TODO: @gerben; cypress test this */
+						this.props.media.description || this.props.media.filename}
 				</label>
 				<button
 					className={styles.messageBoxMediaDownload}
@@ -143,16 +146,16 @@ class Media extends Component {
 }
 
 Media.propTypes = {
-	api: PropTypes.instanceOf(Api),
+	api: PropTypes.instanceOf(Api).isRequired,
 	media: PropTypes.shape({
 		day: PropTypes.string.isRequired,
-		description: PropTypes.string.isRequired,
+		description: PropTypes.string,
 		filename: PropTypes.string.isRequired,
 		id: PropTypes.string.isRequired,
 		mimeType: PropTypes.string.isRequired,
 		month: PropTypes.string.isRequired,
 		year: PropTypes.string.isRequired,
-	}),
+	}).isRequired,
 	messageType: PropTypes.oneOf([
 		MessageTypes.Agent,
 		MessageTypes.User,

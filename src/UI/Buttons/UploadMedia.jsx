@@ -5,10 +5,6 @@ import PropTypes from "prop-types";
 import {SUPPORTED_MEDIA_TYPES} from "../../Api/Constants/SupportedMediaTypes";
 import * as styles from "./UploadMedia.module.css";
 class UploadMedia extends Component {
-	constructor(props) {
-		super(props);
-	}
-
 	handleFileChange = (e) => {
 		this.props.onChange(e.target.files[0]);
 	}

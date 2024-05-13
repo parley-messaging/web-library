@@ -558,7 +558,7 @@ describe("UI", () => {
 		});
 	});
 	describe("receiving messages", () => {
-		it("should render images when received", () => {
+		it.only("should render images when received", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with an image in it

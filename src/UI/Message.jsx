@@ -8,6 +8,7 @@ import MessageTypes from "../Api/Constants/MessageTypes";
 // components
 import Api from "../Api/Api";
 import Media from "./Media";
+import Image from "./Image";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -48,9 +49,11 @@ class Message extends Component {
 						{this.props.message.message}
 					</ReactMarkdown>
 					{
-						this.props.message.media
-						&& <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />
 
+						// TODO: @gerben; should Media decide if it shows an <Image> or <??>
+						this.props.message.media?.mimeType.startsWith("image/")
+						? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
+						: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
@@ -71,8 +74,13 @@ Message.propTypes = {
 		}),
 		id: PropTypes.number,
 		media: PropTypes.shape({
+			day: PropTypes.string.isRequired,
 			description: PropTypes.string,
+			filename: PropTypes.string.isRequired,
 			id: PropTypes.string.isRequired,
+			mimeType: PropTypes.string.isRequired,
+			month: PropTypes.string.isRequired,
+			year: PropTypes.string.isRequired,
 		}),
 		message: PropTypes.string,
 		quickReplies: PropTypes.arrayOf(PropTypes.string),
