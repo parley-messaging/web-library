@@ -820,7 +820,7 @@ describe("Api class", () => {
 		});
 	});
 
-	describe("getMedia", () => {
+	describe("getMedia()", () => {
 		filterPrimitives(["string"])
 			.forEach((set) => {
 				it(`should throw an error when using '${set.type}' as year`, () => {
@@ -902,7 +902,7 @@ describe("Api class", () => {
 		});
 	});
 
-	describe("uploadMedia", () => {
+	describe("uploadMedia()", () => {
 		filterPrimitives(["Object"])
 			.forEach((set) => {
 				it(`should throw an error when using '${set.type}' as file`, () => {
@@ -951,6 +951,91 @@ describe("Api class", () => {
 								config.api.uploadMedia(mediaFile);
 							});
 						});
+				});
+		});
+	});
+
+	describe("sendMedia()", () => {
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as mediaId`, () => {
+					expect(() => config.api.sendMedia(set.value, "pdf.pdf"))
+						.to
+						.throw(`Expected \`mediaId\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as fileName`, () => {
+					expect(() => config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", set.value))
+						.to
+						.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		filterPrimitives([
+			"string",
+			"undefined",
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as referer`, () => {
+					expect(() => config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf", set.value))
+						.to
+						.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		it("should default referer to window.location.href", () => {
+			cy.visit("/");
+
+			config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+
+			cy.wait("@postMessages")
+				.then((interception) => {
+					cy.location("href")
+						.then((href) => {
+							expect(JSON.parse(interception.request.body).referer)
+								.to
+								.contain(href);
+
+							// There is an issue where the window.location.href will contain "iframe/xxx"
+							// due to how Cypress loads the chat, so we cannot check if the
+							// href equals the href we get here
+							// Instead we can only check if it begins with the href
+							// Error when using `.equal(href)`
+							// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+						});
+				});
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					const data = await config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(fixture));
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(messageSent, (data) => {
+							// Validate that the response from the API is correct
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
+							resolve();
+						});
+
+						config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+					});
 				});
 		});
 	});

@@ -265,6 +265,8 @@ export default class Api {
 	}
 
 	sendMedia(mediaId, fileName, referer) {
+		ow(mediaId, "mediaId", ow.string.nonEmpty);
+		ow(fileName, "fileName", ow.string.nonEmpty);
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		// Alternatively, you can define an object with initial properties
