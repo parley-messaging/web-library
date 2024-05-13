@@ -9,8 +9,7 @@ import ow from "ow";
 import {
 	ApiFetchFailed, ApiGenericError, CustomHeaderBlacklistError,
 	DeviceVersionMaxLength,
-	DeviceVersionMinLength, DeviceVersionRegex, isSupportedMediaType,
-	MinUdidLength,
+	DeviceVersionMinLength, DeviceVersionRegex, MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
 import {media, mediaUploaded, messages, messageSent, subscribe} from "./Constants/Events";
@@ -22,6 +21,7 @@ import {
 } from "./Constants/ApiResponseNotificationTypes";
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
+import {isSupportedMediaType} from "./Constants/SupportedMediaTypes";
 
 export default class Api {
 	constructor(

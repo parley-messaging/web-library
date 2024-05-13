@@ -78,3 +78,7 @@ export const SUPPORTED_MEDIA_TYPES = [
 	"audio/x-pn-realaudio-plugin",
 	"audio/x-pn-realaudio",
 ];
+
+export function isSupportedMediaType(contentType) {
+	return SUPPORTED_MEDIA_TYPES.some(type => contentType.includes(type));
+}

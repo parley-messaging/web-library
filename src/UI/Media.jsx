@@ -5,9 +5,9 @@ import gfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
 import * as styles from "./Media.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
-import {isSupportedMediaType} from "../Api/Constants/Other";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowDown, faFile, faFileAlt, faFileAudio, faFilePdf, faFileVideo} from "@fortawesome/free-solid-svg-icons";
+import {isSupportedMediaType} from "../Api/Constants/SupportedMediaTypes";
 
 class Media extends Component {
 	constructor(props) {
