@@ -221,7 +221,6 @@ export default class Api {
 			});
 	}
 
-	// TODO: @gerben; unit tests?
 	getMedia(year, month, day, fileName) {
 		ow(year, "year", ow.string.nonEmpty);
 		ow(month, "month", ow.string.nonEmpty);
