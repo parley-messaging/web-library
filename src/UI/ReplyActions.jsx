@@ -21,45 +21,39 @@ class ReplyActions extends Component {
 	}
 
 	handleFileChange = (file) => {
-		this.setState({selectedFile: file});
-		if(file)
-			this.handleMediaUploader(file);
+		if(this.props.api.deviceRegistered) {
+			this.uploadMedia(file);
+		} else {
+			// Wait until device is subscribed before trying to send a message
+			const handleSubscribe = (event) => {
+				if(!event.detail.errorNotifications)
+					this.uploadMedia(file);
+
+				// This is a one time thing (for this submit),
+				// so stop listening for future subscriptions
+				ApiEventTarget.removeEventListener(subscribe, handleSubscribe);
+			};
+			ApiEventTarget.addEventListener(subscribe, handleSubscribe);
+
+			this.props.onDeviceNeedsSubscribing();
+		}
 	};
 
 	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
 
-	openFileDialog = () => {
-		this.fileInputRef.current.click();
-	}
-
-	handleMediaUploader = (file) => {
-		this.props.replyTextRef.current.textArea.current.disabled = true;
-		if(this.props.api.deviceRegistered) {
-			this.uploadMedia(file);
-		} else {
-			// Wait until device is subscribed before trying to send a message
-			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
-
-			this.props.onDeviceNeedsSubscribing();
-		}
-	};
-
 	uploadMedia = file => this.props.api.uploadMedia(file)
 		.then((data) => {
 			if(data && data.length === 0)
 				return; // Don't send empty message since we have no media
-			this.props.api.sendMedia(data, this.state.selectedFile)
-				.then(() => {
-					// Reset state
-					this.setState(() => ({reply: ""}));
+				// TODO: @gerben; maybe its better to check if uploading was ok and if not show an error
 
+			this.props.api.sendMedia(data.data.media, file.name)
+				.then(() => {
 					this.props.onSentSuccessfully();
 				})
 				.finally(() => {
-					this.props.replyTextRef.current.textArea.current.disabled = false;
-
 					// After re-enabling the focus must be set again
 					this.props.replyTextRef.current.textArea.current.focus();
 				});
@@ -78,19 +72,18 @@ class ReplyActions extends Component {
 			this.sendMessage();
 		} else {
 			// Wait until device is subscribed before trying to send a message
-			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+			const handleSubscribe = (event) => {
+				if(!event.detail.errorNotifications)
+					this.sendMessage();
+
+				// This is a one time thing (for this submit),
+				// so stop listening for future subscriptions
+				ApiEventTarget.removeEventListener(subscribe, handleSubscribe);
+			};
+			ApiEventTarget.addEventListener(subscribe, handleSubscribe);
 
 			this.props.onDeviceNeedsSubscribing();
 		}
-	}
-
-	handleSubscribe = (event) => {
-		if(!event.detail.errorNotifications)
-			this.sendMessage();
-
-		// This is a one time thing (for this submit),
-		// so stop listening for future subscriptions
-		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	sendMessage = () => this.props.api.sendMessage(this.state.reply)
@@ -131,7 +124,6 @@ class ReplyActions extends Component {
 									: <UploadMedia
 											fileInputRef={this.fileInputRef}
 											onChange={this.handleFileChange}
-											onFileSelect={this.openFileDialog}
 									  />
 								}
 							</div>

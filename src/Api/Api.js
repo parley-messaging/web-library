@@ -221,6 +221,7 @@ export default class Api {
 			});
 	}
 
+	// TODO: @gerben; unit tests?
 	getMedia(year, month, day, fileName) {
 		ow(year, "year", ow.string.nonEmpty);
 		ow(month, "month", ow.string.nonEmpty);
@@ -228,6 +229,10 @@ export default class Api {
 		ow(fileName, "fileName", ow.string.nonEmpty);
 
 		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {method: "GET"})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, data));
+				return data;
+			})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, {
 					errorNotifications,
@@ -237,6 +242,7 @@ export default class Api {
 			});
 	}
 
+	// TODO: @gerben; unit tests?
 	uploadMedia(file) {
 		const formData = new FormData();
 		formData.append("media", file);
@@ -258,13 +264,13 @@ export default class Api {
 			});
 	}
 
-	sendMedia(mediaResponse, fileName, referer) {
+	sendMedia(mediaId, fileName, referer) {
 		ow(referer, "referer", ow.optional.string.nonEmpty);
 
 		// Alternatively, you can define an object with initial properties
 		const mediaBody = {
-			id: mediaResponse.data.media,
-			description: fileName.name,
+			id: mediaId,
+			description: fileName,
 		};
 
 		let refererCopy = referer;
@@ -274,7 +280,7 @@ export default class Api {
 		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			body: JSON.stringify({
-				mediaBody,
+				media: mediaBody,
 				referer: refererCopy,
 			}),
 		})

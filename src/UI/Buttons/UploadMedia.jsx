@@ -18,11 +18,12 @@ class UploadMedia extends Component {
 	render() {
 		const typeInput = "file";
 		const ariaLabel = "upload";
-		const htmlForType = "fileInput";
+		const inputId = "upload-file";
 		return (
 			<>
 				<input
 					accept={SUPPORTED_MEDIA_TYPES.join(",")}
+					id={inputId}
 					onChange={this.handleFileChange}
 					ref={this.props.fileInputRef}
 					style={{display: "none"}}
@@ -31,11 +32,12 @@ class UploadMedia extends Component {
 				<label
 					aria-label={ariaLabel}
 					className={styles.paperclip}
-					htmlFor={htmlForType}
-					onClick={this.props.onFileSelect}
+					htmlFor={inputId}
 					style={{cursor: "pointer"}}
 				>
-					<FontAwesomeIcon icon={faPaperclip} />
+					<FontAwesomeIcon
+						icon={faPaperclip}
+					/>
 				</label>
 			</>
 
@@ -46,6 +48,5 @@ class UploadMedia extends Component {
 UploadMedia.propTypes = {
 	fileInputRef: PropTypes.func.isRequired,
 	onChange: PropTypes.func.isRequired,
-	onFileSelect: PropTypes.func.isRequired,
 };
 export default UploadMedia;

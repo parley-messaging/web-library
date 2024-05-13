@@ -532,6 +532,30 @@ describe("UI", () => {
 			cy.get("@error")
 				.should("not.exist");
 		});
+		it.only("should show the media file, after submitting a media file", () => {
+			cy.intercept("POST", "*/**/messages").as("postMessage");
+			cy.intercept("GET", "*/**/messages").as("getMessages");
+
+			const fileName = "pdf.pdf";
+			cy.fixture(fileName).as("mediaFile");
+
+			// TODO: @gerben; test all different media files?
+
+			visitHome();
+
+			clickOnLauncher();
+
+			cy.get("#upload-file")
+				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+
+			cy.wait("@postMessage");
+			cy.wait("@getMessages");
+
+			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+				.should("have.text", fileName)
+				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+				.should("be.visible");
+		});
 	});
 	describe("receiving messages", () => {
 		it("should render images when received", () => {
@@ -551,23 +575,6 @@ describe("UI", () => {
 				.find("input[type=image]")
 				.should("have.length", 2)
 				.should("exist");
-		});
-		it("should render an error message for unsupported media types", () => {
-			visitHome();
-
-			// Intercept GET messages and return a fixture message with an image in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithPdfResponse.json"})
-				.as("getMessages");
-
-			clickOnLauncher();
-
-			cy.wait("@getMessages");
-
-			cy.get("@app")
-				.find("[class^=parley-messaging-message__]")
-				.should("be.visible")
-				.find("p")
-				.should("have.text", "Unsupported media");
 		});
 		it("should render an error message when the image cannot be loaded", () => {
 			visitHome();
@@ -613,6 +620,21 @@ describe("UI", () => {
 				.find("[class^=parley-messaging-error__]")
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
+		});
+		it("should show an error, after rendering an unsupported media file", () => {
+			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"}).as("getMessages");
+
+			visitHome();
+
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			cy.get("div[class^=parley-messaging-message__]")
+				.find("div")
+				.should("have.text", "Unsupported media")
+				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+				.should("not.exist");
 		});
 	});
 	describe("parley config settings", () => {
