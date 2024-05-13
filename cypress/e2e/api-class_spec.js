@@ -5,7 +5,7 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {mediaUploaded, messageSent, subscribe} from "../../src/Api/Constants/Events";
+import {media, mediaUploaded, messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
@@ -115,12 +115,12 @@ describe("Api class", () => {
 					.as("postMessages");
 			});
 		cy.get("@getMediaResponse")
-			.then((media) => {
+			.then((mediaFile) => {
 				cy.intercept("GET", `${config.apiDomain}/**/media/**/*`, (req) => {
 					requestExpectations(req);
 
 					req.reply({
-						body: media,
+						body: mediaFile,
 						headers: {"Content-Type": "image/png"},
 					});
 				})
@@ -874,9 +874,35 @@ describe("Api class", () => {
 						.equal(fixtureAsText);
 				});
 		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@getMediaResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(media, async (data) => {
+							// Validate that the response from the API is correct
+
+							// `data` is a Blob and we need text so we can match it to the fixture
+							const dataAsText = await data.detail.text();
+
+							// `fixture` is a buffer, so we need to convert it to a blob and then to text
+							const fixtureAsText = await new Blob([fixture], {type: "image/png"}).text();
+
+							expect(dataAsText)
+								.to
+								.be
+								.equal(fixtureAsText);
+							resolve();
+						});
+
+						config.api.getMedia("2023", "6", "6", "41cedb695613d417be10c65f089521599c103cc9.png");
+					});
+				});
+		});
 	});
 
-	describe.only("uploadMedia", () => {
+	describe("uploadMedia", () => {
 		filterPrimitives(["Object"])
 			.forEach((set) => {
 				it(`should throw an error when using '${set.type}' as file`, () => {
