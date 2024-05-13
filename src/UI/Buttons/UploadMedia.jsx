@@ -7,8 +7,6 @@ import * as styles from "./UploadMedia.module.css";
 class UploadMedia extends Component {
 	constructor(props) {
 		super(props);
-		this.fileInputRef = React.createRef();
-		this.state = {selectedFile: null};
 	}
 
 	handleFileChange = (e) => {
@@ -31,9 +29,8 @@ class UploadMedia extends Component {
 				/>
 				<label
 					aria-label={ariaLabel}
-					className={styles.paperclip}
+					className={styles.uploadLabel}
 					htmlFor={inputId}
-					style={{cursor: "pointer"}}
 				>
 					<FontAwesomeIcon
 						icon={faPaperclip}
