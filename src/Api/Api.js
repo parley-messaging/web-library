@@ -320,7 +320,7 @@ export default class Api {
 					if(contentType && contentType.includes("application/json"))
 						return response.json(); // Handle JSON response
 					 else if(contentType && isSupportedMediaType(contentType))
-						return response.blob(); // Handle image binary response
+						return response.blob(); // Handle media binary response
 					 throw new Error("Unsupported response type");
 				})
 				.then((data) => {
