@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import Api from "../../Api/Api";
+import * as styles from "./Button.module.css";
 
 export default class ReplyButton extends Component {
 	constructor(props) {
@@ -23,7 +24,7 @@ export default class ReplyButton extends Component {
 
 		return (
 			<button
-				className={this.props.className}
+				className={styles.button}
 				disabled={this.state.disabled}
 				name={name}
 				onClick={this.handleClick}
@@ -36,7 +37,6 @@ export default class ReplyButton extends Component {
 
 ReplyButton.propTypes = {
 	api: PropTypes.instanceOf(Api),
-	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
 	title: PropTypes.string,
 };

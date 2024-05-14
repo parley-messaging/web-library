@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import * as styles from "./Button.module.css";
 
 export default class WebUrlButton extends Component {
 	handleClick = (e) => {
@@ -12,7 +13,7 @@ export default class WebUrlButton extends Component {
 		const name = "WebUrlButton";
 
 		return (
-			<button className={this.props.className} name={name} onClick={this.handleClick}>
+			<button className={styles.button} name={name} onClick={this.handleClick}>
 				{this.props.title || this.props.payload}
 			</button>
 		);
@@ -20,7 +21,6 @@ export default class WebUrlButton extends Component {
 }
 
 WebUrlButton.propTypes = {
-	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
 	title: PropTypes.string,
 };

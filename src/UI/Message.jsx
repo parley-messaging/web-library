@@ -60,13 +60,13 @@ class Message extends Component {
 							switch (button.type) {
 							case MessageButtonTypes.Reply:
 								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <ReplyButton api={this.props.api} className={styles.button} key={index} payload={button.payload} title={button.title} />;
+								return <ReplyButton api={this.props.api} key={index} payload={button.payload} title={button.title} />;
 							case MessageButtonTypes.WebUrl:
 								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <WebUrlButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+								return <WebUrlButton key={index} payload={button.payload} title={button.title} />;
 							case MessageButtonTypes.PhoneNumber:
 								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <CallButton className={styles.button} key={index} payload={button.payload} title={button.title} />;
+								return <CallButton key={index} payload={button.payload} title={button.title} />;
 							default:
 								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
 							}

@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import * as styles from "./Button.module.css";
 
 export default class CallButton extends Component {
 	handleClick = (e) => {
@@ -15,7 +16,7 @@ export default class CallButton extends Component {
 		const name = "CallButton";
 
 		return (
-			<button className={this.props.className} name={name} onClick={this.handleClick}>
+			<button className={styles.button} name={name} onClick={this.handleClick}>
 				{this.props.title || this.props.payload}
 			</button>
 		);
@@ -23,7 +24,6 @@ export default class CallButton extends Component {
 }
 
 CallButton.propTypes = {
-	className: PropTypes.string,
 	payload: PropTypes.string.isRequired,
 	title: PropTypes.string,
 };
