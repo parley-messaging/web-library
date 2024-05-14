@@ -18,7 +18,7 @@ class Message extends Component {
 			minute: "2-digit",
 			hour12: false,
 		});
-	}
+	};
 
 	render() {
 		let classNames = styles.messageBubble;
@@ -51,9 +51,9 @@ class Message extends Component {
 					{
 
 						// TODO: @gerben; should Media decide if it shows an <Image> or <??>
-						this.props.message.media?.mimeType.startsWith("image/")
-						? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-						: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />
+						this.props.message.media && (this.props.message.media.mimeType.startsWith("image/")
+							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
+							: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />)
 					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}

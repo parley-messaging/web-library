@@ -19,7 +19,6 @@ class UploadMedia extends Component {
 					accept={SUPPORTED_MEDIA_TYPES.join(",")}
 					id={inputId}
 					onChange={this.handleFileChange}
-					ref={this.props.fileInputRef}
 					style={{display: "none"}}
 					type={typeInput}
 				/>
@@ -38,8 +37,5 @@ class UploadMedia extends Component {
 	}
 }
 
-UploadMedia.propTypes = {
-	fileInputRef: PropTypes.func.isRequired,
-	onChange: PropTypes.func.isRequired,
-};
+UploadMedia.propTypes = {onChange: PropTypes.func.isRequired};
 export default UploadMedia;

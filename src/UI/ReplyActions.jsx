@@ -14,7 +14,6 @@ class ReplyActions extends Component {
 		super(props);
 
 		this.state = {reply: ""};
-		this.fileInputRef = React.createRef();
 	}
 
 	/**
@@ -45,7 +44,7 @@ class ReplyActions extends Component {
 
 	uploadMedia = file => this.props.api.uploadMedia(file)
 		.then((data) => {
-			if(data && data.length === 0)
+			if(!data)
 				return; // Don't send empty message since we have no media
 				// TODO: @gerben; maybe its better to check if uploading was ok and if not show an error
 
@@ -121,7 +120,6 @@ class ReplyActions extends Component {
 									this.props.isMobile && this.state.reply !== ""
 									? <MobileSubmit onClick={this.handleSubmit} />
 									: <UploadMedia
-											fileInputRef={this.fileInputRef}
 											onChange={this.handleFileChange}
 									  />
 								}

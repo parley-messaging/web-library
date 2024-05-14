@@ -532,33 +532,78 @@ describe("UI", () => {
 			cy.get("@error")
 				.should("not.exist");
 		});
-		it.only("should show the media file, after submitting a media file", () => {
-			cy.intercept("POST", "*/**/messages").as("postMessage");
-			cy.intercept("GET", "*/**/messages").as("getMessages");
+		[
+			{
+				fileName: "pdf.pdf",
+				expectedIcon: "file-pdf",
+			},
+			{
+				fileName: "plain.txt",
+				expectedIcon: "file-lines",
+			},
+			{
+				fileName: "excel.xlsx",
+				expectedIcon: "file-excel",
+			},
+			{
+				fileName: "word.doc",
+				expectedIcon: "file-word",
+			},
+			{
+				fileName: "word.docx",
+				expectedIcon: "file-word",
+			},
+			{
+				fileName: "powerpoint.pptx",
+				expectedIcon: "file-powerpoint",
+			},
+			{
+				fileName: "powerpoint.ppt",
+				expectedIcon: "file-powerpoint",
+			},
+			{
+				fileName: "audio.mp3",
+				expectedIcon: "file-audio",
+			},
+			{
+				fileName: "video.mp4",
+				expectedIcon: "file-video",
+			},
 
-			const fileName = "pdf.pdf";
-			cy.fixture(fileName).as("mediaFile");
+			// I did not find a way to create a file with `application/msexcel` so this one will not be tested
+		].forEach(({fileName, expectedIcon}) => {
+			it(`should show the media file '${fileName}', after submitting it`, () => {
+				cy.intercept("POST", "*/**/messages").as("postMessage");
+				cy.intercept("GET", "*/**/messages").as("getMessages");
 
-			// TODO: @gerben; test all different media files?
+				cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
+					.as("mediaFile");
 
-			visitHome();
+				visitHome();
 
-			clickOnLauncher();
+				clickOnLauncher();
 
-			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+				cy.get("#upload-file")
+					.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
+					});
 
-			cy.wait("@postMessage");
-			cy.wait("@getMessages");
+				cy.wait("@postMessage");
+				cy.wait("@getMessages");
 
-			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
-				.should("have.text", fileName)
-				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
-				.should("be.visible");
+				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+					.should("have.text", fileName)
+					.find("svg")
+					.first()
+					.invoke("attr", "data-icon")
+					.should("eq", expectedIcon);
+				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+					.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+					.should("be.visible");
+			});
 		});
 	});
 	describe("receiving messages", () => {
-		it.only("should render images when received", () => {
+		it("should render images when received", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with an image in it

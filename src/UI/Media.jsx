@@ -6,8 +6,16 @@ import ReactMarkdown from "react-markdown";
 import * as styles from "./Media.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowDown, faFile, faFileAlt, faFileAudio, faFilePdf, faFileVideo} from "@fortawesome/free-solid-svg-icons";
+import {
+	faFileAlt,
+	faFileAudio, faFileExcel, faFileLines,
+	faFilePdf, faFilePowerpoint,
+	faFileVideo,
+	faFileWord,
+} from "@fortawesome/free-regular-svg-icons";
+import {faArrowDown} from "@fortawesome/free-solid-svg-icons";
 import {isSupportedMediaType} from "../Api/Constants/SupportedMediaTypes";
+import Logger from "js-logger";
 
 class Media extends Component {
 	constructor(props) {
@@ -31,47 +39,39 @@ class Media extends Component {
 		document.body.removeChild(link);
 	};
 
-	// ToDo @bouke: Het zou mooier zijn als er een mapping wordt gemaakt op basis van SupportedMediaTypes Volgende toevoegen
-	// ToDo @bouke: Audio en video moeten nog een kleur bevatten
-	// "application/msword",
-	// "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-	// "application/vnd.ms-excel",
-	// "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-	// "application/vnd.ms-powerpoint",
 	convertFileToIcon = () => {
 		const {mimeType} = this.props.media;
-		if(mimeType.startsWith("application/pdf")) {
-			return <FontAwesomeIcon className={styles.iconFilePdf} icon={faFilePdf} />;
-		} else if(mimeType.startsWith("text")) {
-			return <FontAwesomeIcon className={styles.iconFileTxtCsv} icon={faFile} />;
-		} else if(mimeType.startsWith("audio")) {
-			return (
-				<FontAwesomeIcon
-					icon={faFileAudio}
-				/>
-			);
-		} else if(mimeType.startsWith("video")) {
-			return (
-				<FontAwesomeIcon
-					icon={faFileVideo}
-				/>
-			);
-		}
-		return (
-			<FontAwesomeIcon
-				icon={faFileAlt} style={
-				{
-					color: "black",
-					fontSize: "24px",
-				}
-			}
-			/>
-		);
+
+		Logger.debug(`Media file mimeType is '${mimeType}'`); // TODO: @gerben; this triggers on every poll (?), fix it
+
+		if(mimeType === "application/pdf")
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFilePdf}`} icon={faFilePdf} />;
+		 else if([
+			"application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		].indexOf(mimeType) > -1)
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileWord}`} icon={faFileWord} />;
+		 else if([
+			"application/msexcel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		].indexOf(mimeType) > -1)
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileExcel}`} icon={faFileExcel} />;
+		 else if([
+			"application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+		].indexOf(mimeType) > -1)
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFilePowerpoint}`} icon={faFilePowerpoint} />;
+		 else if(mimeType.startsWith("text/"))
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileText}`} icon={faFileLines} />;
+		 else if(mimeType.startsWith("audio/"))
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileAudio}`} icon={faFileAudio} />;
+		 else if(mimeType.startsWith("video/"))
+			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileVideo}`} icon={faFileVideo} />;
+
+		return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileUnknown}`} icon={faFileAlt} />;
 	};
 
 	componentDidMount() {
 		// Don't load if this is an unsupported mime type
 		if(!isSupportedMediaType(this.props.media.mimeType)) {
+			Logger.debug(`Mime type '${this.props.media.mimeType}' is not supported!`);
 			this.setState(() => ({
 				errorText: "_Unsupported media_",
 				isLoading: false,

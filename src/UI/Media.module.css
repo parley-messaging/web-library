@@ -25,19 +25,26 @@
 	padding: 5px;
 	border-radius: 5px;
 }
-.iconFilePdf {
-	color: #FA0F00;
+.icon {
 	flex-basis: 33px;
 	min-width: 33px;
 	max-width: 33px;
 	font-size: 32px;
 }
-.iconFileTxtCsv {
-	color: #4A5E83;
-	flex-basis: 33px;
-	min-width: 33px;
-	max-width: 33px;
-	font-size: 32px;
+.iconFilePdf {
+	color: #FA0F00;
+}
+.iconFileWord {
+	color: #1B5EBE;
+}
+.iconFileExcel {
+	color: #1B5EBE;
+}
+.iconFilePowerpoint {
+	color: #1B5EBE;
+}
+.iconFileAudio, .iconFileVideo, .iconFileText, .iconFileUnknown {
+	color: var(--parley-user-background-color, #4BF0B9);
 }
 
 .loadingContainer {
