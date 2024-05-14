@@ -44,10 +44,6 @@ class ReplyActions extends Component {
 
 	uploadMedia = file => this.props.api.uploadMedia(file)
 		.then((data) => {
-			if(!data)
-				return; // Don't send empty message since we have no media
-				// TODO: @gerben; maybe its better to check if uploading was ok and if not show an error
-
 			this.props.api.sendMedia(data.data.media, file.name)
 				.then(() => {
 					this.props.onSentSuccessfully();

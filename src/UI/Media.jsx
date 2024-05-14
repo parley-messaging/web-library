@@ -41,31 +41,32 @@ class Media extends Component {
 
 	convertFileToIcon = () => {
 		const {mimeType} = this.props.media;
+		const iconClass = `${styles.icon} `;
 
 		Logger.debug(`Media file mimeType is '${mimeType}'`); // TODO: @gerben; this triggers on every poll (?), fix it
 
 		if(mimeType === "application/pdf")
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFilePdf}`} icon={faFilePdf} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFilePdf} icon={faFilePdf} />;
 		 else if([
 			"application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 		].indexOf(mimeType) > -1)
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileWord}`} icon={faFileWord} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFileWord} icon={faFileWord} />;
 		 else if([
 			"application/msexcel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 		].indexOf(mimeType) > -1)
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileExcel}`} icon={faFileExcel} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFileExcel} icon={faFileExcel} />;
 		 else if([
 			"application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 		].indexOf(mimeType) > -1)
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFilePowerpoint}`} icon={faFilePowerpoint} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFilePowerpoint} icon={faFilePowerpoint} />;
 		 else if(mimeType.startsWith("text/"))
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileText}`} icon={faFileLines} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFileText} icon={faFileLines} />;
 		 else if(mimeType.startsWith("audio/"))
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileAudio}`} icon={faFileAudio} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFileAudio} icon={faFileAudio} />;
 		 else if(mimeType.startsWith("video/"))
-			return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileVideo}`} icon={faFileVideo} />;
+			return <FontAwesomeIcon className={iconClass + styles.iconFileVideo} icon={faFileVideo} />;
 
-		return <FontAwesomeIcon className={`${styles.icon} ${styles.iconFileUnknown}`} icon={faFileAlt} />;
+		return <FontAwesomeIcon className={iconClass + styles.iconFileUnknown} icon={faFileAlt} />;
 	};
 
 	componentDidMount() {
