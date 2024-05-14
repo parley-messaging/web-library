@@ -9,7 +9,7 @@ export default class CallButton extends Component {
 		// There is no need to open this in a new tab,
 		// as this will only confuse the client because an empty tab will open
 		// So that is why we use target "_self"
-		window.open(`${this.props.payload}`, "_self", "noopener");
+		window.open(`${this.props.payload}`, "_self", "noopener,noreferrer");
 	};
 
 	render() {

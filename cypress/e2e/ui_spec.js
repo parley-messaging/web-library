@@ -725,7 +725,7 @@ describe("UI", () => {
 					.then((fixture) => {
 						cy.window()
 							.its("open")
-							.should("be.calledWith", fixture.data[0].buttons[0].payload, "_blank", "noopener");
+							.should("be.calledWith", fixture.data[0].buttons[0].payload, "_blank", "noopener,noreferrer");
 					});
 			});
 			it("should open the phone app in the current page when clicking on the Call button", () => {
@@ -756,7 +756,7 @@ describe("UI", () => {
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
 						cy.get("@windowOpen")
-							.should("be.calledWith", fixture.data[0].buttons[1].payload, "_self", "noopener");
+							.should("be.calledWith", fixture.data[0].buttons[1].payload, "_self", "noopener,noreferrer");
 					});
 			});
 			it("should set the input field text when clicking on the Reply button", () => {
