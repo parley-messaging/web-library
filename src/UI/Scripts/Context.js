@@ -32,6 +32,9 @@ export const InterfaceTexts = {
 		serviceUnreachableError: "The service is unreachable at the moment, please try again later", // Was `serviceUnreachableNotification`
 		subscribeDeviceFailedError: "Something went wrong while registering your device, please re-open the chat to try again", // New in v2
 		retrievingMessagesFailedError: "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening", // New in v2
+		uploadMediaInvalidTypeError: "You can not upload this type of file", // Was `imageFormatIncorrect` (is now used for all media files)
+		uploadMediaTooLargeError: "You can not upload files with sizes that exceed the 10mb limit", // Was `imageTooBig` (is now used for all media files)
+		uploadMediaNotUploadedError: "Something went wrong while uploading this file, please try again later", // New in v2
 	},
 	dutch: {
 		// New from v2
@@ -43,6 +46,9 @@ export const InterfaceTexts = {
 		ariaLabelTextInput: "bericht invoerveld",
 		serviceGenericError: "Er ging iets fout, probeer het later opnieuw",
 		deviceRequiresAuthorizationError: "Dit gesprek is verdergegaan in een ingelogde omgeving, wil je verder met dat gesprek ga dan terug naar die omgeving. Wil je een nieuw gesprek starten, stuur dan hieronder je bericht.",
+		uploadMediaInvalidTypeError: "Je kan dit type bestand niet uploaden",
+		uploadMediaTooLargeError: "Je kan geen bestanden uploaden die groter zijn dan 10mb",
+		uploadMediaNotUploadedError: "Er ging iets fout tijdens het uploaden, probeer het later opnieuw",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`

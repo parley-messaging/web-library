@@ -601,6 +601,108 @@ describe("UI", () => {
 					.should("be.visible");
 			});
 		});
+		it("should show the `uploadMediaInvalidTypeError` error when we upload an invalid media file", () => {
+			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			cy.intercept("POST", "*/**/media", {
+				body: {
+					notifications: [
+						{
+							type: "error",
+							message: "invalid_media_type",
+						},
+					],
+					status: "ERROR",
+					metadata: {
+						values: null,
+						method: "post",
+						duration: 0.01,
+					},
+				},
+			})
+				.as("postMedia");
+
+			cy.fixture("pdf.pdf", null).as("mediaFile");
+
+			visitHome();
+			clickOnLauncher();
+
+			cy.get("#upload-file")
+				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
+				});
+
+			cy.wait("@postMedia");
+
+			cy.get("div[class^=parley-messaging-error__]")
+				.should("have.text", "You can not upload this type of file");
+		});
+		it("should show the `uploadMediaTooLargeError` error when we upload a media file that is larger than 10mb", () => {
+			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			cy.intercept("POST", "*/**/media", {
+				body: {
+					notifications: [
+						{
+							type: "error",
+							message: "media_too_large",
+						},
+					],
+					status: "ERROR",
+					metadata: {
+						values: null,
+						method: "post",
+						duration: 0.01,
+					},
+				},
+			})
+				.as("postMedia");
+
+			cy.fixture("pdf.pdf", null).as("mediaFile");
+
+			visitHome();
+			clickOnLauncher();
+
+			cy.get("#upload-file")
+				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
+				});
+
+			cy.wait("@postMedia");
+
+			cy.get("div[class^=parley-messaging-error__]")
+				.should("have.text", "You can not upload files with sizes that exceed the 10mb limit");
+		});
+		it("should show the `uploadMediaNotUploadedError` error when we uploading goes wrong", () => {
+			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			cy.intercept("POST", "*/**/media", {
+				body: {
+					notifications: [
+						{
+							type: "error",
+							message: "media_not_uploaded",
+						},
+					],
+					status: "ERROR",
+					metadata: {
+						values: null,
+						method: "post",
+						duration: 0.01,
+					},
+				},
+			})
+				.as("postMedia");
+
+			cy.fixture("pdf.pdf", null).as("mediaFile");
+
+			visitHome();
+			clickOnLauncher();
+
+			cy.get("#upload-file")
+				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
+				});
+
+			cy.wait("@postMedia");
+
+			cy.get("div[class^=parley-messaging-error__]")
+				.should("have.text", "Something went wrong while uploading this file, please try again later");
+		});
 	});
 	describe("receiving messages", () => {
 		it("should render images when received", () => {

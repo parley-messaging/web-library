@@ -6,7 +6,7 @@ import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
 import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
-import {messages, messageSent, subscribe} from "../Api/Constants/Events";
+import {mediaUploaded, messages, messageSent, subscribe} from "../Api/Constants/Events";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -96,6 +96,7 @@ class Chat extends Component {
 		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.addEventListener(messages, this.handleMessages);
 		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.addEventListener(mediaUploaded, this.handleMediaUploaded);
 	}
 
 	componentWillUnmount() {
@@ -105,6 +106,7 @@ class Chat extends Component {
 		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
 		ApiEventTarget.removeEventListener(messages, this.handleMessages);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(mediaUploaded, this.handleMediaUploaded);
 	}
 
 	componentDidUpdate(prevProps, prevState, snapshot) {
@@ -129,6 +131,18 @@ class Chat extends Component {
 		// If we have any errors, show them to the client
 		if(event.detail.errorNotifications)
 			this.setErrorNotifications(event, this.context.subscribeDeviceFailedError);
+	};
+
+	handleMediaUploaded = (event) => {
+		// If we have any errors, show them to the client
+		if(event.detail.errorNotifications) {
+			if(event.detail.errorNotifications.some(error => error === "invalid_media_type"))
+				this.setErrorNotifications(event, this.context.uploadMediaInvalidTypeError);
+			 else if(event.detail.errorNotifications.some(error => error === "media_too_large"))
+				this.setErrorNotifications(event, this.context.uploadMediaTooLargeError);
+			 else
+				this.setErrorNotifications(event, this.context.uploadMediaNotUploadedError);
+		}
 	};
 
 	setErrorNotifications = (event, defaultError) => {
@@ -168,7 +182,7 @@ class Chat extends Component {
 			// Device is not subscribed and needs to be
 			this.props.onDeviceNeedsSubscribing();
 		}
-	}
+	};
 
 	handleSentSuccessfully = () => {
 		if(this.state.errorNotification === this.context.deviceRequiresAuthorizationError) {
@@ -176,7 +190,7 @@ class Chat extends Component {
 			// because it is no longer relevant
 			this.handleErrorCloseButtonClick();
 		}
-	}
+	};
 
 	render() {
 		let classNames = styles.chat;
