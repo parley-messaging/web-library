@@ -1,49 +1,60 @@
 .messageBoxMediaDownload {
-	border-radius: 50%;
-	border: 1px solid #4A5E83;
-	cursor: pointer;
-	flex-basis: 30px;
+	display: flex;
 	min-width: 30px;
 	max-width: 30px;
 	min-height: 30px;
 	max-height: 30px;
-	display: flex;
-	justify-content: center;
+	flex-basis: 30px;
 	align-items: center;
+	justify-content: center;
+	border: 1px solid #4A5E83;
+	border-radius: 50%;
+	cursor: pointer;
 }
+
 .wrapperDownloadAltIcon {
-	color: #4A5E83;
 	min-width: 15px;
 	max-width: 15px;
+	color: #4A5E83;
 }
+
 .messageBoxMedia {
 	display: flex;
 	align-items: center;
-	gap: 5px;
-	background: #FFF;
-	color: #4A5E83;
 	padding: 5px;
+	background: #FFF;
 	border-radius: 5px;
+	color: #4A5E83;
+	gap: 5px;
 }
+
 .icon {
-	flex-basis: 33px;
 	min-width: 33px;
 	max-width: 33px;
+	flex-basis: 33px;
 	font-size: 32px;
 }
+
 .iconFilePdf {
 	color: #FA0F00;
 }
+
 .iconFileWord {
 	color: #1B5EBE;
 }
+
 .iconFileExcel {
-	color: #1B5EBE;
+	color: #10793F;
 }
+
 .iconFilePowerpoint {
-	color: #1B5EBE;
+	color: #D35230;
 }
-.iconFileAudio, .iconFileVideo, .iconFileText, .iconFileUnknown {
+
+.iconFileAudio,
+.iconFileVideo,
+.iconFileText,
+.iconFileUnknown {
 	color: var(--parley-user-background-color, #4BF0B9);
 }
 
@@ -55,11 +66,10 @@
 	/* fill up the parent completely.
 	 * This way the message bubble wont change
 	 * sizes too much when switching between
-	 * loading and the actual image
+	 * loading and the actual media file
 	 * when loading is done
 	 */
 	width: var(--message-max-width);
-	height: var(--message-max-width);
 }
 
 .loading {
