@@ -4,9 +4,11 @@ import * as styles from "./Message.module.css";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import MessageTypes from "../Api/Constants/MessageTypes";
-
-// components
 import Api from "../Api/Api";
+import MessageButtonTypes from "../Api/Constants/MessageButtonTypes";
+import ReplyButton from "./MessageButtons/ReplyButton";
+import WebUrlButton from "./MessageButtons/WebUrlButton";
+import CallButton from "./MessageButtons/CallButton";
 import Media from "./Media";
 import Image from "./Image";
 
@@ -33,6 +35,7 @@ class Message extends Component {
 		} else {
 			return null;
 		}
+		const buttonRenderError = "_Unable to show unsupported button_";
 
 		return (
 			<div className={classNames}>
@@ -53,6 +56,24 @@ class Message extends Component {
 							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 							: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />)
 					}
+					{
+						this.props.message.buttons
+						&& this.props.message.buttons.map((button, index) => {
+							switch (button.type) {
+							case MessageButtonTypes.Reply:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <ReplyButton api={this.props.api} key={index} payload={button.payload} title={button.title} />;
+							case MessageButtonTypes.WebUrl:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <WebUrlButton key={index} payload={button.payload} title={button.title} />;
+							case MessageButtonTypes.PhoneNumber:
+								// eslint-disable-next-line max-len,react/no-array-index-key
+								return <CallButton key={index} payload={button.payload} title={button.title} />;
+							default:
+								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
+							}
+						})
+					}
 					<span className={styles.time}>
 						{this.showTime(this.props.message.time)}
 					</span>
@@ -70,6 +91,11 @@ Message.propTypes = {
 			id: PropTypes.number,
 			name: PropTypes.string.isRequired,
 		}),
+		buttons: PropTypes.arrayOf(PropTypes.shape({
+			payload: PropTypes.string.isRequired,
+			title: PropTypes.string,
+			type: PropTypes.oneOf(MessageButtonTypes),
+		})),
 		id: PropTypes.number,
 		media: PropTypes.shape({
 			day: PropTypes.string.isRequired,
