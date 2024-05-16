@@ -128,10 +128,7 @@ class Media extends Component {
 			<div className={styles.messageBoxMedia}>
 				<span>{icon}</span>
 				<label>
-					{
-
-						/* TODO: @gerben; cypress test this */
-						this.props.media.description || this.props.media.filename}
+					{this.props.media.description || this.props.media.filename}
 				</label>
 				<button
 					className={styles.messageBoxMediaDownload}
