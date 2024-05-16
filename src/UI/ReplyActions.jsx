@@ -44,6 +44,9 @@ class ReplyActions extends Component {
 
 	uploadMedia = file => this.props.api.uploadMedia(file)
 		.then((data) => {
+			if(!data)
+				return; // This means the upload failed. The error will be handled by Chat.jsx
+
 			this.props.api.sendMedia(data.data.media, file.name)
 				.then(() => {
 					this.props.onSentSuccessfully();

@@ -777,7 +777,8 @@ describe("UI", () => {
 			cy.wait("@getMessages");
 
 			cy.get("div[class^=parley-messaging-message__]")
-				.find("div")
+				.children()
+				.first()
 				.should("have.text", "Unsupported media")
 				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
 				.should("not.exist");
