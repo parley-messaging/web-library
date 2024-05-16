@@ -43,8 +43,6 @@ class Media extends Component {
 		const {mimeType} = this.props.media;
 		const iconClass = `${styles.icon} `;
 
-		Logger.debug(`Media file mimeType is '${mimeType}'`); // TODO: @gerben; this triggers on every poll (?), fix it
-
 		if(mimeType === "application/pdf")
 			return <FontAwesomeIcon className={iconClass + styles.iconFilePdf} icon={faFilePdf} />;
 		 else if([

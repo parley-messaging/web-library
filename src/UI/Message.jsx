@@ -49,8 +49,6 @@ class Message extends Component {
 						{this.props.message.message}
 					</ReactMarkdown>
 					{
-
-						// TODO: @gerben; should Media decide if it shows an <Image> or <??>
 						this.props.message.media && (this.props.message.media.mimeType.startsWith("image/")
 							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
 							: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />)
