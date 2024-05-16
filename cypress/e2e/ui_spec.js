@@ -584,8 +584,7 @@ describe("UI", () => {
 				clickOnLauncher();
 
 				cy.get("#upload-file")
-					.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
-					});
+					.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
 
 				cy.wait("@postMessage");
 				cy.wait("@getMessages");
@@ -602,7 +601,8 @@ describe("UI", () => {
 			});
 		});
 		it("should show the `uploadMediaInvalidTypeError` error when we upload an invalid media file", () => {
-			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			// We don't really need to upload anything,
+			// we just check if the error is shown when we receive it from the api
 			cy.intercept("POST", "*/**/media", {
 				body: {
 					notifications: [
@@ -627,8 +627,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
-				});
+				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
 
 			cy.wait("@postMedia");
 
@@ -636,7 +635,8 @@ describe("UI", () => {
 				.should("have.text", "You can not upload this type of file");
 		});
 		it("should show the `uploadMediaTooLargeError` error when we upload a media file that is larger than 10mb", () => {
-			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			// We don't really need to upload anything,
+			// we just check if the error is shown when we receive it from the api
 			cy.intercept("POST", "*/**/media", {
 				body: {
 					notifications: [
@@ -661,8 +661,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
-				});
+				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
 
 			cy.wait("@postMedia");
 
@@ -670,7 +669,8 @@ describe("UI", () => {
 				.should("have.text", "You can not upload files with sizes that exceed the 10mb limit");
 		});
 		it("should show the `uploadMediaNotUploadedError` error when we uploading goes wrong", () => {
-			// We don't really need to upload anything, we just check if the error is shown when we receive it from the api
+			// We don't really need to upload anything,
+			// we just check if the error is shown when we receive it from the api
 			cy.intercept("POST", "*/**/media", {
 				body: {
 					notifications: [
@@ -695,8 +695,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true, // We need to force it because this input is hidden
-				});
+				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
 
 			cy.wait("@postMedia");
 
@@ -782,6 +781,125 @@ describe("UI", () => {
 				.should("have.text", "Unsupported media")
 				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
 				.should("not.exist");
+		});
+		[
+			{
+				fileName: "pdf.pdf",
+				fileExtension: "pdf",
+				mimeType: "application/pdf",
+				expectedIcon: "file-pdf",
+			},
+			{
+				fileName: "plain.txt",
+				fileExtension: "txt",
+				mimeType: "text/plain",
+				expectedIcon: "file-lines",
+			},
+			{
+				fileName: "excel.xlsx",
+				fileExtension: "xlsx",
+				mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+				expectedIcon: "file-excel",
+			},
+			{
+				fileName: "word.doc",
+				fileExtension: "doc",
+				mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+				expectedIcon: "file-word",
+			},
+			{
+				fileName: "word.docx",
+				fileExtension: "docx",
+				mimeType: "application/msword",
+				expectedIcon: "file-word",
+			},
+			{
+				fileName: "powerpoint.pptx",
+				fileExtension: "pptx",
+				mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+				expectedIcon: "file-powerpoint",
+			},
+			{
+				fileName: "powerpoint.ppt",
+				fileExtension: "ppt",
+				mimeType: "application/vnd.ms-powerpoint",
+				expectedIcon: "file-powerpoint",
+			},
+			{
+				fileName: "audio.mp3",
+				fileExtension: "mp3",
+				mimeType: "audio/mpeg",
+				expectedIcon: "file-audio",
+			},
+			{
+				fileName: "video.mp4",
+				fileExtension: "mp4",
+				mimeType: "video/mp4",
+				expectedIcon: "file-video",
+			},
+		].forEach(({fileName, fileExtension, mimeType, expectedIcon}) => {
+			it(`should show the media file with mimeType '${mimeType}', after receiving it`, () => {
+				cy.fixture("getMessageWithPdfResponse.json")
+					.then((fixture) => {
+						const _fixture = fixture;
+						_fixture.data[0].media.id = fixture.data[0].media.id.replace(".pdf", `.${fileExtension}`);
+						_fixture.data[0].media.filename = fixture.data[0].media.filename.replace(".pdf", `.${fileExtension}`);
+						_fixture.data[0].media.description = fileName;
+						_fixture.data[0].media.mimeType = mimeType;
+						return _fixture;
+					})
+					.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+						.as("getMessages"));
+
+				// Intercept the retrieval of the file binary
+				// We always return a pdf file here because it doesn't really matter.
+				// We just need a binary. The UI uses the `media.mimeType` from the GET /messages
+				// call to determine what kind of icon to show.
+				cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"}).as("getMedia");
+
+				visitHome();
+
+				clickOnLauncher();
+
+				cy.wait("@getMessages");
+				cy.wait("@getMedia");
+
+				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+					.should("have.text", fileName)
+					.find("svg")
+					.first()
+					.invoke("attr", "data-icon")
+					.should("eq", expectedIcon);
+				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+					.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+					.should("be.visible");
+			});
+		});
+
+		it(`should show the media file's filename, if description is not set, after receiving it`, () => {
+			const fileName = "some-pdf.pdf";
+
+			cy.fixture("getMessageWithPdfResponse.json")
+				.then((fixture) => {
+					const _fixture = fixture;
+					_fixture.data[0].media.filename = fileName;
+					_fixture.data[0].media.description = null;
+					return _fixture;
+				})
+				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+					.as("getMessages"));
+
+			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"}).as("getMedia");
+
+			visitHome();
+
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+			cy.wait("@getMedia");
+
+			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+				.should("have.text", fileName);
 		});
 	});
 	describe("parley config settings", () => {
