@@ -26,6 +26,7 @@ class Chat extends Component {
 		this.correctionTimeoutID = null;
 		this.chatRef = React.createRef();
 		this.replyTextRef = React.createRef();
+		this.replyActionsRef = React.createRef();
 
 		this.state = {errorNotification: ""};
 	}
@@ -222,6 +223,7 @@ class Chat extends Component {
 					isMobile={this.isMobile}
 					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onSentSuccessfully={this.handleSentSuccessfully}
+					ref={this.replyActionsRef}
 					replyTextRef={this.replyTextRef}
 					restartPolling={this.props.restartPolling}
 				/>

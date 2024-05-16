@@ -4,7 +4,7 @@ import {interceptIndefinitely} from "../support/utils";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 
-function visitHome(parleyConfig) {
+function visitHome(parleyConfig, onBeforeLoad) {
 	cy.visit("/", {
 		onBeforeLoad: (window) => {
 			// eslint-disable-next-line no-param-reassign
@@ -12,6 +12,8 @@ function visitHome(parleyConfig) {
 				...defaultParleyConfig, // Always set default config
 				...parleyConfig,
 			};
+			if(onBeforeLoad)
+				onBeforeLoad(window);
 		},
 		onLoad: (window) => {
 			window.initParleyMessenger();
@@ -614,6 +616,195 @@ describe("UI", () => {
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
 		});
+		describe("message buttons", () => {
+			it("should render buttons when received", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonsResponseFixture");
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				// Check that every button rendered correctly
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						fixture.data.forEach((message, messageIndex) => {
+							message.buttons.forEach((button, buttonIndex) => {
+								cy.get("@app")
+									.find("[class^=parley-messaging-messageBubble__]")
+									.its(messageIndex + 1) // +1 to skip the date "message"
+									.find("[class^=parley-messaging-button__]")
+									.its(buttonIndex)
+									.should("have.text", button.title);
+							});
+						});
+					});
+			});
+			it("should show the payload as the button title if no title is supplied", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonsResponseFixture");
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						const fixtureWithoutTitles = fixture;
+						fixtureWithoutTitles.data = fixtureWithoutTitles.data.map((message) => {
+							const updatedMessage = message;
+							updatedMessage.buttons.map((button) => {
+								const updatedButton = button;
+								updatedButton.title = "";
+								return updatedButton;
+							});
+							return updatedMessage;
+						});
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixtureWithoutTitles);
+						})
+							.as("getMessages");
+					});
+
+				clickOnLauncher();
+
+				cy.wait("@getMessages");
+
+				// Check that every button rendered correctly
+				cy.get("@getMessageWithButtonsResponseFixture")
+					.then((fixture) => {
+						fixture.data.forEach((message, messageIndex) => {
+							message.buttons.forEach((button, buttonIndex) => {
+								cy.get("@app")
+									.find("[class^=parley-messaging-messageBubble__]")
+									.its(messageIndex + 1) // +1 to skip the date "message"
+									.find("[class^=parley-messaging-button__]")
+									.its(buttonIndex)
+									.should("have.text", button.payload);
+							});
+						});
+					});
+			});
+			it("should open a new page when clicking on the WebUrl button", () => {
+				visitHome({}, (window) => {
+					cy.stub(window, "open")
+						.returns({
+							// Window.open returns an object on which we call focus.
+							// If we don't mock the focus() method the chat would throw an error
+							// eslint-disable-next-line no-empty-function
+							focus: () => {
+							},
+						}); // Mock window.open function
+				});
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='WebUrlButton']")
+					.first()
+					.click();
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.window()
+							.its("open")
+							.should("be.calledWith", fixture.data[0].buttons[0].payload, "_blank", "noopener,noreferrer");
+					});
+			});
+			it("should open the phone app in the current page when clicking on the Call button", () => {
+				visitHome({}, (window) => {
+					cy.stub(window, "open")
+						.as("windowOpen"); // Mock window.open function
+				});
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='CallButton']")
+					.first()
+					.click();
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.get("@windowOpen")
+							.should("be.calledWith", fixture.data[0].buttons[1].payload, "_self", "noopener,noreferrer");
+					});
+			});
+			it("should set the input field text when clicking on the Reply button", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with buttons in it
+				cy.fixture("getMessageWithButtonsResponse.json")
+					.as("getMessageWithButtonFixture");
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				cy.intercept("POST", "*/**/messages").as("postMessage");
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-messageBubble__]")
+					.find("button[name='ReplyButton']")
+					.first()
+					.as("clickedButton");
+
+				cy.get("@clickedButton")
+					.click()
+					.should("be.disabled");
+
+				cy.wait("@postMessage");
+
+				cy.get("@clickedButton")
+					.should("be.enabled");
+
+				// Disable the interception, so we can send the message from the reply button
+				// and also receive it.
+				cy.intercept("GET", "*/**/messages", (req) => {
+					req.continue();
+				});
+
+				cy.get("@getMessageWithButtonFixture")
+					.then((fixture) => {
+						// Check to see if the message is rendered correctly
+						findMessage(fixture.data[0].buttons[2].payload);
+					});
+			});
+		});
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
@@ -1020,7 +1211,8 @@ describe("UI", () => {
 									},
 								],
 							},
-						}).as("getMessages");
+						})
+							.as("getMessages");
 
 						visitHome(parleyConfig);
 						clickOnLauncher();
@@ -1097,7 +1289,8 @@ describe("UI", () => {
 						cy.intercept("POST", "*/**/messages", {
 							statusCode: 400,
 							body: {status: "ERROR"},
-						}).as("postMessage");
+						})
+							.as("postMessage");
 
 						visitHome(parleyConfig);
 						clickOnLauncher();

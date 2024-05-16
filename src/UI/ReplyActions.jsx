@@ -103,4 +103,4 @@ ReplyActions.propTypes = {
 	restartPolling: PropTypes.func,
 };
 
-export default React.forwardRef((props, ref) => <ReplyActions replyTextRef={ref} {...props} />);
+export default ReplyActions;
