@@ -1,10 +1,11 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 import {interceptIndefinitely} from "../support/utils";
+import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 
-function visitHome(parleyConfig, onBeforeLoad) {
+function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	cy.visit("/", {
 		onBeforeLoad: (window) => {
 			// eslint-disable-next-line no-param-reassign
@@ -16,6 +17,8 @@ function visitHome(parleyConfig, onBeforeLoad) {
 				onBeforeLoad(window);
 		},
 		onLoad: (window) => {
+			if(onLoad)
+				onLoad(window);
 			window.initParleyMessenger();
 		},
 	});
@@ -52,6 +55,11 @@ function findMessage(testMessage) {
 		.should("be.visible")
 		.contains(testMessage)
 		.should("be.visible");
+}
+
+function pretendToBeMobile(window) {
+	// Mock match media to return true
+	Object.defineProperty(window, "matchMedia", {value: arg => ({matches: Boolean(arg.includes("(pointer: coarse)"))})});
 }
 
 beforeEach(() => {
@@ -534,175 +542,196 @@ describe("UI", () => {
 			cy.get("@error")
 				.should("not.exist");
 		});
-		[
-			{
-				fileName: "pdf.pdf",
-				expectedIcon: "file-pdf",
-			},
-			{
-				fileName: "plain.txt",
-				expectedIcon: "file-lines",
-			},
-			{
-				fileName: "excel.xlsx",
-				expectedIcon: "file-excel",
-			},
-			{
-				fileName: "word.doc",
-				expectedIcon: "file-word",
-			},
-			{
-				fileName: "word.docx",
-				expectedIcon: "file-word",
-			},
-			{
-				fileName: "powerpoint.pptx",
-				expectedIcon: "file-powerpoint",
-			},
-			{
-				fileName: "powerpoint.ppt",
-				expectedIcon: "file-powerpoint",
-			},
-			{
-				fileName: "audio.mp3",
-				expectedIcon: "file-audio",
-			},
-			{
-				fileName: "video.mp4",
-				expectedIcon: "file-video",
-			},
+		describe("upload media", () => {
+			[
+				{
+					fileName: "pdf.pdf",
+					expectedIcon: "file-pdf",
+				},
+				{
+					fileName: "plain.txt",
+					expectedIcon: "file-lines",
+				},
+				{
+					fileName: "excel.xlsx",
+					expectedIcon: "file-excel",
+				},
+				{
+					fileName: "word.doc",
+					expectedIcon: "file-word",
+				},
+				{
+					fileName: "word.docx",
+					expectedIcon: "file-word",
+				},
+				{
+					fileName: "powerpoint.pptx",
+					expectedIcon: "file-powerpoint",
+				},
+				{
+					fileName: "powerpoint.ppt",
+					expectedIcon: "file-powerpoint",
+				},
+				{
+					fileName: "audio.mp3",
+					expectedIcon: "file-audio",
+				},
+				{
+					fileName: "video.mp4",
+					expectedIcon: "file-video",
+				},
 
-			// I did not find a way to create a file with `application/msexcel` so this one will not be tested
-		].forEach(({fileName, expectedIcon}) => {
-			it(`should show the media file '${fileName}', after submitting it`, () => {
-				cy.intercept("POST", "*/**/messages").as("postMessage");
-				cy.intercept("GET", "*/**/messages").as("getMessages");
+				// I did not find a way to create a file with `application/msexcel` so this one will not be tested
+			].forEach(({fileName, expectedIcon}) => {
+				it(`should show the media file '${fileName}', after submitting it`, () => {
+					cy.intercept("POST", "*/**/messages").as("postMessage");
+					cy.intercept("GET", "*/**/messages").as("getMessages");
 
-				cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
-					.as("mediaFile");
+					cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
+						.as("mediaFile");
+
+					visitHome();
+
+					clickOnLauncher();
+
+					cy.get("#upload-file")
+						.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+
+					cy.wait("@postMessage");
+					cy.wait("@getMessages");
+
+					cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+						.should("have.text", fileName)
+						.find("svg")
+						.first()
+						.invoke("attr", "data-icon")
+						.should("eq", expectedIcon);
+					cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+						.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+						.should("be.visible");
+				});
+			});
+			it("should show the `uploadMediaInvalidTypeError` error when we upload an invalid media file", () => {
+				// We don't really need to upload anything,
+				// we just check if the error is shown when we receive it from the api
+				cy.intercept("POST", "*/**/media", {
+					body: {
+						notifications: [
+							{
+								type: "error",
+								message: "invalid_media_type",
+							},
+						],
+						status: "ERROR",
+						metadata: {
+							values: null,
+							method: "post",
+							duration: 0.01,
+						},
+					},
+				})
+					.as("postMedia");
+
+				cy.fixture("pdf.pdf", null).as("mediaFile");
 
 				visitHome();
-
 				clickOnLauncher();
 
 				cy.get("#upload-file")
 					.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
 
-				cy.wait("@postMessage");
-				cy.wait("@getMessages");
+				cy.wait("@postMedia");
 
-				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
-					.should("have.text", fileName)
-					.find("svg")
-					.first()
-					.invoke("attr", "data-icon")
-					.should("eq", expectedIcon);
-				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
-					.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
-					.should("be.visible");
+				cy.get("div[class^=parley-messaging-error__]")
+					.should("have.text", "You can not upload this type of file");
+			});
+			it("should show the `uploadMediaTooLargeError` error when we upload a media file that is larger than 10mb", () => {
+				// We don't really need to upload anything,
+				// we just check if the error is shown when we receive it from the api
+				cy.intercept("POST", "*/**/media", {
+					body: {
+						notifications: [
+							{
+								type: "error",
+								message: "media_too_large",
+							},
+						],
+						status: "ERROR",
+						metadata: {
+							values: null,
+							method: "post",
+							duration: 0.01,
+						},
+					},
+				})
+					.as("postMedia");
+
+				cy.fixture("pdf.pdf", null).as("mediaFile");
+
+				visitHome();
+				clickOnLauncher();
+
+				cy.get("#upload-file")
+					.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+
+				cy.wait("@postMedia");
+
+				cy.get("div[class^=parley-messaging-error__]")
+					.should("have.text", "You can not upload files with sizes that exceed the 10mb limit");
+			});
+			it("should show the `uploadMediaNotUploadedError` error when we uploading goes wrong", () => {
+				// We don't really need to upload anything,
+				// we just check if the error is shown when we receive it from the api
+				cy.intercept("POST", "*/**/media", {
+					body: {
+						notifications: [
+							{
+								type: "error",
+								message: "media_not_uploaded",
+							},
+						],
+						status: "ERROR",
+						metadata: {
+							values: null,
+							method: "post",
+							duration: 0.01,
+						},
+					},
+				})
+					.as("postMedia");
+
+				cy.fixture("pdf.pdf", null).as("mediaFile");
+
+				visitHome();
+				clickOnLauncher();
+
+				cy.get("#upload-file")
+					.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+
+				cy.wait("@postMedia");
+
+				cy.get("div[class^=parley-messaging-error__]")
+					.should("have.text", "Something went wrong while uploading this file, please try again later");
 			});
 		});
-		it("should show the `uploadMediaInvalidTypeError` error when we upload an invalid media file", () => {
-			// We don't really need to upload anything,
-			// we just check if the error is shown when we receive it from the api
-			cy.intercept("POST", "*/**/media", {
-				body: {
-					notifications: [
-						{
-							type: "error",
-							message: "invalid_media_type",
-						},
-					],
-					status: "ERROR",
-					metadata: {
-						values: null,
-						method: "post",
-						duration: 0.01,
-					},
-				},
-			})
-				.as("postMedia");
-
-			cy.fixture("pdf.pdf", null).as("mediaFile");
-
-			visitHome();
+		it("should hide the media upload button when the submit button should be shown", () => {
+			visitHome({}, null, pretendToBeMobile);
 			clickOnLauncher();
 
-			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
+			cy.get("label[class^=parley-messaging-uploadLabel__]")
+				.should("exist");
 
-			cy.wait("@postMedia");
+			cy.get("@app")
+				.find("[class^=parley-messaging-chat__]")
+				.find("[class^=parley-messaging-footer__]")
+				.find("[class^=parley-messaging-text__]")
+				.find("textarea")
+				.type(`This is some text`);
 
-			cy.get("div[class^=parley-messaging-error__]")
-				.should("have.text", "You can not upload this type of file");
-		});
-		it("should show the `uploadMediaTooLargeError` error when we upload a media file that is larger than 10mb", () => {
-			// We don't really need to upload anything,
-			// we just check if the error is shown when we receive it from the api
-			cy.intercept("POST", "*/**/media", {
-				body: {
-					notifications: [
-						{
-							type: "error",
-							message: "media_too_large",
-						},
-					],
-					status: "ERROR",
-					metadata: {
-						values: null,
-						method: "post",
-						duration: 0.01,
-					},
-				},
-			})
-				.as("postMedia");
-
-			cy.fixture("pdf.pdf", null).as("mediaFile");
-
-			visitHome();
-			clickOnLauncher();
-
-			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
-
-			cy.wait("@postMedia");
-
-			cy.get("div[class^=parley-messaging-error__]")
-				.should("have.text", "You can not upload files with sizes that exceed the 10mb limit");
-		});
-		it("should show the `uploadMediaNotUploadedError` error when we uploading goes wrong", () => {
-			// We don't really need to upload anything,
-			// we just check if the error is shown when we receive it from the api
-			cy.intercept("POST", "*/**/media", {
-				body: {
-					notifications: [
-						{
-							type: "error",
-							message: "media_not_uploaded",
-						},
-					],
-					status: "ERROR",
-					metadata: {
-						values: null,
-						method: "post",
-						duration: 0.01,
-					},
-				},
-			})
-				.as("postMedia");
-
-			cy.fixture("pdf.pdf", null).as("mediaFile");
-
-			visitHome();
-			clickOnLauncher();
-
-			cy.get("#upload-file")
-				.selectFile("@mediaFile", {force: true}); // We need to force it because this input is hidden
-
-			cy.wait("@postMedia");
-
-			cy.get("div[class^=parley-messaging-error__]")
-				.should("have.text", "Something went wrong while uploading this file, please try again later");
+			cy.get("label[class^=parley-messaging-uploadLabel__]")
+				.should("not.exist");
+			cy.get("button[class^=parley-messaging-mobile__]")
+				.should("exist");
 		});
 	});
 	describe("receiving messages", () => {
@@ -1701,6 +1730,114 @@ describe("UI", () => {
 					cy.get("@app")
 						.find("[class^=parley-messaging-title__]")
 						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
+				});
+			});
+			describe("allowedMediaTypes", () => {
+				it("should change the acceptable file types for the upload form", () => {
+					const parleyConfig = {
+						runOptions: {
+							allowedMediaTypes: [
+								"image/jpeg",
+								"image/png",
+								"image/gif",
+							],
+						},
+					};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]")
+						.as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("have.attr", "accept", parleyConfig.runOptions.allowedMediaTypes.join(","));
+
+					// Test if it changes during runtime
+					const newAllowedMediaTypes = [
+						"text/plain",
+						"text/csv",
+						"application/pdf",
+						"application/msword",
+					];
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.allowedMediaTypes = newAllowedMediaTypes;
+						});
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("have.attr", "accept", newAllowedMediaTypes.join(","));
+				});
+				it("should fallback to our supported file types if the array is empty", () => {
+					const parleyConfig = {runOptions: {allowedMediaTypes: []}};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]")
+						.as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("have.attr", "accept", SUPPORTED_MEDIA_TYPES.join(","));
+				});
+				it("should fallback to our supported file types if the setting is not set", () => {
+					const parleyConfig = {runOptions: {}};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]")
+						.as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("have.attr", "accept", SUPPORTED_MEDIA_TYPES.join(","));
+				});
+			});
+			describe("allowFileUpload", () => {
+				it(`should enable/disable the upload button`, () => {
+					const parleyConfig = {runOptions: {allowFileUpload: false}};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]")
+						.as("app");
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("not.exist");
+					cy.get("@app")
+						.find("[class^=parley-messaging-uploadLabel__]")
+						.should("not.exist");
+
+					// Test if it changes during runtime
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.runOptions.allowFileUpload = true;
+						});
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-actions__]")
+						.find("input")
+						.should("exist");
+					cy.get("@app")
+						.find("[class^=parley-messaging-uploadLabel__]")
+						.should("exist");
 				});
 			});
 		});
@@ -2713,6 +2850,58 @@ describe("UI", () => {
 									});
 							});
 					});
+				});
+			});
+		});
+		describe("interface", () => {
+			describe("`hideChatAfterBusinessHours", () => {
+				it("should hide the chat after business hours", () => {
+					const parleyConfig = {
+						weekdays: [
+							["Monday"],
+							["Tuesday"],
+							["Wednesday"],
+							["Thursday"],
+							["Friday"],
+							["Saturday"],
+							["Sunday"],
+						],
+						interface: {hideChatAfterBusinessHours: false},
+					};
+
+					visitHome(parleyConfig);
+
+					cy.get("[id=app]")
+						.as("app");
+
+					// Launcher should appear because we
+					// are inside working hours
+					clickOnLauncher();
+
+					// Test if it changes during runtime
+					const newWeekdays = [ // closed every day
+						["Monday"],
+						["Tuesday"],
+						["Wednesday"],
+						["Thursday"],
+						["Friday"],
+						["Saturday"],
+						["Sunday"],
+					];
+
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.weekdays = newWeekdays;
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.interface.hideChatAfterBusinessHours = true;
+						});
+
+					// Launcher is not rendered because we are offline
+					// and outside working hours
+					cy.get("@app")
+						.get("[class^=parley-messaging-launcher__]")
+						.should("not.exist");
 				});
 			});
 		});

@@ -11,6 +11,7 @@ import {InterfaceTextsContext} from "./Scripts/Context";
 import {ApiFetchFailed, ApiGenericError} from "../Api/Constants/Other";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTimes} from "@fortawesome/free-solid-svg-icons/faTimes";
+import {SUPPORTED_MEDIA_TYPES} from "../Api/Constants/SupportedMediaTypes";
 
 class Chat extends Component {
 	static contextType = InterfaceTextsContext;
@@ -230,8 +231,9 @@ class Chat extends Component {
 					</div>
 				}
 				<ReplyActions
-					allowEmoji={this.allowEmoji}
-					allowFileUpload={this.allowFileUpload}
+					allowEmoji={this.props.allowEmoji}
+					allowMediaUpload={this.props.allowMediaUpload}
+					allowedMediaTypes={this.props.allowedMediaTypes}
 					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
@@ -247,8 +249,9 @@ class Chat extends Component {
 }
 
 Chat.propTypes = {
+	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
-	allowFileUpload: PropTypes.bool,
+	allowMediaUpload: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	isiOSMobile: PropTypes.bool,
 	isMobile: PropTypes.bool,

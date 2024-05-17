@@ -8,6 +8,7 @@ import ApiEventTarget from "../Api/ApiEventTarget";
 import {subscribe} from "../Api/Constants/Events";
 import MobileSubmit from "./Buttons/MobileSubmit";
 import UploadMedia from "./Buttons/UploadMedia";
+import {SUPPORTED_MEDIA_TYPES} from "../Api/Constants/SupportedMediaTypes";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -99,6 +100,8 @@ class ReplyActions extends Component {
 		})
 
 	render() {
+		const showMobileSubmit = this.props.isMobile && this.state.reply.length > 0;
+		const showMediaUpload = this.props.allowMediaUpload;
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
@@ -116,11 +119,12 @@ class ReplyActions extends Component {
 							/>
 							<div className={styles.actions}>
 								{
-									this.props.isMobile && this.state.reply !== ""
+									showMobileSubmit
 									? <MobileSubmit onClick={this.handleSubmit} />
-									: <UploadMedia
+									: showMediaUpload && <UploadMedia
+											allowedMediaTypes={this.props.allowedMediaTypes}
 											onChange={this.handleFileChange}
-									  />
+									                     />
 								}
 							</div>
 						</div>
@@ -132,8 +136,9 @@ class ReplyActions extends Component {
 }
 
 ReplyActions.propTypes = {
+	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
-	allowFileUpload: PropTypes.bool,
+	allowMediaUpload: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,

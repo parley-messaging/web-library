@@ -30,3 +30,6 @@ ssl
 
 # Env variables for cypress tests
 /cypress.env.json
+
+# Material theme UI plugin
+/.idea/material_theme_project_new.xml

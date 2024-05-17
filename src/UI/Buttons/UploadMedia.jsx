@@ -13,10 +13,14 @@ class UploadMedia extends Component {
 		const typeInput = "file";
 		const ariaLabel = "upload";
 		const inputId = "upload-file";
+		let allowedMediaTypes = SUPPORTED_MEDIA_TYPES;
+		if(this.props.allowedMediaTypes?.length > 0)
+			({allowedMediaTypes} = this.props);
+
 		return (
 			<>
 				<input
-					accept={SUPPORTED_MEDIA_TYPES.join(",")}
+					accept={allowedMediaTypes.join(",")}
 					id={inputId}
 					onChange={this.handleFileChange}
 					style={{display: "none"}}
@@ -37,5 +41,8 @@ class UploadMedia extends Component {
 	}
 }
 
-UploadMedia.propTypes = {onChange: PropTypes.func.isRequired};
+UploadMedia.propTypes = {
+	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
+	onChange: PropTypes.func.isRequired,
+};
 export default UploadMedia;
