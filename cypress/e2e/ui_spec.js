@@ -955,7 +955,15 @@ describe("UI", () => {
 						});
 					});
 
-				cy.intercept("POST", "*/**/messages").as("postMessage");
+				// Intercept the POST that happens when you click the button.
+				// We use a small delay because we need to check if the button
+				// disables itself after you clicked it
+				// (and re-enables itself after the POST is done)
+				cy.intercept("POST", "*/**/messages", (req) => {
+					req.on("response", (res) => {
+						res.setDelay(500);
+					});
+				}).as("postMessage");
 
 				clickOnLauncher();
 
@@ -979,6 +987,12 @@ describe("UI", () => {
 				cy.intercept("GET", "*/**/messages", (req) => {
 					req.continue();
 				});
+
+				// Trigger a GET call by clicking on the textarea
+				// (otherwise we have to wait until the next polling interval)
+				cy.get("div[class^=parley-messaging-footer__]")
+					.find("textarea")
+					.click();
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
