@@ -3165,8 +3165,10 @@ describe("UI", () => {
 				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
 					.as("getMessages"));
 
-			const interception = interceptIndefinitely("GET", "*/**/media/**", {body: "", // We don't want to return a file otherwise the chat will download this file everytime we run the test
-			});
+			// We don't want to return a file otherwise the chat will download this file everytime we run the test
+			// That is why we return an empty body
+			const interception
+				= interceptIndefinitely("GET", "*/**/media/**", {body: ""});
 
 			visitHome();
 
