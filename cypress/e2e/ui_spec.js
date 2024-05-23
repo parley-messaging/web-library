@@ -1705,6 +1705,32 @@ describe("UI", () => {
 							.should("have.text", newErrorText);
 					});
 				});
+				describe("ariaLabelUploadFile", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelUploadFile: "Custom text"}}};
+
+						visitHome(parleyConfig);
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-uploadLabel__]")
+							.as("uploadLabel")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelUploadFile);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelUploadFile = newValue;
+							});
+
+						cy.get("@uploadLabel")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
 			});
 			describe("country", () => {
 				it("should change the language of interface texts", () => {
