@@ -1086,18 +1086,11 @@ describe("UI", () => {
 					.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
 						.as("getMessages"));
 
-				// Intercept the retrieval of the file binary
-				// We always return a pdf file here because it doesn't really matter.
-				// We just need a binary. The UI uses the `media.mimeType` from the GET /messages
-				// call to determine what kind of icon to show.
-				cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"}).as("getMedia");
-
 				visitHome();
 
 				clickOnLauncher();
 
 				cy.wait("@getMessages");
-				cy.wait("@getMedia");
 
 				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 					.should("have.text", fileName)
@@ -1131,7 +1124,6 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.wait("@getMessages");
-			cy.wait("@getMedia");
 
 			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 				.should("have.text", fileName);
@@ -3157,6 +3149,52 @@ describe("UI", () => {
 			cy.get("@app")
 				.find("[class^=parley-messaging-container__]")
 				.should("not.exist");
+		});
+	});
+	describe("media", () => {
+		it(`should show a loading icon while download the media file`, () => {
+			const fileName = "some-pdf.pdf";
+
+			cy.fixture("getMessageWithPdfResponse.json")
+				.then((fixture) => {
+					const _fixture = fixture;
+					_fixture.data[0].media.filename = fileName;
+					_fixture.data[0].media.description = null;
+					return _fixture;
+				})
+				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+					.as("getMessages"));
+
+			const interception = interceptIndefinitely("GET", "*/**/media/**", {body: "", // We don't want to return a file otherwise the chat will download this file everytime we run the test
+			});
+
+			visitHome();
+
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
+				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
+				.as("downloadButton")
+				.click();
+
+			// Loading animation should show
+			cy.get("@downloadButton")
+				.find("span[class^=parley-messaging-loading__]")
+				.should("exist")
+				.get("@downloadButton")
+				.find("span[class^=parley-messaging-wrapperDownloadAltIcon__]")
+				.should("not.exist")
+				.then(interception.sendResponse);
+
+			// Loading animation should be gone and button should show the normal icon again
+			cy.get("@downloadButton")
+				.find("span[class^=parley-messaging-loading__]")
+				.should("not.exist")
+				.get("@downloadButton")
+				.find("span[class^=parley-messaging-wrapperDownloadAltIcon__]")
+				.should("exist");
 		});
 	});
 });

@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import Api from "../Api/Api";
-import gfm from "remark-gfm";
-import ReactMarkdown from "react-markdown";
 import * as styles from "./Media.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -16,6 +14,8 @@ import {
 import {faArrowDown} from "@fortawesome/free-solid-svg-icons";
 import {isSupportedMediaType} from "../Api/Constants/SupportedMediaTypes";
 import Logger from "js-logger";
+import ReactMarkdown from "react-markdown";
+import gfm from "remark-gfm";
 
 class Media extends Component {
 	constructor(props) {
@@ -23,20 +23,41 @@ class Media extends Component {
 
 		// state
 		this.state = {
-			isLoading: true,
-			errorText: "_Unable to load media_",
+			isLoading: false,
+			errorText: "",
 			fileDownloadUrl: null,
 		};
 	}
 
 
 	handleDownload = () => {
-		const link = document.createElement("a");
-		link.href = this.state.fileDownloadUrl;
-		link.download = this.props.media.filename;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
+		this.setState(() => ({isLoading: true}));
+		const {
+			year,
+			month,
+			day,
+			filename,
+		} = this.props.media;
+		this.props.api.getMedia(year, month, day, filename)
+			.then((mediaBlob) => {
+				if(!mediaBlob)
+					return;
+
+				const reader = new FileReader();
+				const fileDownloadUrl = URL.createObjectURL(mediaBlob);
+				reader.onloadend = () => {
+					const link = document.createElement("a");
+					link.href = fileDownloadUrl;
+					link.download = filename;
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+				};
+				reader.readAsArrayBuffer(mediaBlob);
+			})
+			.finally(() => {
+				this.setState(() => ({isLoading: false}));
+			});
 	};
 
 	convertFileToIcon = () => {
@@ -64,6 +85,7 @@ class Media extends Component {
 		 else if(mimeType.startsWith("video/"))
 			return <FontAwesomeIcon className={iconClass + styles.iconFileVideo} icon={faFileVideo} />;
 
+
 		return <FontAwesomeIcon className={iconClass + styles.iconFileUnknown} icon={faFileAlt} />;
 	};
 
@@ -71,50 +93,15 @@ class Media extends Component {
 		// Don't load if this is an unsupported mime type
 		if(!isSupportedMediaType(this.props.media.mimeType)) {
 			Logger.debug(`Mime type '${this.props.media.mimeType}' is not supported!`);
-			this.setState(() => ({
-				errorText: "_Unsupported media_",
-				isLoading: false,
-			}));
-			return;
+			this.setState(() => ({errorText: "_Unsupported media_"}));
 		}
-
-		const {
-			year,
-			month,
-			day,
-			filename,
-		} = this.props.media;
-		this.props.api.getMedia(year, month, day, filename)
-			.then((mediaBlob) => {
-				if(!mediaBlob)
-					return;
-
-
-				const reader = new FileReader();
-				const fileDownloadUrl = URL.createObjectURL(mediaBlob);
-				reader.onloadend = () => {
-					this.setState(() => ({fileDownloadUrl}));
-				};
-				reader.readAsArrayBuffer(mediaBlob);
-			})
-			.finally(() => {
-				this.setState(() => ({isLoading: false}));
-			});
 	}
 
 
 	render() {
 		const icon = this.convertFileToIcon();
 
-		if(this.state.isLoading) {
-			return (
-				<div className={styles.loadingContainer}>
-					<span className={styles.loading} />
-				</div>
-			);
-		}
-
-		if(!this.state.fileDownloadUrl) {
+		if(this.state.errorText) {
 			return (
 				<ReactMarkdown remarkPlugins={[gfm]} skipHtml={true}>
 					{this.state.errorText}
@@ -130,11 +117,14 @@ class Media extends Component {
 				</label>
 				<button
 					className={styles.messageBoxMediaDownload}
-					data-file-url={this.state.fileDownloadUrl}
+					disabled={this.state.isLoading}
 					onClick={this.handleDownload}
-				><span className={styles.wrapperDownloadAltIcon}>
-					<FontAwesomeIcon icon={faArrowDown} />
-				</span>
+				>
+					{
+						this.state.isLoading
+							? <span className={styles.loading} />
+							: <span className={styles.wrapperDownloadAltIcon}><FontAwesomeIcon icon={faArrowDown} /></span>
+					}
 				</button>
 			</div>
 		);
