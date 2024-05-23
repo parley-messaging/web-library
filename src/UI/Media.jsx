@@ -62,29 +62,30 @@ class Media extends Component {
 		const {mimeType} = this.props.media;
 		const iconClass = `${styles.icon} `;
 
-		if(mimeType === "application/pdf")
+		switch (mimeType) {
+		case mimeType === "application/pdf":
 			return <FontAwesomeIcon className={iconClass + styles.iconFilePdf} icon={faFilePdf} />;
-		 else if([
+		case [
 			"application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-		].indexOf(mimeType) > -1)
+		].indexOf(mimeType) > -1:
 			return <FontAwesomeIcon className={iconClass + styles.iconFileWord} icon={faFileWord} />;
-		 else if([
+		case [
 			"application/msexcel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-		].indexOf(mimeType) > -1)
+		].indexOf(mimeType) > -1:
 			return <FontAwesomeIcon className={iconClass + styles.iconFileExcel} icon={faFileExcel} />;
-		 else if([
+		case [
 			"application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-		].indexOf(mimeType) > -1)
+		].indexOf(mimeType) > -1:
 			return <FontAwesomeIcon className={iconClass + styles.iconFilePowerpoint} icon={faFilePowerpoint} />;
-		 else if(mimeType.startsWith("text/"))
+		case mimeType.startsWith("text/"):
 			return <FontAwesomeIcon className={iconClass + styles.iconFileText} icon={faFileLines} />;
-		 else if(mimeType.startsWith("audio/"))
+		case mimeType.startsWith("audio/"):
 			return <FontAwesomeIcon className={iconClass + styles.iconFileAudio} icon={faFileAudio} />;
-		 else if(mimeType.startsWith("video/"))
+		case mimeType.startsWith("video/"):
 			return <FontAwesomeIcon className={iconClass + styles.iconFileVideo} icon={faFileVideo} />;
-
-
-		return <FontAwesomeIcon className={iconClass + styles.iconFileUnknown} icon={faFileAlt} />;
+		default:
+			return <FontAwesomeIcon className={iconClass + styles.iconFileUnknown} icon={faFileAlt} />;
+		}
 	};
 
 	componentDidMount() {
