@@ -49,9 +49,7 @@ class Media extends Component {
 					const link = document.createElement("a");
 					link.href = fileDownloadUrl;
 					link.download = filename;
-					document.body.appendChild(link);
 					link.click();
-					document.body.removeChild(link);
 				};
 				reader.readAsArrayBuffer(mediaBlob);
 			})
@@ -123,7 +121,9 @@ class Media extends Component {
 					{
 						this.state.isLoading
 							? <span className={styles.loading} />
-							: <span className={styles.wrapperDownloadAltIcon}><FontAwesomeIcon icon={faArrowDown} /></span>
+							: <span className={styles.wrapperDownloadAltIcon}>
+								<FontAwesomeIcon icon={faArrowDown} />
+							  </span>
 					}
 				</button>
 			</div>
