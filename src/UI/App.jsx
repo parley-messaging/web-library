@@ -71,7 +71,9 @@ export default class App extends React.Component {
 			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
-			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+			hideChatOutsideWorkingHours: typeof window?.parleySettings?.interface?.hideChatAfterBusinessHours === "boolean"
+				? window?.parleySettings?.interface?.hideChatAfterBusinessHours
+				: false,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			devicePersistence: {
 				domain: window?.parleySettings?.devicePersistence?.domain || undefined,
@@ -81,6 +83,10 @@ export default class App extends React.Component {
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 			messengerOpenState: showChat ? MessengerOpenState.open : MessengerOpenState.minimize,
 			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
+			allowMediaUpload: typeof window?.parleySettings?.runOptions?.allowFileUpload === "boolean"
+				? window?.parleySettings?.runOptions?.allowFileUpload
+				: true,
+			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 		};
 
 		this.Api = new Api(
@@ -586,6 +592,17 @@ export default class App extends React.Component {
 				objectToSaveIntoState = {interfaceLanguage: value};
 			} else if(path[layer1] === "icon") {
 				objectToSaveIntoState = {launcherIcon: value};
+			} else if(path[layer1] === "allowedMediaTypes") {
+				// Clear the current allowedMediaTypes, otherwise the deepmerge
+				// further down will merge your new list with the current one.
+				// This is not what we want, we only want to have the new values
+				// and discard all the old values.
+				// Also, we don't use setState() so we don't trigger an update.
+				if(this.state.allowedMediaTypes)
+					this.state.allowedMediaTypes.splice(0, this.state.allowedMediaTypes.length);
+				objectToSaveIntoState = {allowedMediaTypes: value};
+			} else if(path[layer1] === "allowFileUpload") {
+				objectToSaveIntoState = {allowMediaUpload: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -837,7 +854,8 @@ export default class App extends React.Component {
 				}
 				<Chat
 					allowEmoji={true}
-					allowFileUpload={true}
+					allowMediaUpload={this.state.allowMediaUpload}
+					allowedMediaTypes={this.state.allowedMediaTypes}
 					api={this.Api}
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}

@@ -56,25 +56,42 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
+		/** @var {[]} messages */
 		let messages = eventData.detail.data;
 		if(eventData.detail.errorNotifications?.filter(x => x === "api_key_not_valid" || x === "device_not_registered")) {
 			Logger.debug("Clearing message because the API doesn't allow this device access to the messages");
 			messages = [];
 		}
 
-		const newState = {
-			messages,
-			stickyMessage: eventData.detail.stickyMessage,
-		};
+		const newState = {};
+
+		// Compare the received messages with our state messages
+		// If there is a change, add them to the new state
+		// If there is no change we don't want to add them
+		// to prevent en unnecessary render.
+		const sortedMessages = Conversation.sortMessagesByID(messages);
+		if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages))
+			newState.messages = messages;
 
 		// Set welcome message if we got one from the api
 		// otherwise use the default set by props
-		if(eventData.detail.welcomeMessage)
-			newState.welcomeMessage = eventData.detail.welcomeMessage;
-		else
-			newState.welcomeMessage = this.props.defaultWelcomeMessage;
+		const welcomeMessage = eventData.detail.welcomeMessage || this.props.defaultWelcomeMessage;
+		if(welcomeMessage !== this.state.welcomeMessage)
+			newState.welcomeMessage = welcomeMessage;
 
-		this.setState(() => newState);
+		const {stickyMessage} = eventData.detail;
+		if(stickyMessage !== this.state.stickyMessage)
+			newState.stickyMessage = stickyMessage;
+
+		// If there is nothing in the new state
+		// we don't have to call setState and trigger an update
+		if(Object.keys(newState).length === 0)
+			return;
+
+		this.setState(currentState => ({
+			...currentState,
+			...newState,
+		}));
 	}
 
 	setRenderedDate = (date) => {

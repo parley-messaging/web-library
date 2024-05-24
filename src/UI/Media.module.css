@@ -1,0 +1,96 @@
+.messageBoxMediaDownload {
+	display: flex;
+	min-width: 30px;
+	max-width: 30px;
+	min-height: 30px;
+	max-height: 30px;
+	flex-basis: 30px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid #4A5E83;
+	border-radius: 50%;
+	cursor: pointer;
+}
+
+.wrapperDownloadAltIcon {
+	min-width: 15px;
+	max-width: 15px;
+	color: #4A5E83;
+}
+
+.messageBoxMedia {
+	display: flex;
+	align-items: center;
+	padding: 5px;
+	background: #FFF;
+	border-radius: 5px;
+	color: #4A5E83;
+	gap: 5px;
+}
+
+.icon {
+	font-size: 32px;
+}
+
+.iconFilePdf {
+	color: #FA0F00;
+}
+
+.iconFileWord {
+	color: #1B5EBE;
+}
+
+.iconFileExcel {
+	color: #10793F;
+}
+
+.iconFilePowerpoint {
+	color: #D35230;
+}
+
+.iconFileAudio,
+.iconFileVideo,
+.iconFileText,
+.iconFileUnknown {
+	color: var(--parley-user-background-color, #4BF0B9);
+}
+
+.loadingContainer {
+
+	/* This helps centering the loading animation */
+	display: flex;
+
+	/* fill up the parent completely.
+	 * This way the message bubble wont change
+	 * sizes too much when switching between
+	 * loading and the actual media file
+	 * when loading is done
+	 */
+	width: var(--message-max-width);
+}
+
+.loading {
+	display: block;
+	width: 10px;
+	height: 10px;
+	border: 6px solid #F3F3F3;
+	border-top: 6px solid var(--parley-image-loading-color, #4A5E83);
+	margin: auto;
+	animation: pending_animation 2s linear infinite;
+	background-color: transparent;
+	border-radius: 50%;
+	color: #FFF;
+	font-size: 20px;
+	line-height: 20px;
+	text-align: center;
+}
+
+@keyframes pending_animation {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
