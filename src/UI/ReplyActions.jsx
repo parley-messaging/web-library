@@ -2,11 +2,13 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./ReplyActions.module.css";
 import ReplyText from "./ReplyText";
-import MobileSubmit from "./Buttons/MobileSubmit";
 import Api from "../Api/Api";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {subscribe} from "../Api/Constants/Events";
+import MobileSubmit from "./Buttons/MobileSubmit";
+import UploadMedia from "./Buttons/UploadMedia";
+import {SUPPORTED_MEDIA_TYPES} from "../Api/Constants/SupportedMediaTypes";
 
 class ReplyActions extends Component {
 	constructor(props) {
@@ -15,9 +17,46 @@ class ReplyActions extends Component {
 		this.state = {reply: ""};
 	}
 
+	/**
+	 * @param {File} file
+	 */
+	handleFileChange = (file) => {
+		if(this.props.api.deviceRegistered) {
+			this.uploadMedia(file);
+		} else {
+			// Wait until device is subscribed before trying to send a message
+			const handleSubscribe = (event) => {
+				if(!event.detail.errorNotifications)
+					this.uploadMedia(file);
+
+				// This is a one time thing (for this submit),
+				// so stop listening for future subscriptions
+				ApiEventTarget.removeEventListener(subscribe, handleSubscribe);
+			};
+			ApiEventTarget.addEventListener(subscribe, handleSubscribe);
+
+			this.props.onDeviceNeedsSubscribing();
+		}
+	};
+
 	handleChange = (event) => {
 		this.setState(() => ({reply: event.target.value}));
 	}
+
+	uploadMedia = file => this.props.api.uploadMedia(file)
+		.then((data) => {
+			if(!data)
+				return; // This means the upload failed. The error will be handled by Chat.jsx
+
+			this.props.api.sendMedia(data.data.media, file.name)
+				.then(() => {
+					this.props.onSentSuccessfully();
+				})
+				.finally(() => {
+					// After re-enabling the focus must be set again
+					this.props.replyTextRef.current.textArea.current.focus();
+				});
+		})
 
 	handleSubmit = () => {
 		if(this.state.reply === "")
@@ -32,19 +71,18 @@ class ReplyActions extends Component {
 			this.sendMessage();
 		} else {
 			// Wait until device is subscribed before trying to send a message
-			ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+			const handleSubscribe = (event) => {
+				if(!event.detail.errorNotifications)
+					this.sendMessage();
+
+				// This is a one time thing (for this submit),
+				// so stop listening for future subscriptions
+				ApiEventTarget.removeEventListener(subscribe, handleSubscribe);
+			};
+			ApiEventTarget.addEventListener(subscribe, handleSubscribe);
 
 			this.props.onDeviceNeedsSubscribing();
 		}
-	}
-
-	handleSubscribe = (event) => {
-		if(!event.detail.errorNotifications)
-			this.sendMessage();
-
-		// This is a one time thing (for this submit),
-		// so stop listening for future subscriptions
-		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 	}
 
 	sendMessage = () => this.props.api.sendMessage(this.state.reply)
@@ -62,6 +100,8 @@ class ReplyActions extends Component {
 		})
 
 	render() {
+		const showMobileSubmit = this.props.isMobile && this.state.reply.length > 0;
+		const showMediaUpload = this.props.allowMediaUpload;
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
@@ -79,8 +119,12 @@ class ReplyActions extends Component {
 							/>
 							<div className={styles.actions}>
 								{
-									this.props.isMobile && this.state.reply !== ""
-									&& <MobileSubmit onClick={this.handleSubmit} />
+									showMobileSubmit
+									? <MobileSubmit onClick={this.handleSubmit} />
+									: showMediaUpload && <UploadMedia
+											allowedMediaTypes={this.props.allowedMediaTypes}
+											onChange={this.handleFileChange}
+									                     />
 								}
 							</div>
 						</div>
@@ -92,8 +136,9 @@ class ReplyActions extends Component {
 }
 
 ReplyActions.propTypes = {
+	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
-	allowFileUpload: PropTypes.bool,
+	allowMediaUpload: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,

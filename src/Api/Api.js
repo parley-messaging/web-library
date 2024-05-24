@@ -9,11 +9,10 @@ import ow from "ow";
 import {
 	ApiFetchFailed, ApiGenericError, CustomHeaderBlacklistError,
 	DeviceVersionMaxLength,
-	DeviceVersionMinLength, DeviceVersionRegex,
-	MinUdidLength,
+	DeviceVersionMinLength, DeviceVersionRegex, MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {media, messages, messageSent, subscribe} from "./Constants/Events";
+import {media, mediaUploaded, messages, messageSent, subscribe} from "./Constants/Events";
 import PushTypes from "./Constants/PushTypes";
 import DeviceTypes from "./Constants/DeviceTypes";
 import {
@@ -22,6 +21,7 @@ import {
 } from "./Constants/ApiResponseNotificationTypes";
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
+import {isSupportedMediaType} from "./Constants/SupportedMediaTypes";
 
 export default class Api {
 	constructor(
@@ -228,8 +228,70 @@ export default class Api {
 		ow(fileName, "fileName", ow.string.nonEmpty);
 
 		return this.fetchWrapper(`${this.config.apiUrl}/media/${year}/${month}/${day}/${fileName}`, {method: "GET"})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, data));
+				return data;
+			})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(media, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	uploadMedia(file) {
+		ow(file, "file", ow.object.instanceOf(File));
+
+		const formData = new FormData();
+		formData.append("media", file);
+
+		return this.fetchWrapper(`${this.config.apiUrl}/media`, {
+			method: "POST",
+			body: formData,
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(mediaUploaded, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(mediaUploaded, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	sendMedia(mediaId, fileName, referer) {
+		ow(mediaId, "mediaId", ow.string.nonEmpty);
+		ow(fileName, "fileName", ow.string.nonEmpty);
+		ow(referer, "referer", ow.optional.string.nonEmpty);
+
+		// Alternatively, you can define an object with initial properties
+		const mediaBody = {
+			id: mediaId,
+			description: fileName,
+		};
+
+		let refererCopy = referer;
+		if(!refererCopy)
+			refererCopy = window.location.href;
+
+		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
+			method: "POST",
+			body: JSON.stringify({
+				media: mediaBody,
+				referer: refererCopy,
+			}),
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {
 					errorNotifications,
 					warningNotifications,
 					data: null,
@@ -257,8 +319,8 @@ export default class Api {
 
 					if(contentType && contentType.includes("application/json"))
 						return response.json(); // Handle JSON response
-					 else if(contentType && contentType.includes("image"))
-						return response.blob(); // Handle image binary response
+					 else if(contentType && isSupportedMediaType(contentType))
+						return response.blob(); // Handle media binary response
 					 throw new Error("Unsupported response type");
 				})
 				.then((data) => {

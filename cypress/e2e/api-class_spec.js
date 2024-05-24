@@ -5,7 +5,7 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {messageSent, subscribe} from "../../src/Api/Constants/Events";
+import {media, mediaUploaded, messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
@@ -61,7 +61,10 @@ function filterPrimitives(excludePrimitiveTypes = []) {
 }
 
 function requestExpectations(req) {
-	expect(req.headers).to.have.property("x-iris-identification");
+	expect(req.headers)
+		.to
+		.have
+		.property("x-iris-identification");
 }
 
 describe("Api class", () => {
@@ -80,36 +83,57 @@ describe("Api class", () => {
 
 		// Intercept api calls and respond with a static response
 		// This way we don't fill up the API with test data
-		cy.fixture("postDevicesResponse.json").as("postDevicesResponse");
-		cy.fixture("postMessagesResponse.json").as("postMessagesResponse");
-		cy.fixture("1x1.png", "latin1").as("getMediaResponse");
-		cy.get("@postDevicesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/devices`, (req) => {
-				requestExpectations(req);
-
-				req.reply(json);
+		cy.fixture("postDevicesResponse.json")
+			.as("postDevicesResponse");
+		cy.fixture("postMessagesResponse.json")
+			.as("postMessagesResponse");
+		cy.fixture("1x1.png", "latin1")
+			.as("getMediaResponse");
+		cy.fixture("postMediaResponse.json")
+			.as("postMediaResponse");
+		cy.fixture("pdf.pdf")
+			.then((fixture) => {
+				return new File([fixture], "pdf.pdf");
 			})
-				.as("postDevices");
-		});
-		cy.get("@postMessagesResponse").then((json) => {
-			cy.intercept("POST", `${config.apiDomain}/**/messages`, (req) => {
-				requestExpectations(req);
+			.as("mediaFile");
+		cy.get("@postDevicesResponse")
+			.then((json) => {
+				cy.intercept("POST", `${config.apiDomain}/**/devices`, (req) => {
+					requestExpectations(req);
 
-				req.reply(json);
-			})
-				.as("postMessages");
-		});
-		cy.get("@getMediaResponse").then((media) => {
-			cy.intercept("GET", `${config.apiDomain}/**/media/**/*`, (req) => {
-				requestExpectations(req);
+					req.reply(json);
+				})
+					.as("postDevices");
+			});
+		cy.get("@postMessagesResponse")
+			.then((json) => {
+				cy.intercept("POST", `${config.apiDomain}/**/messages`, (req) => {
+					requestExpectations(req);
 
-				req.reply({
-					body: media,
-					headers: {"Content-Type": "image/png"},
+					req.reply(json);
+				})
+					.as("postMessages");
+			});
+		cy.get("@getMediaResponse")
+			.then((mediaFile) => {
+				cy.intercept("GET", `${config.apiDomain}/**/media/**/*`, (req) => {
+					requestExpectations(req);
+
+					req.reply({
+						body: mediaFile,
+						headers: {"Content-Type": "image/png"},
+					});
+				})
+					.as("getMedia");
+			});
+		cy.get("@postMediaResponse")
+			.then((json) => {
+				cy.intercept("POST", `${config.apiDomain}/**/media`, (req) => {
+					requestExpectations(req);
+
+					req.reply(json);
 				});
-			})
-				.as("getMedia");
-		});
+			});
 
 
 		// This should not go in afterEach,
@@ -126,15 +150,31 @@ describe("Api class", () => {
 
 	describe("constructor", () => {
 		it("should create a new Api object with all it's properties set", () => {
-			expect(config.api.config).to.be.instanceOf(Config);
-			expect(config.api.config.apiDomain).to.be.equal(config.apiDomain);
-			expect(config.api.accountIdentification).to.be.equal(config.accountIdentification);
-			expect(config.api.deviceIdentification).to.be.equal(config.deviceIdentification);
-			expect(config.api.eventTarget).to.be.equal(ApiEventTarget);
+			expect(config.api.config)
+				.to
+				.be
+				.instanceOf(Config);
+			expect(config.api.config.apiDomain)
+				.to
+				.be
+				.equal(config.apiDomain);
+			expect(config.api.accountIdentification)
+				.to
+				.be
+				.equal(config.accountIdentification);
+			expect(config.api.deviceIdentification)
+				.to
+				.be
+				.equal(config.deviceIdentification);
+			expect(config.api.eventTarget)
+				.to
+				.be
+				.equal(ApiEventTarget);
 		});
 		it("should throw an error when using something other than a EventTarget as apiEventTarget", () => {
 			expect(() => new Api(config.apiDomain, config.accountIdentification, config.deviceIdentification, {}))
-				.to.throw("Expected object `apiEventTarget` `{}` to be of type `EventTarget`");
+				.to
+				.throw("Expected object `apiEventTarget` `{}` to be of type `EventTarget`");
 		});
 	});
 
@@ -143,18 +183,24 @@ describe("Api class", () => {
 			const newDomain = "someotherdomain";
 			config.api.setDomain(newDomain);
 
-			expect(config.api.config.apiDomain).to.be.equal(newDomain);
+			expect(config.api.config.apiDomain)
+				.to
+				.be
+				.equal(newDomain);
 		});
 
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as domain`, () => {
-				expect(() => config.api.setDomain(set.value))
-					.to.throw(`Expected \`apiDomain\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as domain`, () => {
+					expect(() => config.api.setDomain(set.value))
+						.to
+						.throw(`Expected \`apiDomain\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 		it("should throw an error when using an Empty string as domain", () => {
 			expect(() => config.api.setDomain(""))
-				.to.throw("Expected string `apiDomain` to not be empty");
+				.to
+				.throw("Expected string `apiDomain` to not be empty");
 		});
 	});
 
@@ -163,17 +209,23 @@ describe("Api class", () => {
 			const newAccountIdentification = "someotheraccountidentfication";
 			config.api.setAccountIdentification(newAccountIdentification);
 
-			expect(config.api.accountIdentification).to.be.equal(newAccountIdentification);
+			expect(config.api.accountIdentification)
+				.to
+				.be
+				.equal(newAccountIdentification);
 		});
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as accountIdentification`, () => {
-				expect(() => config.api.setAccountIdentification(set.value))
-					.to.throw(`Expected \`accountIdentification\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as accountIdentification`, () => {
+					expect(() => config.api.setAccountIdentification(set.value))
+						.to
+						.throw(`Expected \`accountIdentification\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 		it("should throw an error when using an Empty string as accountIdentification", () => {
 			expect(() => config.api.setAccountIdentification(""))
-				.to.throw("Expected string `accountIdentification` to not be empty");
+				.to
+				.throw("Expected string `accountIdentification` to not be empty");
 		});
 	});
 
@@ -182,23 +234,30 @@ describe("Api class", () => {
 			const newDeviceIdentification = "someotherdeviceidentfication";
 			config.api.setDeviceIdentification(newDeviceIdentification);
 
-			expect(config.api.deviceIdentification).to.be.equal(newDeviceIdentification);
+			expect(config.api.deviceIdentification)
+				.to
+				.be
+				.equal(newDeviceIdentification);
 		});
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as deviceIdentification`, () => {
-				expect(() => config.api.setDeviceIdentification(set.value))
-					.to.throw(`Expected \`deviceIdentification\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as deviceIdentification`, () => {
+					expect(() => config.api.setDeviceIdentification(set.value))
+						.to
+						.throw(`Expected \`deviceIdentification\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 		it("should throw an error when using an Empty string as deviceIdentification", () => {
 			expect(() => config.api.setDeviceIdentification(""))
-				.to.throw("Expected string `deviceIdentification` to not be empty");
+				.to
+				.throw("Expected string `deviceIdentification` to not be empty");
 		});
 		it("should throw an error when using a short string as deviceIdentification", () => {
 			// Min length is 10
 			const identification = "aaaaaaaaa";
 			expect(() => config.api.setDeviceIdentification(identification))
-				.to.throw(`Expected string \`deviceIdentification\` to have a minimum length of \`10\`, got \`${identification}\``);
+				.to
+				.throw(`Expected string \`deviceIdentification\` to have a minimum length of \`10\`, got \`${identification}\``);
 		});
 	});
 
@@ -207,17 +266,22 @@ describe("Api class", () => {
 			const newAuthorization = "somenewauthorization";
 			config.api.setAuthorization(newAuthorization);
 
-			expect(config.api.authorization).to.be.equal(newAuthorization);
+			expect(config.api.authorization)
+				.to
+				.be
+				.equal(newAuthorization);
 		});
 
 		filterPrimitives([
 			"string", "undefined",
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as authorization`, () => {
-				expect(() => config.api.setAuthorization(set.value))
-					.to.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as authorization`, () => {
+					expect(() => config.api.setAuthorization(set.value))
+						.to
+						.throw(`Expected \`authorization\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 	});
 
 	describe("setCustomHeaders()", () => {
@@ -228,21 +292,27 @@ describe("Api class", () => {
 			};
 			config.api.setCustomHeaders(newCustomHeaders);
 
-			expect(config.api.customHeaders).to.be.equal(newCustomHeaders);
+			expect(config.api.customHeaders)
+				.to
+				.be
+				.equal(newCustomHeaders);
 		});
 		filterPrimitives([
 			"Object", "undefined", "null", "boolean",
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as customHeaders`, () => {
-				expect(() => config.api.setCustomHeaders(set.value))
-					.to.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as customHeaders`, () => {
+					expect(() => config.api.setCustomHeaders(set.value))
+						.to
+						.throw(`Expected \`customHeaders\` to be of type \`object\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should throw an error when using a blacklisted header as one of the custom headers", () => {
 			CUSTOMHEADER_BLACKLIST.forEach((blacklistedHeaderKey) => {
 				expect(() => config.api.setCustomHeaders({[blacklistedHeaderKey]: "some value"}))
-					.to.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
+					.to
+					.throw(`(string \`${blacklistedHeaderKey}\`) This is a blacklisted header, please use a different header name`);
 			});
 		});
 
@@ -251,13 +321,15 @@ describe("Api class", () => {
 			let newCustomHeaders = {[reservedPrefixKey]: "some value"};
 
 			expect(() => config.api.setCustomHeaders(newCustomHeaders))
-				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-parley-\`, got \`${reservedPrefixKey}\``);
+				.to
+				.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-parley-\`, got \`${reservedPrefixKey}\``);
 
 			reservedPrefixKey = "x-iris-test";
 			newCustomHeaders = {[reservedPrefixKey]: "some value"};
 
 			expect(() => config.api.setCustomHeaders(newCustomHeaders))
-				.to.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-iris-\`, got \`${reservedPrefixKey}\``);
+				.to
+				.throw(`Expected string \`${reservedPrefixKey}\` to not start with \`x-iris-\`, got \`${reservedPrefixKey}\``);
 		});
 	});
 
@@ -265,38 +337,42 @@ describe("Api class", () => {
 		filterPrimitives([
 			"string",
 			"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as pushToken`, () => {
-				expect(() => config.api.subscribeDevice(
-					set.value,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as pushToken`, () => {
+					expect(() => config.api.subscribeDevice(
+						set.value,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		filterPrimitives([
 			"number",
 			"undefined", // Don't test for undefined, because pushType is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as pushType`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					set.value,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`pushType\` to be of type \`number\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as pushType`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						set.value,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`pushType\` to be of type \`number\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should throw an error when using invalid pushType", () => {
 			const pushType = 9999;
@@ -309,81 +385,90 @@ describe("Api class", () => {
 				undefined,
 				undefined,
 			))
-				.to.throw(`Expected number \`pushType\` to be one of \`[1,2,3,4,5,6]\`, got ${pushType}`);
+				.to
+				.throw(`Expected number \`pushType\` to be one of \`[1,2,3,4,5,6]\`, got ${pushType}`);
 		});
 
 		filterPrimitives([
 			"boolean",
 			"undefined", // Don't test for undefined, because pushEnabled is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as pushEnabled`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					set.value,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`pushEnabled\` to be of type \`boolean\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as pushEnabled`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						set.value,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`pushEnabled\` to be of type \`boolean\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		filterPrimitives([
 			"string",
 			"undefined", // Don't test for undefined, because pushToken is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using 'pushEnabled = true' and '${set.type}' as pushToken`, () => {
-				expect(() => config.api.subscribeDevice(
-					set.value,
-					config.pushType,
-					true,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using 'pushEnabled = true' and '${set.type}' as pushToken`, () => {
+					expect(() => config.api.subscribeDevice(
+						set.value,
+						config.pushType,
+						true,
+						undefined,
+						undefined,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`pushToken\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		filterPrimitives([
 			"Object",
 			"undefined", // Don't test for undefined, because userAdditionalInformation is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as userAdditionalInformation`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					set.value,
-					undefined,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`userAdditionalInformation\` to be of type \`object\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as userAdditionalInformation`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						true,
+						set.value,
+						undefined,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`userAdditionalInformation\` to be of type \`object\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		filterPrimitives([
 			"number",
 			"boolean", // Boolean are numbers
 			"undefined", // Don't test for undefined, because type is optional and if we give undefined it will test for `version` next
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as type`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					config.userAdditionalInformation,
-					set.value,
-					undefined,
-					undefined,
-				))
-					.to.throw(`Expected \`type\` to be of type \`number\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as type`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						true,
+						config.userAdditionalInformation,
+						set.value,
+						undefined,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`type\` to be of type \`number\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should throw an error when using invalid type", () => {
 			const type = 9999;
@@ -396,23 +481,26 @@ describe("Api class", () => {
 				undefined,
 				undefined,
 			))
-				.to.throw(`Expected number \`type\` to be one of \`[1,2,3,4]\`, got ${type}`);
+				.to
+				.throw(`Expected number \`type\` to be one of \`[1,2,3,4]\`, got ${type}`);
 		});
 
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as version`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					config.userAdditionalInformation,
-					config.type,
-					set.value,
-					undefined,
-				))
-					.to.throw(`Expected \`version\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as version`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						true,
+						config.userAdditionalInformation,
+						config.type,
+						set.value,
+						undefined,
+					))
+						.to
+						.throw(`Expected \`version\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should throw an error when using invalid version", () => {
 			// Min length
@@ -426,7 +514,8 @@ describe("Api class", () => {
 				shortVersion,
 				config.referer,
 			))
-				.to.throw(`Expected string \`version\` to have a minimum length of \`5\`, got \`${shortVersion}\``);
+				.to
+				.throw(`Expected string \`version\` to have a minimum length of \`5\`, got \`${shortVersion}\``);
 
 			// Max length
 			const longVersion = "100000000";
@@ -439,7 +528,8 @@ describe("Api class", () => {
 				longVersion,
 				config.referer,
 			))
-				.to.throw(`Expected string \`version\` to have a maximum length of \`8\`, got \`${longVersion}\``);
+				.to
+				.throw(`Expected string \`version\` to have a maximum length of \`8\`, got \`${longVersion}\``);
 
 			// Regex
 			const wrongFormat = "v1.0.0";
@@ -452,26 +542,29 @@ describe("Api class", () => {
 				wrongFormat,
 				config.referer,
 			))
-				.to.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
+				.to
+				.throw(`Expected string \`version\` to match \`${DeviceVersionRegex}\`, got \`${wrongFormat}\``);
 		});
 
 		filterPrimitives([
 			"string",
 			"undefined",
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as referer`, () => {
-				expect(() => config.api.subscribeDevice(
-					config.pushToken,
-					config.pushType,
-					true,
-					config.userAdditionalInformation,
-					config.type,
-					config.version,
-					set.value,
-				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as referer`, () => {
+					expect(() => config.api.subscribeDevice(
+						config.pushToken,
+						config.pushType,
+						true,
+						config.userAdditionalInformation,
+						config.type,
+						config.version,
+						set.value,
+					))
+						.to
+						.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should default referer to window.location.href", () => {
 			cy.visit("/");
@@ -486,19 +579,22 @@ describe("Api class", () => {
 				undefined,
 			);
 
-			cy.wait("@postDevices").then((interception) => {
-				cy.location("href").then((href) => {
-					expect(JSON.parse(interception.request.body).referer)
-						.to.contain(href);
+			cy.wait("@postDevices")
+				.then((interception) => {
+					cy.location("href")
+						.then((href) => {
+							expect(JSON.parse(interception.request.body).referer)
+								.to
+								.contain(href);
 
-					// There is an issue where the window.location.href will contain "iframe/xxx"
-					// due to how Cypress loads the chat, so we cannot check if the
-					// href equals the href we get here
-					// Instead we can only check if it begins with the href
-					// Error when using `.equal(href)`
-					// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+							// There is an issue where the window.location.href will contain "iframe/xxx"
+							// due to how Cypress loads the chat, so we cannot check if the
+							// href equals the href we get here
+							// Instead we can only check if it begins with the href
+							// Error when using `.equal(href)`
+							// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+						});
 				});
-			});
 		});
 
 		it("should fetch and return response using direct way", () => {
@@ -513,7 +609,10 @@ describe("Api class", () => {
 						config.version,
 						config.referer,
 					);
-					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(fixture));
 				});
 		});
 
@@ -524,7 +623,10 @@ describe("Api class", () => {
 						// Subscribe to the "subscribe" event
 						ApiEventTarget.addEventListener(subscribe, (data) => {
 							// Validate that the response from the API is correct
-							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
 							resolve();
 						});
 
@@ -544,8 +646,14 @@ describe("Api class", () => {
 		it("should set the deviceRegistered and isDeviceRegistrationPending correctly", () => {
 			cy.visit("/");
 
-			expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
-			expect(config.api.deviceRegistered).to.be.equal(false);
+			expect(config.api.isDeviceRegistrationPending)
+				.to
+				.be
+				.equal(false);
+			expect(config.api.deviceRegistered)
+				.to
+				.be
+				.equal(false);
 
 			config.api.subscribeDevice(
 				config.pushToken,
@@ -555,61 +663,81 @@ describe("Api class", () => {
 				config.type,
 				config.version,
 				config.referer,
-			).then(() => {
-				expect(config.api.isDeviceRegistrationPending).to.be.equal(false);
-				expect(config.api.deviceRegistered).to.be.equal(true);
-			});
+			)
+				.then(() => {
+					expect(config.api.isDeviceRegistrationPending)
+						.to
+						.be
+						.equal(false);
+					expect(config.api.deviceRegistered)
+						.to
+						.be
+						.equal(true);
+				});
 
-			expect(config.api.isDeviceRegistrationPending).to.be.equal(true);
+			expect(config.api.isDeviceRegistrationPending)
+				.to
+				.be
+				.equal(true);
 		});
 	});
 
 	describe("sendMessage()", () => {
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as message`, () => {
-				expect(() => config.api.sendMessage(set.value))
-					.to.throw(`Expected \`message\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as message`, () => {
+					expect(() => config.api.sendMessage(set.value))
+						.to
+						.throw(`Expected \`message\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		filterPrimitives([
 			"string",
 			"undefined",
-		]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as referer`, () => {
-				expect(() => config.api.sendMessage(
-					config.message,
-					set.value,
-				))
-					.to.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as referer`, () => {
+					expect(() => config.api.sendMessage(
+						config.message,
+						set.value,
+					))
+						.to
+						.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should default referer to window.location.href", () => {
 			cy.visit("/");
 
 			config.api.sendMessage(config.message);
 
-			cy.wait("@postMessages").then((interception) => {
-				cy.location("href").then((href) => {
-					expect(JSON.parse(interception.request.body).referer)
-						.to.contain(href);
+			cy.wait("@postMessages")
+				.then((interception) => {
+					cy.location("href")
+						.then((href) => {
+							expect(JSON.parse(interception.request.body).referer)
+								.to
+								.contain(href);
 
-					// There is an issue where the window.location.href will contain "iframe/xxx"
-					// due to how Cypress loads the chat, so we cannot check if the
-					// href equals the href we get here
-					// Instead we can only check if it begins with the href
-					// Error when using `.equal(href)`
-					// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+							// There is an issue where the window.location.href will contain "iframe/xxx"
+							// due to how Cypress loads the chat, so we cannot check if the
+							// href equals the href we get here
+							// Instead we can only check if it begins with the href
+							// Error when using `.equal(href)`
+							// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+						});
 				});
-			});
 		});
 
 		it("should fetch and return response using direct way", () => {
 			cy.get("@postMessagesResponse")
 				.then(async (fixture) => {
 					const data = await config.api.sendMessage(config.message);
-					expect(JSON.stringify(data)).to.be.equal(JSON.stringify(fixture));
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(fixture));
 				});
 		});
 
@@ -620,7 +748,10 @@ describe("Api class", () => {
 						// Subscribe to the "messagesent" event
 						ApiEventTarget.addEventListener(messageSent, (data) => {
 							// Validate that the response from the API is correct
-							expect(JSON.stringify(data.detail)).to.be.equal(JSON.stringify(fixture));
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
 							resolve();
 						});
 
@@ -645,10 +776,17 @@ describe("Api class", () => {
 
 			cy.wrap(config.api.fetchWrapper(testUrl, {method}));
 
-			cy.wait("@postDevices").then((interception) => {
-				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(defaultHeaders));
-				expect(Object.values(interception.request.headers)).to.include.members(Object.values(defaultHeaders));
-			});
+			cy.wait("@postDevices")
+				.then((interception) => {
+					expect(Object.keys(interception.request.headers))
+						.to
+						.include
+						.members(Object.keys(defaultHeaders));
+					expect(Object.values(interception.request.headers))
+						.to
+						.include
+						.members(Object.values(defaultHeaders));
+				});
 		});
 		it("should make a request with custom headers", () => {
 			const customHeaders = {
@@ -668,41 +806,56 @@ describe("Api class", () => {
 				config.referer,
 			);
 
-			cy.wait("@postDevices").then((interception) => {
-				expect(Object.keys(interception.request.headers)).to.include.members(Object.keys(customHeaders));
-				expect(Object.values(interception.request.headers)).to.include.members(Object.values(customHeaders));
-			});
+			cy.wait("@postDevices")
+				.then((interception) => {
+					expect(Object.keys(interception.request.headers))
+						.to
+						.include
+						.members(Object.keys(customHeaders));
+					expect(Object.values(interception.request.headers))
+						.to
+						.include
+						.members(Object.values(customHeaders));
+				});
 		});
 	});
 
-	describe("getMedia", () => {
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as year`, () => {
-				expect(() => config.api.getMedia(set.value))
-					.to.throw(`Expected \`year\` to be of type \`string\` but received type \`${set.type}\``);
+	describe("getMedia()", () => {
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as year`, () => {
+					expect(() => config.api.getMedia(set.value))
+						.to
+						.throw(`Expected \`year\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as month`, () => {
-				expect(() => config.api.getMedia("2023", set.value))
-					.to.throw(`Expected \`month\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as month`, () => {
+					expect(() => config.api.getMedia("2023", set.value))
+						.to
+						.throw(`Expected \`month\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as day`, () => {
-				expect(() => config.api.getMedia("2023", "6", set.value))
-					.to.throw(`Expected \`day\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as day`, () => {
+					expect(() => config.api.getMedia("2023", "6", set.value))
+						.to
+						.throw(`Expected \`day\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
-		filterPrimitives(["string"]).forEach((set) => {
-			it(`should throw an error when using '${set.type}' as fileName`, () => {
-				expect(() => config.api.getMedia("2023", "6", "6", set.value))
-					.to.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as fileName`, () => {
+					expect(() => config.api.getMedia("2023", "6", "6", set.value))
+						.to
+						.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
+				});
 			});
-		});
 
 		it("should fetch and return response using direct way", () => {
 			cy.get("@getMediaResponse")
@@ -715,7 +868,174 @@ describe("Api class", () => {
 					// `fixture` is a buffer, so we need to convert it to a blob and then to text
 					const fixtureAsText = await new Blob([fixture], {type: "image/png"}).text();
 
-					expect(dataAsText).to.be.equal(fixtureAsText);
+					expect(dataAsText)
+						.to
+						.be
+						.equal(fixtureAsText);
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@getMediaResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(media, async (data) => {
+							// Validate that the response from the API is correct
+
+							// `data` is a Blob and we need text so we can match it to the fixture
+							const dataAsText = await data.detail.text();
+
+							// `fixture` is a buffer, so we need to convert it to a blob and then to text
+							const fixtureAsText = await new Blob([fixture], {type: "image/png"}).text();
+
+							expect(dataAsText)
+								.to
+								.be
+								.equal(fixtureAsText);
+							resolve();
+						});
+
+						config.api.getMedia("2023", "6", "6", "41cedb695613d417be10c65f089521599c103cc9.png");
+					});
+				});
+		});
+	});
+
+	describe("uploadMedia()", () => {
+		filterPrimitives(["Object"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as file`, () => {
+					expect(() => config.api.uploadMedia(set.value))
+						.to
+						.throw(`Expected \`file\` to be of type \`object\` but received type \`${set.type}\``);
+				});
+			});
+
+		it(`should throw an error when using 'object' as file`, () => {
+			expect(() => config.api.uploadMedia({}))
+				.to
+				.throw(`Expected object \`file\` \`{}\` to be of type \`File\``);
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@postMediaResponse")
+				.then(async (fixture) => {
+					cy.get("@mediaFile")
+						.then(async (mediaFile) => {
+							const data = await config.api.uploadMedia(mediaFile);
+							expect(JSON.stringify(data))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
+						});
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@postMediaResponse")
+				.then(async (fixture) => {
+					cy.get("@mediaFile")
+						.then(async (mediaFile) => {
+							return new Cypress.Promise((resolve) => {
+								// Subscribe to the "messagesent" event
+								ApiEventTarget.addEventListener(mediaUploaded, (data) => {
+									// Validate that the response from the API is correct
+									expect(JSON.stringify(data.detail))
+										.to
+										.be
+										.equal(JSON.stringify(fixture));
+									resolve();
+								});
+
+								config.api.uploadMedia(mediaFile);
+							});
+						});
+				});
+		});
+	});
+
+	describe("sendMedia()", () => {
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as mediaId`, () => {
+					expect(() => config.api.sendMedia(set.value, "pdf.pdf"))
+						.to
+						.throw(`Expected \`mediaId\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as fileName`, () => {
+					expect(() => config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", set.value))
+						.to
+						.throw(`Expected \`fileName\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		filterPrimitives([
+			"string",
+			"undefined",
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as referer`, () => {
+					expect(() => config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf", set.value))
+						.to
+						.throw(`Expected \`referer\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		it("should default referer to window.location.href", () => {
+			cy.visit("/");
+
+			config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+
+			cy.wait("@postMessages")
+				.then((interception) => {
+					cy.location("href")
+						.then((href) => {
+							expect(JSON.parse(interception.request.body).referer)
+								.to
+								.contain(href);
+
+							// There is an issue where the window.location.href will contain "iframe/xxx"
+							// due to how Cypress loads the chat, so we cannot check if the
+							// href equals the href we get here
+							// Instead we can only check if it begins with the href
+							// Error when using `.equal(href)`
+							// expected https://chat-dev.parley.nu:8181/__cypress/iframes/integration/api-class_spec.js to equal https://chat-dev.parley.nu:8181/
+						});
+				});
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					const data = await config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(fixture));
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@postMessagesResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(messageSent, (data) => {
+							// Validate that the response from the API is correct
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
+							resolve();
+						});
+
+						config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+					});
 				});
 		});
 	});
