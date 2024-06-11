@@ -1,0 +1,78 @@
+.carouselContainer {
+  margin-bottom: 10px;
+  position: relative; // Needed so that the carousel navButton can be position: absolute
+
+  .carousel {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	padding-right: 55px; // So that the last carousel item is placed in line with normal messages above
+	scroll-behavior: smooth;
+	scrollbar-width: none; // Hide scrollbar, only supported by Firefox right now
+	-ms-overflow-style: none; // Remove scrollbar in IE11
+
+	.carouselItem {
+	  padding-right: 0; // Carousel items (messages) already have their own padding that adds whitespace between them
+	  scroll-snap-align: start;
+	}
+
+	&::-webkit-scrollbar { // Hide scrollbar for browsers other than Firefox
+	  width: 0;
+	  background: transparent;
+	}
+  }
+
+  .navButton {
+	display: none; // Hide by default, we show it once we hover over it
+	position: absolute;
+	top: 50%;
+	width: auto;
+
+	&.isMobile {
+	  display: flex; // Always show on mobile
+	}
+  }
+
+  .previous,
+  .next {
+	background-color: var(--parley-nav-background-color);
+	border: none;
+	color: white;
+	opacity: 40%;
+	text-align: center;
+	cursor: pointer;
+	padding: 0;
+
+	font-size: 0;
+	width: 20px;
+	height: 25px;
+	background-size: 15px 15px;
+	background-repeat: no-repeat;
+	background-position: center;
+
+	&:hover {
+	  opacity: 100%;
+	}
+
+	// Only apply this to IE10+
+	@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+	  padding: 5px; // IE10+ does something different with `padding: 0px` than chrome so we need extra padding
+	}
+  }
+
+  .previous {
+	border-radius: 0 15% 15% 0;
+	left: 0;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='0,50 80,100 80,0' fill='%23fff'/%3E%3C/svg%3E");
+  }
+
+  .next {
+	border-radius: 15% 0 0 15%;
+	right: 0;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='100,50 20,100 20,0' fill='%23fff'/%3E%3C/svg%3E");
+  }
+
+  &:hover .navButton {
+	display: flex;
+  }
+}

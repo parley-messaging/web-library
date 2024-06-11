@@ -19,6 +19,7 @@ function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 		onLoad: (window) => {
 			if(onLoad)
 				onLoad(window);
+
 			window.initParleyMessenger();
 		},
 	});
@@ -582,10 +583,15 @@ describe("UI", () => {
 				},
 
 				// I did not find a way to create a file with `application/msexcel` so this one will not be tested
-			].forEach(({fileName, expectedIcon}) => {
+			].forEach(({
+				fileName,
+				expectedIcon,
+			}) => {
 				it(`should show the media file '${fileName}', after submitting it`, () => {
-					cy.intercept("POST", "*/**/messages").as("postMessage");
-					cy.intercept("GET", "*/**/messages").as("getMessages");
+					cy.intercept("POST", "*/**/messages")
+						.as("postMessage");
+					cy.intercept("GET", "*/**/messages")
+						.as("getMessages");
 
 					cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
 						.as("mediaFile");
@@ -632,7 +638,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -666,7 +673,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -700,7 +708,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -963,7 +972,8 @@ describe("UI", () => {
 					req.on("response", (res) => {
 						res.setDelay(500);
 					});
-				}).as("postMessage");
+				})
+					.as("postMessage");
 
 				clickOnLauncher();
 
@@ -1002,7 +1012,8 @@ describe("UI", () => {
 			});
 		});
 		it("should show an error, after rendering an unsupported media file", () => {
-			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"}).as("getMessages");
+			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"})
+				.as("getMessages");
 
 			visitHome();
 
@@ -1072,7 +1083,12 @@ describe("UI", () => {
 				mimeType: "video/mp4",
 				expectedIcon: "file-video",
 			},
-		].forEach(({fileName, fileExtension, mimeType, expectedIcon}) => {
+		].forEach(({
+			fileName,
+			fileExtension,
+			mimeType,
+			expectedIcon,
+		}) => {
 			it(`should show the media file with mimeType '${mimeType}', after receiving it`, () => {
 				cy.fixture("getMessageWithPdfResponse.json")
 					.then((fixture) => {
@@ -1103,7 +1119,6 @@ describe("UI", () => {
 					.should("be.visible");
 			});
 		});
-
 		it(`should show the media file's filename, if description is not set, after receiving it`, () => {
 			const fileName = "some-pdf.pdf";
 
@@ -1117,7 +1132,8 @@ describe("UI", () => {
 				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
 					.as("getMessages"));
 
-			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"}).as("getMedia");
+			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"})
+				.as("getMedia");
 
 			visitHome();
 
@@ -1127,6 +1143,166 @@ describe("UI", () => {
 
 			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 				.should("have.text", fileName);
+		});
+		describe("carousel", () => {
+			it("should show carousel with multiple items and can navigate using buttons or scrolling", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarousel.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.get("@app")
+							.find("[class^=parley-messaging-carouselContainer__]")
+							.should("have.length", 1)
+							.find("[class^=parley-messaging-messageBubble__]")
+							.should("have.length", 2)
+							.find("[class^=parley-messaging-message__]")
+							.as("messages");
+						cy.get("@messages")
+							.eq(0)
+							.find("p")
+							.should("have.text", fixture.data[0].carousel[0].message)
+							.should("be.visible");
+						cy.get("@messages")
+							.eq(1)
+							.find("p")
+							.should("have.text", fixture.data[0].carousel[1].message)
+							.should("not.be.visible");
+					});
+
+				// Test navigation
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("not.be.visible");
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realHover({});
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("be.visible");
+
+				// Next button click
+				cy.get("button[name=next]")
+					.click();
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Previous button click
+				cy.get("button[name=previous]")
+					.click();
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Mouse horizontal scroll right
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realMouseWheel({deltaX: 500});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Mouse horizontal scroll left
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realMouseWheel({deltaX: -500});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Stop hovering navigation
+				cy.get("body")
+					.realHover({});
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("not.be.visible");
+			});
+			it("should show carousel with multiple items and can navigate using swipe on mobile", () => {
+				visitHome({}, null, pretendToBeMobile);
+
+				cy.fixture("getMessageWithCarousel.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-message__]")
+					.as("messages");
+
+				// Test navigation (should always be visible on mobile)
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("be.visible");
+
+				// Next button touch
+				cy.get("button[name=next]")
+					.realTouch({});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Previous button touch
+				cy.get("button[name=previous]")
+					.realTouch({});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Swipe right
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realSwipe("toLeft", {length: 100});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Swipe left
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realSwipe("toRight", {length: 100});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+			});
+
+			// TODO: @gerben; carousels with media (image, video, file)
+			// TODO: @gerben; carousels with buttons
 		});
 	});
 	describe("parley config settings", () => {

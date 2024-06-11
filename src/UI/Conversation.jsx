@@ -172,17 +172,17 @@ class Conversation extends Component {
 									message.carousel && message.carousel.length > 0
 									&& <Carousel
 										items={
-											message.carousel.map((item, _index) => (
+											message.carousel.map((carouselItem, _index) => (
 												<Message
 													api={this.props.api}
 													key={_index}
 													message={
 													{
 														...message,
-														message: item.message,
+														...carouselItem,
 													}
 													}
-													showAgent={this.shouldRenderAgentName(index, index - 1)}
+													showAgent={false}
 												/>
 											))
 										}
