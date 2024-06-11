@@ -1,0 +1,14 @@
+{
+	"data": {
+		"media": "da0cb973-6a33-402d-8dd6-68eb3ad65cef"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "media"
+		},
+		"method": "post",
+		"duration": 0.021
+	}
+}

@@ -71,7 +71,9 @@ export default class App extends React.Component {
 			deviceVersion: version.substr(0, version.indexOf("-")) || version, // Strip any pre-release data, if not present just use the whole version
 			userAdditionalInformation: window?.parleySettings?.userAdditionalInformation || undefined,
 			workingHours: window?.parleySettings?.weekdays || undefined,
-			hideChatOutsideWorkingHours: window?.parleySettings?.interface?.hideChatAfterBusinessHours || undefined,
+			hideChatOutsideWorkingHours: typeof window?.parleySettings?.interface?.hideChatAfterBusinessHours === "boolean"
+				? window?.parleySettings?.interface?.hideChatAfterBusinessHours
+				: false,
 			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			devicePersistence: {
 				domain: window?.parleySettings?.devicePersistence?.domain || undefined,
@@ -81,6 +83,10 @@ export default class App extends React.Component {
 			storagePrefix: window?.parleySettings?.storagePrefix || undefined,
 			messengerOpenState: showChat ? MessengerOpenState.open : MessengerOpenState.minimize,
 			launcherIcon: window?.parleySettings?.runOptions?.icon || undefined,
+			allowMediaUpload: typeof window?.parleySettings?.runOptions?.allowFileUpload === "boolean"
+				? window?.parleySettings?.runOptions?.allowFileUpload
+				: true,
+			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 		};
 
 		this.Api = new Api(
@@ -133,13 +139,14 @@ export default class App extends React.Component {
 		const overridesFromWindow = {...window?.parleySettings?.runOptions?.interfaceTexts};
 
 		// Remove all keys that are not overridable
-		Object.keys(overridesFromWindow).forEach((key) => {
-			if(!overridableTextsKeys.includes(key))
-				delete overridesFromWindow[key];
-		});
+		Object.keys(overridesFromWindow)
+			.forEach((key) => {
+				if(!overridableTextsKeys.includes(key))
+					delete overridesFromWindow[key];
+			});
 
 		return overridesFromWindow;
-	}
+	};
 
 	/**
 	 * Creates a new cookie with that stores the device identification
@@ -585,6 +592,17 @@ export default class App extends React.Component {
 				objectToSaveIntoState = {interfaceLanguage: value};
 			} else if(path[layer1] === "icon") {
 				objectToSaveIntoState = {launcherIcon: value};
+			} else if(path[layer1] === "allowedMediaTypes") {
+				// Clear the current allowedMediaTypes, otherwise the deepmerge
+				// further down will merge your new list with the current one.
+				// This is not what we want, we only want to have the new values
+				// and discard all the old values.
+				// Also, we don't use setState() so we don't trigger an update.
+				if(this.state.allowedMediaTypes)
+					this.state.allowedMediaTypes.splice(0, this.state.allowedMediaTypes.length);
+				objectToSaveIntoState = {allowedMediaTypes: value};
+			} else if(path[layer1] === "allowFileUpload") {
+				objectToSaveIntoState = {allowMediaUpload: value};
 			}
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
@@ -594,6 +612,22 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "authHeader") {
 			objectToSaveIntoState = {deviceAuthorization: value};
 		} else if(path[layer0] === "weekdays") {
+			// Find existing weekdays that have the same day name as the new value
+			// If we find any we delete them so the new setting can override them.
+			value.forEach((newWeekday) => {
+				const existingWeekday = this.state.workingHours?.find((stateWeekday) => {
+					if(stateWeekday[0].toLowerCase !== undefined) {
+						// Dealing with ["Day", start, end]
+						return stateWeekday[0].toLowerCase() === newWeekday[0].toLowerCase();
+					}
+
+					// Dealing with [startTimestamp, endTimestamp]
+					return stateWeekday[0] === newWeekday[0];
+				});
+				if(existingWeekday)
+					this.state.workingHours.splice(this.state.workingHours.indexOf(existingWeekday), 1);
+			});
+
 			objectToSaveIntoState = {workingHours: value};
 		} else if(path[layer0] === "xIrisIdentification") {
 			objectToSaveIntoState = {deviceIdentification: value};
@@ -772,8 +806,9 @@ export default class App extends React.Component {
 	};
 
 	checkWorkingHours = () => {
-		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}));
-		Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
+		this.setState(prevState => ({offline: !areWeOnline(prevState.workingHours)}), () => {
+			Logger.debug(`Offline mode ${this.state.offline ? "enabled" : "disabled"}`);
+		});
 	};
 
 	saveMessengerOpenState = (messengerOpenState) => {
@@ -796,7 +831,7 @@ export default class App extends React.Component {
 
 		// This will trigger a new subscribe due to state.deviceIdentification being updated
 		this.getDeviceIdentification(true);
-	}
+	};
 
 	/**
 	 * Called when, somehow, the device is not yet registered when trying to send
@@ -819,7 +854,8 @@ export default class App extends React.Component {
 				}
 				<Chat
 					allowEmoji={true}
-					allowFileUpload={true}
+					allowMediaUpload={this.state.allowMediaUpload}
+					allowedMediaTypes={this.state.allowedMediaTypes}
 					api={this.Api}
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}

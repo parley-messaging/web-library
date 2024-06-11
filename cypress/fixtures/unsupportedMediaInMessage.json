@@ -1,0 +1,46 @@
+{
+	"data": [
+		{
+			"id": 5682,
+			"time": 1686054738,
+			"message": null,
+			"image": "img/364/2023/6/6/41cedb695613d417be10c65f089521599c103cc9.exe",
+			"typeId": 2,
+			"agent": {
+				"id": 3,
+				"name": "Tracebuzz",
+				"avatar": "https://beta.tracebuzz.com/V002/img/avatar.php?i=TB&c=f4931d",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": {
+				"id": "img/364/2023/6/6/41cedb695613d417be10c65f089521599c103cc9.exe",
+				"mimeType": "application/octet-stream",
+				"year": "2023",
+				"month": "6",
+				"day": "6",
+				"filename": "41cedb695613d417be10c65f089521599c103cc9.exe",
+				"description": "2117234911_1686055386_2743.exe"
+			},
+			"buttons": []
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}
