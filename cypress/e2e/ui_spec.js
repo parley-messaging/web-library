@@ -1148,7 +1148,7 @@ describe("UI", () => {
 			it("should show carousel with multiple items and can navigate using buttons or scrolling", () => {
 				visitHome();
 
-				cy.fixture("getMessageWithCarousel.json")
+				cy.fixture("getMessageWithCarouselTextItems.json")
 					.as("getMessageResponse");
 
 				// Intercept GET messages and return a fixture message with an image in it
@@ -1237,9 +1237,13 @@ describe("UI", () => {
 					.should("not.be.visible");
 			});
 			it("should show carousel with multiple items and can navigate using swipe on mobile", () => {
+				// According to https://gs.statcounter.com/screen-resolution-stats/mobile/worldwide
+				// the most populair mobile screen size is 360x800,
+				// so we'll use that for this test
+				cy.viewport(360, 800);
 				visitHome({}, null, pretendToBeMobile);
 
-				cy.fixture("getMessageWithCarousel.json")
+				cy.fixture("getMessageWithCarouselTextItems.json")
 					.as("getMessageResponse");
 
 				// Intercept GET messages and return a fixture message with an image in it
@@ -1300,9 +1304,120 @@ describe("UI", () => {
 					.eq(1)
 					.should("not.be.visible");
 			});
+			[
+				{
+					title: "fullscreen (mobile)",
+					params: {
+						mobile: true,
+						carouselItems: 2,
+					},
+				},
+				{
+					title: "only 1 carousel item on non-fullscreen",
+					params: {
+						mobile: false,
+						carouselItems: 1,
+					},
+				},
+			].forEach((test) => {
+				it(`should show carousel and hide navigation if all items fit on screen (${test.title})`, () => {
+					if(test.params.mobile)
+						visitHome({}, null, pretendToBeMobile);
+					 else
+						visitHome();
 
-			// TODO: @gerben; carousels with media (image, video, file)
-			// TODO: @gerben; carousels with buttons
+
+					cy.fixture("getMessageWithCarouselTextItems.json")
+						.as("getMessageResponse");
+
+					// Intercept GET messages and return a fixture message with the carousel items
+					cy.get("@getMessageResponse")
+						.then((fixture) => {
+							// Dynamically create carousel items
+							const updatedFixture = fixture;
+							const carouselItem = updatedFixture.data[0].carousel[0];
+							updatedFixture.data[0].carousel = [];
+							for(let i = 0; i < test.params.carouselItems; i++) {
+								carouselItem.title = `This is a title #${i}`;
+								carouselItem.title = `This is the carousel body #${i}}`;
+								updatedFixture.data[0].carousel.push(carouselItem);
+							}
+
+							cy.intercept("GET", "*/**/messages", (req) => {
+								req.reply(updatedFixture);
+							});
+						});
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-message__]")
+						.as("messages");
+
+					// Navigation should not exist if all the items fit on the screen
+					cy.get("[class^=parley-messaging-navButton__]")
+						.should("not.exist");
+				});
+			});
+			it("should show carousel with image items", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarouselImageItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				// Intercept the retrieval of the image binary
+				cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-carouselContainer__]")
+					.should("have.length", 1)
+					.find("[class^=parley-messaging-messageBubble__]")
+					.should("have.length", 2)
+					.find("[class^=parley-messaging-message__]")
+					.first()
+					.find("[class^=parley-messaging-image__]")
+					.should("be.visible");
+			});
+			it("should show carousel with button items", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarouselButtonItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						fixture.data[0].carousel[0].buttons.forEach((button, buttonIndex) => {
+							cy.get("@app")
+								.find("[class^=parley-messaging-carouselContainer__]")
+								.find("[class^=parley-messaging-message__]")
+								.first()
+								.find("[class^=parley-messaging-button__]")
+								.its(buttonIndex)
+								.should("have.text", button.title)
+								.should("be.visible");
+						});
+					});
+			});
 		});
 	});
 	describe("parley config settings", () => {

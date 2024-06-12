@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
 import * as styles from "./Carousel.module.less";
 import {isMobile} from "./Scripts/OSRecognition";
 
@@ -11,6 +10,8 @@ export default class Carousel extends Component {
 		this.carouselRef = React.createRef();
 		this.previousButtonName = "previous";
 		this.nextButtonName = "next";
+
+		this.state = {shouldRenderNavigation: true};
 	}
 
 	handleNavigationClick = (e) => {
@@ -27,6 +28,22 @@ export default class Carousel extends Component {
 		} else if(e.target.name === this.previousButtonName) {
 			this.carouselRef.current.scrollLeft
 				-= (scrollWidth / this.props.items.length) + messagePaddingLeftCorrection;
+		}
+	};
+
+	componentDidMount = () => {
+		// We always render the navigation by default
+		// unless the navigation isn't needed because all the carousel items already fit on the screen
+		// (on fullscreen for example, with a couple carousel items)
+
+		if(this.props.items.length === 1 // Single items should never show navigation
+			|| this.carouselRef.current?.clientWidth === this.carouselRef.current?.scrollWidth
+		) {
+			// There is nothing to scroll so hide the navigation
+			this.setState(prevState => ({
+				...prevState,
+				shouldRenderNavigation: false,
+			}));
 		}
 	};
 
@@ -49,24 +66,29 @@ export default class Carousel extends Component {
 							<div className={styles.carouselItem} key={index}>
 								{item}
 							</div>
-					))
+						))
 					}
 				</div>
-				<button
-					className={previousButtonStyle} name={this.previousButtonName}
-					onClick={this.handleNavigationClick}
-				>
-					{previousButtonText}
-				</button>
-				<button
-					className={nextButtonStyle} name={this.nextButtonName}
-					onClick={this.handleNavigationClick}
-				>
-					{nextButtonText}
-				</button>
+				{
+					this.state.shouldRenderNavigation && <>
+						<button
+							className={previousButtonStyle} name={this.previousButtonName}
+							onClick={this.handleNavigationClick}
+						>
+							{previousButtonText}
+						</button>
+						<button
+							className={nextButtonStyle} name={this.nextButtonName}
+							onClick={this.handleNavigationClick}
+						>
+							{nextButtonText}
+						</button>
+					</>
+				}
 			</div>
 		);
 	}
 }
 
+// TODO: @gerben; implement proptypes
 // Carousel.propTypes = {items: PropTypes.arrayOf(PropTypes.instanceOf(Message))};

@@ -11,6 +11,7 @@ import WebUrlButton from "./MessageButtons/WebUrlButton";
 import CallButton from "./MessageButtons/CallButton";
 import Media from "./Media";
 import Image from "./Image";
+import mediaShape from "./shapes/media";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -94,18 +95,10 @@ Message.propTypes = {
 		buttons: PropTypes.arrayOf(PropTypes.shape({
 			payload: PropTypes.string.isRequired,
 			title: PropTypes.string,
-			type: PropTypes.oneOf(MessageButtonTypes),
+			type: PropTypes.oneOf(Object.values(MessageButtonTypes)),
 		})),
 		id: PropTypes.number,
-		media: PropTypes.shape({
-			day: PropTypes.string.isRequired,
-			description: PropTypes.string,
-			filename: PropTypes.string.isRequired,
-			id: PropTypes.string.isRequired,
-			mimeType: PropTypes.string.isRequired,
-			month: PropTypes.string.isRequired,
-			year: PropTypes.string.isRequired,
-		}),
+		media: PropTypes.shape(mediaShape),
 		message: PropTypes.string,
 		quickReplies: PropTypes.arrayOf(PropTypes.string),
 		time: PropTypes.number.isRequired,

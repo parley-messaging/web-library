@@ -16,6 +16,7 @@ import {isSupportedMediaType} from "../Api/Constants/SupportedMediaTypes";
 import Logger from "js-logger";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
+import mediaShape from "./shapes/media";
 
 class Media extends Component {
 	constructor(props) {
@@ -133,15 +134,7 @@ class Media extends Component {
 
 Media.propTypes = {
 	api: PropTypes.instanceOf(Api).isRequired,
-	media: PropTypes.shape({
-		day: PropTypes.string.isRequired,
-		description: PropTypes.string,
-		filename: PropTypes.string.isRequired,
-		id: PropTypes.string.isRequired,
-		mimeType: PropTypes.string.isRequired,
-		month: PropTypes.string.isRequired,
-		year: PropTypes.string.isRequired,
-	}).isRequired,
+	media: PropTypes.shape(mediaShape).isRequired,
 	messageType: PropTypes.oneOf([
 		MessageTypes.Agent,
 		MessageTypes.User,
