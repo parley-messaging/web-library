@@ -74,26 +74,30 @@ class Conversation extends Component {
 		if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages))
 			newState.messages = messages;
 
+
 		// Set welcome message if we got one from the api
 		// otherwise use the default set by props
 		const welcomeMessage = eventData.detail.welcomeMessage || this.props.defaultWelcomeMessage;
 		if(welcomeMessage !== this.state.welcomeMessage)
 			newState.welcomeMessage = welcomeMessage;
 
+
 		const {stickyMessage} = eventData.detail;
 		if(stickyMessage !== this.state.stickyMessage)
 			newState.stickyMessage = stickyMessage;
+
 
 		// If there is nothing in the new state
 		// we don't have to call setState and trigger an update
 		if(Object.keys(newState).length === 0)
 			return;
 
+
 		this.setState(currentState => ({
 			...currentState,
 			...newState,
 		}));
-	}
+	};
 
 	setRenderedDate = (date) => {
 		if(this.renderedDates.includes(date))
@@ -175,6 +179,8 @@ class Conversation extends Component {
 											message.carousel.map((carouselItem, _index) => (
 												<Message
 													api={this.props.api}
+													/* eslint-disable-next-line react/no-array-index-key --
+													   There is nothing unique we can use inside the carouselItem */
 													key={_index}
 													message={
 													{
