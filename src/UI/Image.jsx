@@ -78,7 +78,7 @@ class Image extends Component {
 		const classNames = `${styles.image} ${this.props.messageType === MessageTypes.Agent ? styles.agent : styles.user}`;
 
 		return (
-			<>
+			<div aria-label={this.props["aria-label"]}>
 				{
 					this.state.imageUrl
 						? <input
@@ -100,13 +100,14 @@ class Image extends Component {
 							src={this.state.imageUrl}
 					   />
 				}
-			</>
+			</div>
 		);
 	}
 }
 
 Image.propTypes = {
 	api: PropTypes.instanceOf(Api),
+	"aria-label": PropTypes.string,
 	media: PropTypes.shape(mediaShape),
 	messageType: PropTypes.oneOf([
 		MessageTypes.Agent,

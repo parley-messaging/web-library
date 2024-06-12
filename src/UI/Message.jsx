@@ -12,6 +12,7 @@ import CallButton from "./MessageButtons/CallButton";
 import Media from "./Media";
 import Image from "./Image";
 import mediaShape from "./shapes/media";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Message extends Component {
 	showTime = (timestamp) => {
@@ -39,47 +40,101 @@ class Message extends Component {
 		const buttonRenderError = "_Unable to show unsupported button_";
 
 		return (
-			<div className={classNames}>
+			<InterfaceTextsContext.Consumer>
 				{
-					this.props.showAgent
-					&& this.props.message.agent
-					&& this.props.message.agent.name.length > 0
-					&& <div className={styles.name}>
-						{this.props.message.agent.name}
-					</div>
-				}
-				<div className={styles.message}>
-					<ReactMarkdown linkTarget={linkTarget} remarkPlugins={[gfm]} skipHtml={true}>
-						{this.props.message.message}
-					</ReactMarkdown>
-					{
-						this.props.message.media && (this.props.message.media.mimeType.startsWith("image/")
-							? <Image api={this.props.api} media={this.props.message.media} messageType={messageType} />
-							: <Media api={this.props.api} media={this.props.message.media} messageType={messageType} />)
-					}
-					{
-						this.props.message.buttons
-						&& this.props.message.buttons.map((button, index) => {
-							switch (button.type) {
-							case MessageButtonTypes.Reply:
-								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <ReplyButton api={this.props.api} key={index} payload={button.payload} title={button.title} />;
-							case MessageButtonTypes.WebUrl:
-								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <WebUrlButton key={index} payload={button.payload} title={button.title} />;
-							case MessageButtonTypes.PhoneNumber:
-								// eslint-disable-next-line max-len,react/no-array-index-key
-								return <CallButton key={index} payload={button.payload} title={button.title} />;
-							default:
-								return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
+					interfaceTexts => (
+						<div className={classNames}>
+							{
+								this.props.showAgent
+								&& this.props.message.agent
+								&& this.props.message.agent.name.length > 0
+								&& <div className={styles.name}>
+									{this.props.message.agent.name}
+								</div>
 							}
-						})
-					}
-					<span className={styles.time}>
-						{this.showTime(this.props.message.time)}
-					</span>
-				</div>
-			</div>
+							<div className={styles.message}>
+								{/* Title */}
+								{
+									this.props.message.title
+									&& <h2 aria-label={interfaceTexts.ariaLabelMessageTitle}>
+										{this.props.message.title}
+									</h2>
+								}
+								{/* Media */}
+								{
+									this.props.message.media && (this.props.message.media.mimeType.startsWith("image/")
+										? <Image
+												api={this.props.api} aria-label={interfaceTexts.ariaLabelMessageMedia}
+												media={this.props.message.media} messageType={messageType}
+										  />
+										: <Media
+												api={this.props.api} aria-label={interfaceTexts.ariaLabelMessageMedia}
+												media={this.props.message.media} messageType={messageType}
+										  />)
+								}
+								{/* Body */}
+								<ReactMarkdown
+									components={
+									{
+										p(props) {
+											// eslint-disable-next-line no-unused-vars,react/prop-types
+											const {node, ...rest} = props;
+											return <p aria-label={interfaceTexts.ariaLabelMessageBody} {...rest} />;
+										},
+									}
+									}
+									linkTarget={linkTarget}
+									remarkPlugins={[gfm]}
+									skipHtml={true}
+								>
+									{this.props.message.message}
+								</ReactMarkdown>
+								{/* Buttons */}
+								{
+									this.props.message.buttons
+									&& <div aria-label={interfaceTexts.ariaLabelMessageButtons}>
+										{
+											this.props.message.buttons.map((button, index) => {
+												switch (button.type) {
+												case MessageButtonTypes.Reply:
+													return (
+														<ReplyButton
+															// eslint-disable-next-line max-len,react/no-array-index-key
+															api={this.props.api} key={index} payload={button.payload}
+															title={button.title}
+														/>
+													);
+												case MessageButtonTypes.WebUrl:
+													return (
+														<WebUrlButton
+															// eslint-disable-next-line max-len,react/no-array-index-key
+															key={index} payload={button.payload}
+															title={button.title}
+														/>
+													);
+												case MessageButtonTypes.PhoneNumber:
+													return (
+														<CallButton
+															// eslint-disable-next-line max-len,react/no-array-index-key
+															key={index} payload={button.payload}
+															title={button.title}
+														/>
+);
+												default:
+													return <ReactMarkdown>{buttonRenderError}</ReactMarkdown>;
+												}
+											})
+										}
+									</div>
+								}
+								<span className={styles.time}>
+									{this.showTime(this.props.message.time)}
+								</span>
+							</div>
+						</div>
+					)
+				}
+			</InterfaceTextsContext.Consumer>
 		);
 	}
 }
@@ -102,6 +157,7 @@ Message.propTypes = {
 		message: PropTypes.string,
 		quickReplies: PropTypes.arrayOf(PropTypes.string),
 		time: PropTypes.number.isRequired,
+		title: PropTypes.string,
 		typeId: PropTypes.number.isRequired,
 	}),
 	showAgent: PropTypes.bool,

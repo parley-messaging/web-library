@@ -109,7 +109,7 @@ class Media extends Component {
 		}
 
 		return (
-			<div className={styles.messageBoxMedia}>
+			<div aria-label={this.props["aria-label"]} className={styles.messageBoxMedia}>
 				<span>{icon}</span>
 				<label>
 					{this.props.media.description || this.props.media.filename}
@@ -134,6 +134,7 @@ class Media extends Component {
 
 Media.propTypes = {
 	api: PropTypes.instanceOf(Api).isRequired,
+	"aria-label": PropTypes.string,
 	media: PropTypes.shape(mediaShape).isRequired,
 	messageType: PropTypes.oneOf([
 		MessageTypes.Agent,

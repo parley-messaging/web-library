@@ -1419,6 +1419,63 @@ describe("UI", () => {
 					});
 			});
 		});
+		it("should render title when received", () => {
+			visitHome();
+
+			cy.fixture("getMessageWithTitleResponse.json")
+				.as("getMessageResponse");
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			clickOnLauncher();
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.get("@app")
+						.find("[class^=parley-messaging-message__]")
+						.find("h2")
+						.should("have.text", fixture.data[0].title);
+				});
+		});
+		it("should render all message parts in the correct order", () => {
+			visitHome();
+
+			cy.fixture("getMessageWithAllPartsResponse.json")
+				.as("getMessageResponse");
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+			clickOnLauncher();
+
+			cy.get("@app")
+				.find("[class^=parley-messaging-message__]")
+				.children()
+				.as("children");
+			cy.get("@children")
+				.eq(0)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageTitle);
+			cy.get("@children")
+				.eq(1)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageMedia);
+			cy.get("@children")
+				.eq(2)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageBody);
+			cy.get("@children")
+				.eq(3)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageButtons);
+		});
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {
@@ -1803,6 +1860,131 @@ describe("UI", () => {
 							.then((win) => {
 								// eslint-disable-next-line no-param-reassign
 								win.parleySettings.runOptions.interfaceTexts.ariaLabelTextInput = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageTitle", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageTitle: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.first()
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageTitle);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageTitle = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageBody", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageBody: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(1)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageBody);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageBody = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageMedia", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageMedia: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse"});
+						cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(3)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageMedia);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageMedia = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageButtons", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageButtons: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(0)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageButtons);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageButtons = newValue;
 							});
 
 						cy.get("@elementUnderTest")
