@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import * as styles from "./Carousel.module.less";
 import {isMobile} from "./Scripts/OSRecognition";
+import PropTypes from "prop-types";
 
 
 export default class Carousel extends Component {
@@ -90,5 +91,4 @@ export default class Carousel extends Component {
 	}
 }
 
-// TODO: @gerben; implement proptypes
-// Carousel.propTypes = {items: PropTypes.arrayOf(PropTypes.instanceOf(Message))};
+Carousel.propTypes = {items: PropTypes.arrayOf(PropTypes.node)};
