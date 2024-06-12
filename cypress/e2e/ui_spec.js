@@ -1281,6 +1281,34 @@ describe("UI", () => {
 							.should("have.text", newTitle);
 					});
 				});
+				describe("title (new name for 'desc')", () => {
+					it("should change the title text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {title: "This is the title bar"}}};
+
+						visitHome(parleyConfig);
+
+						cy.get("[id=app]")
+							.as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-title__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.title);
+
+						// Test if it changes during runtime
+						const newTitle = "This is the title bar #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.desc = newTitle;
+							});
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-title__]")
+							.should("have.text", newTitle);
+					});
+				});
 				describe("infoText", () => {
 					it("should change the welcome message", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {infoText: "This is the info text"}}};
@@ -1376,6 +1404,46 @@ describe("UI", () => {
 							.should("not.exist");
 					});
 				});
+				describe("welcomeMessage (new name for 'infoText')", () => {
+					it("should change the welcome message", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {welcomeMessage: "This is the info text"}}};
+
+						// To test this we need to ignore the API's `welcomeMessage`
+						cy.fixture("getMessagesResponse.json")
+							.then((json) => {
+								const _json = {
+									...json,
+									welcomeMessage: null,
+								};
+								cy.intercept("GET", "*/**/messages", _json);
+							});
+
+						visitHome(parleyConfig);
+
+						cy.get("[id=app]")
+							.as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class*=parley-messaging-announcement__]")
+							.first()
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.welcomeMessage);
+
+						// Test if it changes during runtime
+						const newValue = "This is the info text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.welcomeMessage = newValue;
+							});
+
+						cy.get("@app")
+							.find("[class*=parley-messaging-announcement__]")
+							.first()
+							.should("have.text", newValue);
+					});
+				});
 				describe("placeholderMessenger", () => {
 					it("should change the input's placeholder text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {placeholderMessenger: "This is the placeholder"}}};
@@ -1398,6 +1466,36 @@ describe("UI", () => {
 							.then((win) => {
 								// eslint-disable-next-line no-param-reassign
 								win.parleySettings.runOptions.interfaceTexts.placeholderMessenger = newPlaceholder;
+							});
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-text__]")
+							.find("textarea")
+							.should("have.attr", "placeholder", newPlaceholder);
+					});
+				});
+				describe("inputPlaceholder (new name for 'placeholderMessenger')", () => {
+					it("should change the input's placeholder text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {inputPlaceholder: "This is the placeholder"}}};
+
+						visitHome(parleyConfig);
+
+						cy.get("[id=app]")
+							.as("app");
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-text__]")
+							.find("textarea")
+							.should("have.attr", "placeholder", parleyConfig.runOptions.interfaceTexts.inputPlaceholder);
+
+						// Test if it changes during runtime
+						const newPlaceholder = "This is the placeholder #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.inputPlaceholder = newPlaceholder;
 							});
 
 						cy.get("@app")
@@ -1721,6 +1819,144 @@ describe("UI", () => {
 						cy.get("@uploadLabel")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+					});
+				});
+				describe("messageSendFailed", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {messageSendFailed: "Custom text"}}};
+						const testMessage = `Test message ${Date.now()}`;
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						});
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.messageSendFailed);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.messageSendFailed = newValue;
+							});
+
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", newValue);
+					});
+				});
+				describe("sendingMessageFailedError (new name for 'messageSendFailed')", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {sendingMessageFailedError: "Custom text"}}};
+						const testMessage = `Test message ${Date.now()}`;
+
+						cy.intercept("POST", "*/**/messages", {
+							statusCode: 400,
+							body: {
+								status: "ERROR",
+								notifications: [
+									{
+										type: "error",
+										message: "Some specific error",
+									},
+								],
+							},
+						});
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.sendingMessageFailedError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.sendingMessageFailedError = newValue;
+							});
+
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", newValue);
+					});
+				});
+				describe("serviceUnreachableNotification", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {serviceUnreachableNotification: "Custom text"}}};
+						const testMessage = `Test message ${Date.now()}`;
+
+						cy.intercept("POST", "*/**/messages", {forceNetworkError: true});
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.serviceUnreachableNotification);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.serviceUnreachableNotification = newValue;
+							});
+
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", newValue);
+					});
+				});
+				describe("serviceUnreachableError (new name for 'serviceUnreachableNotification')", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {serviceUnreachableError: "Custom text"}}};
+						const testMessage = `Test message ${Date.now()}`;
+
+						cy.intercept("POST", "*/**/messages", {forceNetworkError: true});
+						visitHome(parleyConfig);
+						clickOnLauncher();
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", parleyConfig.runOptions.interfaceTexts.serviceUnreachableError);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.serviceUnreachableError = newValue;
+							});
+
+						sendMessage(testMessage);
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-error__]")
+							.should("have.text", newValue);
 					});
 				});
 			});

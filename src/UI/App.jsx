@@ -49,10 +49,10 @@ export default class App extends React.Component {
 			isiOSMobile: isiOSMobileDevice(),
 			interfaceLanguage,
 			interfaceTexts: {
+				// Load the default values
 				...interfaceTextsDefaults,
-				...this.loadInterfaceTextOverrides(Object.keys(interfaceTextsDefaults)),
 
-				// Below are all the overrides which have deprecated names
+				// Load all the overrides which have deprecated names
 				title: window?.parleySettings?.runOptions?.interfaceTexts
 					?.desc || interfaceTextsDefaults.title,
 				inputPlaceholder: window?.parleySettings?.runOptions?.interfaceTexts
@@ -63,6 +63,9 @@ export default class App extends React.Component {
 					?.serviceUnreachableNotification || interfaceTextsDefaults.serviceUnreachableError,
 				welcomeMessage: window?.parleySettings?.runOptions?.interfaceTexts
 					?.infoText || interfaceTextsDefaults.welcomeMessage,
+
+				// Load all other overrides
+				...this.loadInterfaceTextOverrides(Object.keys(interfaceTextsDefaults)),
 			},
 			apiDomain: window?.parleySettings?.apiDomain || ApiOptions.apiDomain,
 			accountIdentification: window?.parleySettings?.roomNumber || ApiOptions.accountIdentification,
@@ -587,6 +590,10 @@ export default class App extends React.Component {
 					objectToSaveIntoState = {interfaceTexts: {welcomeMessage: value}};
 				} else if(path[layer2] === "placeholderMessenger") {
 					objectToSaveIntoState = {interfaceTexts: {inputPlaceholder: value}};
+				} else if(path[layer2] === "messageSendFailed") {
+					objectToSaveIntoState = {interfaceTexts: {sendingMessageFailedError: value}};
+				} else if(path[layer2] === "serviceUnreachableNotification") {
+					objectToSaveIntoState = {interfaceTexts: {serviceUnreachableError: value}};
 				}
 			} else if(path[layer1] === "country") {
 				objectToSaveIntoState = {interfaceLanguage: value};
