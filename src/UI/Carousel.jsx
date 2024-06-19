@@ -51,12 +51,13 @@ export default class Carousel extends Component {
 	render() {
 		let previousButtonStyle = `${styles.navButton} ${styles.previous}`;
 		let nextButtonStyle = `${styles.navButton} ${styles.next}`;
-		const previousButtonText = "<";
-		const nextButtonText = ">";
 		if(isMobile()) {
 			previousButtonStyle += ` ${styles.isMobile}`;
 			nextButtonStyle += ` ${styles.isMobile}`;
 		}
+
+		const previousButtonText = "<";
+		const nextButtonText = ">";
 
 		return (
 			<div className={styles.carouselContainer}>
