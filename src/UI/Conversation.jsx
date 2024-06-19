@@ -173,7 +173,7 @@ class Conversation extends Component {
 									   />
 								}
 								{
-									message.carousel && message.carousel.length > 0
+									message.carousel.length > 0
 									&& <Carousel
 										items={
 											message.carousel.map((carouselItem, _index) => (
