@@ -1,0 +1,38 @@
+{
+	"data": [
+		{
+			"id": 10737,
+			"time": 1536739259,
+			"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 2,
+				"name": "Tracebuzz",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": "This is a title",
+			"media": null,
+			"buttons": []
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}

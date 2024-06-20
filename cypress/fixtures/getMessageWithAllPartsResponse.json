@@ -1,0 +1,62 @@
+{
+	"data": [
+		{
+			"id": 10737,
+			"time": 1536739259,
+			"message": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 2,
+				"name": "Tracebuzz",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": "This is a title",
+			"media": {
+				"id": "img/364/2023/6/6/41cedb695613d417be10c65f089521599c103cc9.png",
+				"mimeType": "image/png",
+				"year": "2023",
+				"month": "6",
+				"day": "6",
+				"filename": "41cedb695613d417be10c65f089521599c103cc9.png",
+				"description": "2117234911_1686055386_2743.png"
+			},
+			"buttons": [
+				{
+					"title": "open app",
+					"payload": "https://developers.parley.nu",
+					"type": "webUrl"
+				},
+				{
+					"title": "Call us",
+					"payload": "tel://+31123456789",
+					"type": "phoneNumber"
+				},
+				{
+					"title": "Vraag over meubels",
+					"payload": "Ik heb een vraag over meubels",
+					"type": "reply"
+				}
+			]
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}

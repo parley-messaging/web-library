@@ -23,7 +23,8 @@
 		"jsx-a11y",
 		"@babel",
 		"cypress",
-		"unused-imports"
+		"unused-imports",
+		"compat"
 	],
 	"rules": {
 		//Possible errors

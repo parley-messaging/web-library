@@ -45,8 +45,9 @@
 	word-wrap: break-word;
 }
 
+.message h2,
 .message p {
-	margin: 0;
+	margin: 0.2em 0;
 }
 
 .message a {
