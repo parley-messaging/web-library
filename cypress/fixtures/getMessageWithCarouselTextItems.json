@@ -1,0 +1,70 @@
+{
+	"data": [
+		{
+			"id": 10737,
+			"time": 1536739259,
+			"message": "hi!",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 2,
+				"name": "Tracebuzz",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"isTyping": null
+			},
+			"carousel": [
+				{
+					"title": "This is a title #1",
+					"message": "This is the carousel body #1",
+					"media": null,
+					"buttons": []
+				},
+				{
+					"title": "This is a title #2",
+					"message": "This is the carousel body #2",
+					"media": null,
+					"buttons": []
+				}
+			],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": []
+		},
+		{
+			"id": 10738,
+			"time": 1536739259,
+			"message": "a normal message",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 2,
+				"name": "Tracebuzz",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": []
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}

@@ -19,6 +19,7 @@ function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 		onLoad: (window) => {
 			if(onLoad)
 				onLoad(window);
+
 			window.initParleyMessenger();
 		},
 	});
@@ -582,10 +583,15 @@ describe("UI", () => {
 				},
 
 				// I did not find a way to create a file with `application/msexcel` so this one will not be tested
-			].forEach(({fileName, expectedIcon}) => {
+			].forEach(({
+				fileName,
+				expectedIcon,
+			}) => {
 				it(`should show the media file '${fileName}', after submitting it`, () => {
-					cy.intercept("POST", "*/**/messages").as("postMessage");
-					cy.intercept("GET", "*/**/messages").as("getMessages");
+					cy.intercept("POST", "*/**/messages")
+						.as("postMessage");
+					cy.intercept("GET", "*/**/messages")
+						.as("getMessages");
 
 					cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
 						.as("mediaFile");
@@ -632,7 +638,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -666,7 +673,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -700,7 +708,8 @@ describe("UI", () => {
 				})
 					.as("postMedia");
 
-				cy.fixture("pdf.pdf", null).as("mediaFile");
+				cy.fixture("pdf.pdf", null)
+					.as("mediaFile");
 
 				visitHome();
 				clickOnLauncher();
@@ -963,7 +972,8 @@ describe("UI", () => {
 					req.on("response", (res) => {
 						res.setDelay(500);
 					});
-				}).as("postMessage");
+				})
+					.as("postMessage");
 
 				clickOnLauncher();
 
@@ -1002,7 +1012,8 @@ describe("UI", () => {
 			});
 		});
 		it("should show an error, after rendering an unsupported media file", () => {
-			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"}).as("getMessages");
+			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"})
+				.as("getMessages");
 
 			visitHome();
 
@@ -1072,7 +1083,12 @@ describe("UI", () => {
 				mimeType: "video/mp4",
 				expectedIcon: "file-video",
 			},
-		].forEach(({fileName, fileExtension, mimeType, expectedIcon}) => {
+		].forEach(({
+			fileName,
+			fileExtension,
+			mimeType,
+			expectedIcon,
+		}) => {
 			it(`should show the media file with mimeType '${mimeType}', after receiving it`, () => {
 				cy.fixture("getMessageWithPdfResponse.json")
 					.then((fixture) => {
@@ -1103,7 +1119,6 @@ describe("UI", () => {
 					.should("be.visible");
 			});
 		});
-
 		it(`should show the media file's filename, if description is not set, after receiving it`, () => {
 			const fileName = "some-pdf.pdf";
 
@@ -1117,7 +1132,8 @@ describe("UI", () => {
 				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
 					.as("getMessages"));
 
-			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"}).as("getMedia");
+			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"})
+				.as("getMedia");
 
 			visitHome();
 
@@ -1127,6 +1143,338 @@ describe("UI", () => {
 
 			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 				.should("have.text", fileName);
+		});
+		describe("carousel", () => {
+			it("should show carousel with multiple items and can navigate using buttons or scrolling", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarouselTextItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.get("@app")
+							.find("[class^=parley-messaging-carouselContainer__]")
+							.should("have.length", 1)
+							.find("[class^=parley-messaging-messageBubble__]")
+							.should("have.length", 2)
+							.find("[class^=parley-messaging-message__]")
+							.as("messages");
+						cy.get("@messages")
+							.eq(0)
+							.find("p")
+							.should("have.text", fixture.data[0].carousel[0].message)
+							.should("be.visible");
+						cy.get("@messages")
+							.eq(1)
+							.find("p")
+							.should("have.text", fixture.data[0].carousel[1].message)
+							.should("not.be.visible");
+					});
+
+				// Test navigation
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("not.be.visible");
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realHover({});
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("be.visible");
+
+				// Next button click
+				cy.get("button[name=next]")
+					.click();
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Previous button click
+				cy.get("button[name=previous]")
+					.click();
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Mouse horizontal scroll right
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realMouseWheel({deltaX: 500});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Mouse horizontal scroll left
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realMouseWheel({deltaX: -500});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Stop hovering navigation
+				cy.get("body")
+					.realHover({});
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("not.be.visible");
+			});
+			it("should show carousel with multiple items and can navigate using swipe on mobile", () => {
+				// According to https://gs.statcounter.com/screen-resolution-stats/mobile/worldwide
+				// the most populair mobile screen size is 360x800,
+				// so we'll use that for this test
+				cy.viewport(360, 800);
+				visitHome({}, null, pretendToBeMobile);
+
+				cy.fixture("getMessageWithCarouselTextItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-message__]")
+					.as("messages");
+
+				// Test navigation (should always be visible on mobile)
+				cy.get("[class^=parley-messaging-navButton__]")
+					.should("be.visible");
+
+				// Next button touch
+				cy.get("button[name=next]")
+					.realTouch({});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Previous button touch
+				cy.get("button[name=previous]")
+					.realTouch({});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+
+				// Swipe right
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realSwipe("toLeft", {length: 100});
+				cy.get("@messages")
+					.eq(0)
+					.should("not.be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("be.visible");
+
+				// Swipe left
+				cy.get("[class^=parley-messaging-carouselContainer__]")
+					.realSwipe("toRight", {length: 100});
+				cy.get("@messages")
+					.eq(0)
+					.should("be.visible");
+				cy.get("@messages")
+					.eq(1)
+					.should("not.be.visible");
+			});
+			[
+				{
+					title: "fullscreen (mobile)",
+					params: {
+						mobile: true,
+						carouselItems: 2,
+					},
+				},
+				{
+					title: "only 1 carousel item on non-fullscreen",
+					params: {
+						mobile: false,
+						carouselItems: 1,
+					},
+				},
+			].forEach((test) => {
+				it(`should show carousel and hide navigation if all items fit on screen (${test.title})`, () => {
+					if(test.params.mobile)
+						visitHome({}, null, pretendToBeMobile);
+					 else
+						visitHome();
+
+
+					cy.fixture("getMessageWithCarouselTextItems.json")
+						.as("getMessageResponse");
+
+					// Intercept GET messages and return a fixture message with the carousel items
+					cy.get("@getMessageResponse")
+						.then((fixture) => {
+							// Dynamically create carousel items
+							const updatedFixture = fixture;
+							const carouselItem = updatedFixture.data[0].carousel[0];
+							updatedFixture.data[0].carousel = [];
+							for(let i = 0; i < test.params.carouselItems; i++) {
+								carouselItem.title = `This is a title #${i}`;
+								carouselItem.title = `This is the carousel body #${i}}`;
+								updatedFixture.data[0].carousel.push(carouselItem);
+							}
+
+							cy.intercept("GET", "*/**/messages", (req) => {
+								req.reply(updatedFixture);
+							});
+						});
+
+					clickOnLauncher();
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-message__]")
+						.as("messages");
+
+					// Navigation should not exist if all the items fit on the screen
+					cy.get("[class^=parley-messaging-navButton__]")
+						.should("not.exist");
+				});
+			});
+			it("should show carousel with image items", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarouselImageItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				// Intercept the retrieval of the image binary
+				cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-carouselContainer__]")
+					.should("have.length", 1)
+					.find("[class^=parley-messaging-messageBubble__]")
+					.should("have.length", 2)
+					.find("[class^=parley-messaging-message__]")
+					.first()
+					.find("[class^=parley-messaging-image__]")
+					.should("be.visible");
+			});
+			it("should show carousel with button items", () => {
+				visitHome();
+
+				cy.fixture("getMessageWithCarouselButtonItems.json")
+					.as("getMessageResponse");
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						cy.intercept("GET", "*/**/messages", (req) => {
+							req.reply(fixture);
+						});
+					});
+
+				clickOnLauncher();
+
+				cy.get("@getMessageResponse")
+					.then((fixture) => {
+						fixture.data[0].carousel[0].buttons.forEach((button, buttonIndex) => {
+							cy.get("@app")
+								.find("[class^=parley-messaging-carouselContainer__]")
+								.find("[class^=parley-messaging-message__]")
+								.first()
+								.find("[class^=parley-messaging-button__]")
+								.its(buttonIndex)
+								.should("have.text", button.title)
+								.should("be.visible");
+						});
+					});
+			});
+		});
+		it("should render title when received", () => {
+			visitHome();
+
+			cy.fixture("getMessageWithTitleResponse.json")
+				.as("getMessageResponse");
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			clickOnLauncher();
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.get("@app")
+						.find("[class^=parley-messaging-message__]")
+						.find("h2")
+						.should("have.text", fixture.data[0].title);
+				});
+		});
+		it("should render all message parts in the correct order", () => {
+			visitHome();
+
+			cy.fixture("getMessageWithAllPartsResponse.json")
+				.as("getMessageResponse");
+
+			cy.get("@getMessageResponse")
+				.then((fixture) => {
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+			clickOnLauncher();
+
+			cy.get("@app")
+				.find("[class^=parley-messaging-message__]")
+				.children()
+				.as("children");
+			cy.get("@children")
+				.eq(0)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageTitle);
+			cy.get("@children")
+				.eq(1)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageMedia);
+			cy.get("@children")
+				.eq(2)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageBody);
+			cy.get("@children")
+				.eq(3)
+				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageButtons);
 		});
 	});
 	describe("parley config settings", () => {
@@ -1512,6 +1860,131 @@ describe("UI", () => {
 							.then((win) => {
 								// eslint-disable-next-line no-param-reassign
 								win.parleySettings.runOptions.interfaceTexts.ariaLabelTextInput = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageTitle", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageTitle: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.first()
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageTitle);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageTitle = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageBody", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageBody: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(1)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageBody);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageBody = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageMedia", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageMedia: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse"});
+						cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(3)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageMedia);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageMedia = newValue;
+							});
+
+						cy.get("@elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", newValue);
+					});
+				});
+				describe("ariaLabelMessageButtons", () => {
+					it("should change the text", () => {
+						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageButtons: "Custom text"}}};
+
+						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse"});
+
+						visitHome(parleyConfig);
+
+						clickOnLauncher();
+
+						cy.get("@app")
+							.find("[class^=parley-messaging-message__]")
+							.children()
+							.eq(0)
+							.as("elementUnderTest")
+							.should("have.attr", "aria-label")
+							.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelMessageButtons);
+
+						// Test if it changes during runtime
+						const newValue = "Custom text #2";
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.runOptions.interfaceTexts.ariaLabelMessageButtons = newValue;
 							});
 
 						cy.get("@elementUnderTest")

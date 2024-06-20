@@ -6,6 +6,8 @@ import ReactMarkdown from "react-markdown";
 import * as styles from "./Image.module.css";
 import ImageViewer from "./ImageViewer";
 import MessageTypes from "../Api/Constants/MessageTypes";
+import mediaShape from "./shapes/media";
+import Logger from "js-logger";
 
 class Image extends Component {
 	constructor(props) {
@@ -27,6 +29,7 @@ class Image extends Component {
 				errorText: "_Unsupported media_",
 				isLoading: false,
 			}));
+			Logger.debug(`Image has unsupported mimeType '${this.props.media.mimeType}', will not render anything`);
 			return;
 		}
 
@@ -38,8 +41,10 @@ class Image extends Component {
 		} = this.props.media;
 		this.props.api.getMedia(year, month, day, filename)
 			.then((mediaBlob) => {
-				if(!mediaBlob)
+				if(!mediaBlob) {
+					Logger.debug("Image blob from api is empty, will not render anything");
 					return;
+				}
 
 
 				// Convert blob to data: url
@@ -73,7 +78,7 @@ class Image extends Component {
 		const classNames = `${styles.image} ${this.props.messageType === MessageTypes.Agent ? styles.agent : styles.user}`;
 
 		return (
-			<>
+			<div aria-label={this.props["aria-label"]}>
 				{
 					this.state.imageUrl
 						? <input
@@ -95,22 +100,15 @@ class Image extends Component {
 							src={this.state.imageUrl}
 					   />
 				}
-			</>
+			</div>
 		);
 	}
 }
 
 Image.propTypes = {
 	api: PropTypes.instanceOf(Api),
-	media: PropTypes.shape({
-		day: PropTypes.string.isRequired,
-		description: PropTypes.string.isRequired,
-		filename: PropTypes.string.isRequired,
-		id: PropTypes.string.isRequired,
-		mimeType: PropTypes.string.isRequired,
-		month: PropTypes.string.isRequired,
-		year: PropTypes.string.isRequired,
-	}),
+	"aria-label": PropTypes.string,
+	media: PropTypes.shape(mediaShape),
 	messageType: PropTypes.oneOf([
 		MessageTypes.Agent,
 		MessageTypes.User,

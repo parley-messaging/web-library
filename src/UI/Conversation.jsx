@@ -3,13 +3,14 @@ import PropTypes from "prop-types";
 import * as styles from "./Conversation.module.css";
 import MessageTypes from "../Api/Constants/MessageTypes";
 import DateGroup from "./DateGroup";
-import Message from "./Message";
 import QuickReplies from "./QuickReplies";
 import Announcement from "./Announcement";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {messages as messagesEvent} from "../Api/Constants/Events";
 import Logger from "js-logger";
 import Api from "../Api/Api";
+import Message from "./Message";
+import Carousel from "./Carousel";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -73,58 +74,66 @@ class Conversation extends Component {
 		if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages))
 			newState.messages = messages;
 
+
 		// Set welcome message if we got one from the api
 		// otherwise use the default set by props
 		const welcomeMessage = eventData.detail.welcomeMessage || this.props.defaultWelcomeMessage;
 		if(welcomeMessage !== this.state.welcomeMessage)
 			newState.welcomeMessage = welcomeMessage;
 
+
 		const {stickyMessage} = eventData.detail;
 		if(stickyMessage !== this.state.stickyMessage)
 			newState.stickyMessage = stickyMessage;
+
 
 		// If there is nothing in the new state
 		// we don't have to call setState and trigger an update
 		if(Object.keys(newState).length === 0)
 			return;
 
+
 		this.setState(currentState => ({
 			...currentState,
 			...newState,
 		}));
-	}
+	};
 
 	setRenderedDate = (date) => {
 		if(this.renderedDates.includes(date))
 			return false;
 
+
 		this.renderedDates.push(date);
 
 		return true;
-	}
+	};
 
 	getDateFromTimestamp = (timestamp) => {
 		const toMillisecondsMultiplier = 1000;
 		return new Date(timestamp * toMillisecondsMultiplier).toLocaleDateString();
-	}
+	};
 
 	shouldRenderAgentName = (currentMessageId, previousMessageId) => {
 		if(this.state.messages[currentMessageId].typeId !== MessageTypes.Agent)
 			return false;
 
+
 		if(this.state.messages[previousMessageId]
 			&& this.state.messages[previousMessageId].typeId === MessageTypes.Agent)
 			return false;
 
+
 		return true;
-	}
+	};
 
 	static sortMessagesByID(messages) {
 		return messages.sort((left, right) => {
 			if(left.id < right.id)
 				return -1;
-			else if(left.id > right.id)
+			 else if(left.id > right.id)
 				return 1;
+
 
 			return 0;
 		});
@@ -146,33 +155,58 @@ class Conversation extends Component {
 				<div className={styles.body}>
 					{
 						this.state.welcomeMessage
-							&& <Announcement message={this.state.welcomeMessage} />
+						&& <Announcement message={this.state.welcomeMessage} />
 					}
 					{
 						this.state.messages.map((message, index, array) => (
 							<React.Fragment key={message.id}>
 								{
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
-										&& <DateGroup timestamp={message.time} />
+									&& <DateGroup timestamp={message.time} />
 								}
-								<Message
-									api={this.props.api}
-									message={message}
-									showAgent={this.shouldRenderAgentName(index, index - 1)}
-								/>
+								{
+									message.carousel.length === 0
+									&& <Message
+										api={this.props.api}
+										message={message}
+										showAgent={this.shouldRenderAgentName(index, index - 1)}
+									   />
+								}
+								{
+									message.carousel.length > 0
+									&& <Carousel
+										items={
+											message.carousel.map((carouselItem, _index) => (
+												<Message
+													api={this.props.api}
+													/* eslint-disable-next-line react/no-array-index-key --
+													   There is nothing unique we can use inside the carouselItem */
+													key={_index}
+													message={
+													{
+														...message,
+														...carouselItem,
+													}
+													}
+													showAgent={false}
+												/>
+											))
+										}
+									   />
+								}
 								{
 									message.typeId === MessageTypes.Agent
 									&& index === array.length - 1
 									&& message.quickReplies
 									&& message.quickReplies.length > 0
-										&& <QuickReplies />
+									&& <QuickReplies />
 								}
 							</React.Fragment>
 						))
 					}
 					{
 						this.state.stickyMessage
-							&& <Announcement message={this.state.stickyMessage} />
+						&& <Announcement message={this.state.stickyMessage} />
 					}
 					<div ref={this.conversationBottom} />
 				</div>
