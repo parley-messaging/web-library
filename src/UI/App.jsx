@@ -91,6 +91,7 @@ export default class App extends React.Component {
 				? window?.parleySettings?.runOptions?.allowFileUpload
 				: true,
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
+			amountOfNewAgentMessagesFound: 0,
 		};
 
 		this.Api = new Api(
@@ -690,6 +691,7 @@ export default class App extends React.Component {
 		this.setState(() => ({
 			showChat: true,
 			messengerOpenState: MessengerOpenState.open,
+			amountOfNewAgentMessagesFound: 0,
 		}));
 
 		// Try to re-register the device if it is not yet registered
@@ -720,19 +722,27 @@ export default class App extends React.Component {
 		// Keep track of all the message IDs, so we can show the
 		// chat when we received a new message
 		let foundNewMessages = false;
+		let _amountOfNewAgentMessagesFound = this.state.amountOfNewAgentMessagesFound;
 		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
-				if(message.typeId === MessageTypes.Agent)
+				if(message.typeId === MessageTypes.Agent) {
 					localStorage.setItem("lastReceivedAgentMessageId", message.id);
+					_amountOfNewAgentMessagesFound++;
+				}
 
 				foundNewMessages = true;
 			}
 		});
 
 		// Show the chat when we received a new message
-		if(!this.state.showChat && foundNewMessages)
-			this.showChat();
+		if(!this.state.showChat && foundNewMessages) {
+			// Update the number for the unread messages badge
+			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
+
+			// TODO: @gerben; we should either update the badge or show the chat. This should be a setting
+			// this.showChat();
+		}
 	};
 
 	handleSubscribe = () => {
@@ -858,6 +868,7 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 					&& <Launcher
+						amountOfUnreadMessages={this.state.amountOfNewAgentMessagesFound}
 						icon={this.state.launcherIcon}
 						messengerOpenState={this.state.messengerOpenState}
 						onClick={this.handleClick}

@@ -36,15 +36,29 @@
 	/* Deliberately left empty */
 }
 
+.launcher.shake {
+	animation-duration: 0.2s;
+	animation-iteration-count: 3;
+	animation-name: horizontal-shaking;
+}
+
 .unreadMessagesBadge {
 	position: relative;
 	top: -10px;
-	right: -33px;
+	right: -37px;
 	display: block;
 	width: fit-content;
-	padding: 1px 9px;
+	padding: 2px 7px;
 	background: red;
 	border-radius: 25px;
 	color: white;
 	font-weight: bold;
+}
+
+@keyframes horizontal-shaking {
+	0% { transform: translateX(0); }
+	25% { transform: translateX(5px); }
+	50% { transform: translateX(-5px); }
+	75% { transform: translateX(5px); }
+	100% { transform: translateX(0); }
 }
