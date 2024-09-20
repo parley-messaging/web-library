@@ -10,6 +10,7 @@ import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
 import {CUSTOMHEADER_BLACKLIST} from "../../src/Api/Constants/CustomHeaderBlacklist";
+import {interceptIndefinitely} from "../support/utils";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -138,7 +139,7 @@ describe("Api class", () => {
 			});
 		cy.get("@getMessagesResponse")
 			.then((json) => {
-				cy.intercept("GET", `${config.apiDomain}/**/messages/*`, (req) => {
+				cy.intercept("GET", `${config.apiDomain}/**/messages/after:*`, (req) => {
 					requestExpectations(req);
 
 					req.reply(json);
@@ -672,6 +673,10 @@ describe("Api class", () => {
 				.be
 				.equal(false);
 
+			// Intercept the devices call until we have confirmed that
+			// the isDeviceRegistrationPending flag is correctly set
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
 			config.api.subscribeDevice(
 				config.pushToken,
 				config.pushType,
@@ -696,6 +701,8 @@ describe("Api class", () => {
 				.to
 				.be
 				.equal(true);
+
+			interception.sendResponse();
 		});
 	});
 
@@ -785,7 +792,7 @@ describe("Api class", () => {
 			.forEach((set) => {
 				it(`should throw an error when using '${set.type}' as id`, () => {
 					// Don't know why but apparently "bigint" causes a different error messages than all other types...
-					if(set.type !== "bigint") {
+					if(set.type === "bigint") {
 						expect(() => config.api.getMessages(set.value))
 							.to
 							.throw(`Expected \`id\` to be of type \`number\` but received type \`${set.type}\``
