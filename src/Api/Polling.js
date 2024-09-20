@@ -31,6 +31,7 @@ export default class PollingService {
 
 		this.isRunning = false;
 		this.eventListenersInitialized = false;
+		this.eventListenersAbortController = null;
 	}
 
 	/**
@@ -51,8 +52,18 @@ export default class PollingService {
 		if(this.eventListenersInitialized)
 			return;
 
-		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		this.eventListenersAbortController = new AbortController();
+
+		ApiEventTarget.addEventListener(
+			messageSent,
+			this.handleMessageSent,
+			{signal: this.eventListenersAbortController.signal},
+		);
+		ApiEventTarget.addEventListener(
+			subscribe,
+			this.handleSubscribe,
+			{signal: this.eventListenersAbortController.signal},
+		);
 
 		this.eventListenersInitialized = true;
 	}
@@ -64,23 +75,23 @@ export default class PollingService {
 		if(!this.eventListenersInitialized)
 			return;
 
-		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
-		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+		this.eventListenersAbortController.abort(); // This removes all event listeners connected to this abort controller
 
 		this.eventListenersInitialized = false;
 	}
 
 	handleMessageSent = () => {
 		this.restartPolling();
-	}
+	};
 
 	handleSubscribe = (event) => {
 		// We don't want to start polling for messages when the subscribe-call returned errors
 		if(event.detail.errorNotifications)
 			return;
 
+
 		this.startPolling();
-	}
+	};
 
 	/**
 	 * Convert something like `"2m"` to 2 minutes in ms;
@@ -93,7 +104,12 @@ export default class PollingService {
 		ow(intervalAsString, "intervalAsString", ow.string.nonEmpty);
 
 		const regex = /(?<timeValue>\d+)(?<timeUnit>\w+)/u;
-		const {groups: {timeValue, timeUnit}} = regex.exec(intervalAsString);
+		const {
+			groups: {
+				timeValue,
+				timeUnit,
+			},
+		} = regex.exec(intervalAsString);
 
 		return timeValue * intervalTimeUnits[timeUnit];
 	}
@@ -119,11 +135,13 @@ export default class PollingService {
 			if(this.currentIntervalStep < this.currentIntervals.length - 1)
 				this.currentIntervalStep++;
 
+
 			// Else; just keep this interval running indefinitely
 		}
 
 		if(this.timeoutID)
 			clearTimeout(this.timeoutID);
+
 		if(this.isRunning) {
 			this.timeoutID = setTimeout(
 				this.pollInterval.bind(this),

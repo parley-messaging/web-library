@@ -234,22 +234,34 @@ describe("Polling Service", () => {
 		let pollingService;
 		let gotFirstRestart = false;
 		let gotSecondRestart = false;
+		let gotThirdRestart = false;
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
 				deviceRegistered: true,
 				getMessages: () => {
-					if(!gotFirstRestart) {
+					if(gotFirstRestart === false) {
 						gotFirstRestart = true;
 						pollingService.stopPolling();
 						pollingService.initializeEventListeners(); // Re-init event listeners
 
 						// Second re-start of the polling mechanism through an Event
 						ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
-					} else if(!gotSecondRestart) {
+					} else if(gotSecondRestart === false) {
 						gotSecondRestart = true;
 						pollingService.stopPolling();
+
+						// Make sure the event listeners are stopped correctly
+						// by triggering an event after calling stopPolling()
+						// and later checking if that event caused a third restart
+						ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
+
 						resolve();
+					} else {
+						gotThirdRestart = true;
+
+						// This should never trigger
+						// because polling is never restart at this point
 					}
 				},
 			};
@@ -269,6 +281,7 @@ describe("Polling Service", () => {
 			.then(() => {
 				expect(gotFirstRestart).to.equal(true);
 				expect(gotSecondRestart).to.equal(true);
+				expect(gotThirdRestart).to.equal(false);
 			});
 	});
 });
