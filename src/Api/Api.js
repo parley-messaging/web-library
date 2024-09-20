@@ -215,7 +215,7 @@ export default class Api {
 
 		let url = `${this.config.apiUrl}/messages`;
 		if(id !== undefined)
-			url = `${this.config.apiUrl}/messages/${id}`;
+			url = `${this.config.apiUrl}/messages/after:${id}`;
 
 		return this.fetchWrapper(url, {method: "GET"})
 			.then((data) => {
