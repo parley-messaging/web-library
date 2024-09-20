@@ -1,6 +1,6 @@
 import ow from "ow";
 import ApiEventTarget from "./ApiEventTarget";
-import {messageSent, subscribe} from "./Constants/Events";
+import {messages, messageSent, subscribe} from "./Constants/Events";
 import Logger from "js-logger";
 
 const maxIntervalAmount = 5;
@@ -31,7 +31,8 @@ export default class PollingService {
 
 		this.isRunning = false;
 		this.eventListenersInitialized = false;
-		this.eventListenersAbortController = null;
+		this.eventListenersAbortController = undefined;
+		this.lastMessageIdReceived = undefined;
 	}
 
 	/**
@@ -64,6 +65,11 @@ export default class PollingService {
 			this.handleSubscribe,
 			{signal: this.eventListenersAbortController.signal},
 		);
+		ApiEventTarget.addEventListener(
+			messages,
+			this.handleNewMessages,
+			{signal: this.eventListenersAbortController.signal},
+		);
 
 		this.eventListenersInitialized = true;
 	}
@@ -94,6 +100,19 @@ export default class PollingService {
 	};
 
 	/**
+	 *
+	 * @param event {{detail: {data: []}}}
+	 */
+	handleNewMessages = (event) => {
+		const messageIds = event.detail.data.map(message => message.id);
+
+		if(messageIds.length > 0)
+			messageIds.sort((a, b) => b - a);
+
+		this.lastMessageIdReceived = messageIds[0];
+	}
+
+	/**
 	 * Convert something like `"2m"` to 2 minutes in ms;
 	 * `minute = 1000 * 60, 2 minutes = 2 * (1000 * 60)`
 	 *
@@ -121,7 +140,7 @@ export default class PollingService {
 		}
 
 		// Get messages
-		await this.api.getMessages();
+		await this.api.getMessages(this.lastMessageIdReceived);
 
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;
