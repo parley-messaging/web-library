@@ -66,13 +66,23 @@ class Conversation extends Component {
 
 		const newState = {};
 
-		// Compare the received messages with our state messages
-		// If there is a change, add them to the new state
-		// If there is no change we don't want to add them
-		// to prevent en unnecessary render.
-		const sortedMessages = Conversation.sortMessagesByID(messages);
-		if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages))
-			newState.messages = messages;
+		if(messages.length > 0) {
+			// Compare the received messages with our state messages
+			// If there is a change, add them to the new state
+			// If there is no change we don't want to add them
+			// to prevent an unnecessary render.
+			const sortedMessages = Conversation.sortMessagesByID(messages);
+			if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages)) {
+				newState.messages = this.state.messages;
+				messages.forEach((message) => {
+					if(this.state.messages.filter(x => x.id === message.id).length > 0)
+						return; // Ignore messages we already have in our state
+
+
+					newState.messages.push(message);
+				});
+			}
+		}
 
 
 		// Set welcome message if we got one from the api
