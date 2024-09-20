@@ -2,6 +2,7 @@ import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 import {interceptIndefinitely} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
+import MessageTypes from "../../src/Api/Constants/MessageTypes";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 
@@ -3718,6 +3719,55 @@ describe("UI", () => {
 							});
 					});
 			});
+		});
+		it(`should contain the last received agent message id`, () => {
+			visitHome();
+			cy.get("[id=app]")
+				.as("app");
+
+			// Mock get messages and give back a couple messages
+			cy.fixture("getMessagesResponse.json")
+				.then((json) => {
+					// Add another User message so we can verify that we ignore user message ID's
+					// (even if they are the newest message)
+					json.data.push({
+						id: json.data[0].id + 1,
+						time: json.data[0].time + 10,
+						typeId: MessageTypes.User,
+						message: "Here is my question...",
+						image: null,
+						agent: null,
+						carousel: [],
+						quickReplies: [],
+						custom: [],
+						title: null,
+						media: null,
+						buttons: [],
+					});
+					cy.intercept("GET", "*/**/messages", json)
+						.as("getMessages");
+					cy.wrap(json)
+						.as("messagesResponse");
+				});
+
+			// Open launcher and check that local storage contains the id of the last message
+			clickOnLauncher();
+			cy.wait("@getMessages");
+			cy.get("@messagesResponse")
+				.then((messagesResponse) => {
+					const expectedLastReceivedMessageId = messagesResponse.data
+						.filter(x => x.typeId === MessageTypes.Agent)[0].id;
+
+					cy.window()
+						.then((win) => {
+							cy.wrap(win.localStorage.getItem("lastReceivedAgentMessageId"))
+								.then((value) => {
+									cy.wrap(value)
+										.should("exist")
+										.should("equal", expectedLastReceivedMessageId.toString());
+								});
+						});
+				});
 		});
 	});
 	describe("chat open state", () => {

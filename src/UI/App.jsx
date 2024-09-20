@@ -27,6 +27,7 @@ import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 import Cookies from "js-cookie";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -722,6 +723,9 @@ export default class App extends React.Component {
 		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
+				if(message.typeId === MessageTypes.Agent)
+					localStorage.setItem("lastReceivedAgentMessageId", message.id);
+
 				foundNewMessages = true;
 			}
 		});
