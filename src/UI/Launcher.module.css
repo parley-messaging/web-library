@@ -12,6 +12,7 @@
 	bottom: 0;
 	width: 55px;
 	height: 55px;
+	padding: 8px;
 	border: none;
 	background: var(--parley-messenger-icon-background-color, #4A5E83);
 	border-radius: 50%;
@@ -28,7 +29,22 @@
 }
 
 .launcher.state-open {
+	/* Deliberately left empty */
 }
 
 .launcher.state-minimize {
+	/* Deliberately left empty */
+}
+
+.unreadMessagesBadge {
+	position: relative;
+	top: -10px;
+	right: -33px;
+	display: block;
+	width: fit-content;
+	padding: 1px 9px;
+	background: red;
+	border-radius: 25px;
+	color: white;
+	font-weight: bold;
 }
