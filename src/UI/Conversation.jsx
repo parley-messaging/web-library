@@ -73,11 +73,13 @@ class Conversation extends Component {
 			// to prevent an unnecessary render.
 			const sortedMessages = Conversation.sortMessagesByID(messages);
 			if(JSON.stringify(sortedMessages) !== JSON.stringify(this.state.messages)) {
-				newState.messages = this.state.messages;
+				// Important that we make a clone of the state, otherwise we are updating the state directly
+				newState.messages = JSON.parse(JSON.stringify(this.state.messages));
+
+				// Add NEW messages to the newState
 				messages.forEach((message) => {
 					if(this.state.messages.filter(x => x.id === message.id).length > 0)
 						return; // Ignore messages we already have in our state
-
 
 					newState.messages.push(message);
 				});
