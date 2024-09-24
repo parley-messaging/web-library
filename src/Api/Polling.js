@@ -109,9 +109,15 @@ export default class PollingService {
 	 * @param event {{detail: {data: []}}}
 	 */
 	handleNewMessages = (event) => {
+		if(event.detail.data === null)
+			return; // API returned no messages
+
+		if(event.detail.data.length === 0)
+			return; // There are no new messages
+
 		const messageIds = event.detail.data.map(message => message.id);
 
-		if(messageIds.length > 0)
+		if(messageIds.length > 1)
 			messageIds.sort((a, b) => b - a);
 
 		this.lastMessageIdReceived = messageIds[0];

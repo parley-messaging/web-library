@@ -57,16 +57,15 @@ class Conversation extends Component {
 	}
 
 	handleMessages = (eventData) => {
-		/** @var {[]} messages */
-		let messages = eventData.detail.data;
-		if(eventData.detail.errorNotifications?.filter(x => x === "api_key_not_valid" || x === "device_not_registered")) {
-			Logger.debug("Clearing message because the API doesn't allow this device access to the messages");
-			messages = [];
-		}
-
 		const newState = {};
 
-		if(messages.length > 0) {
+		/** @var {[]} messages */
+		const messages = eventData.detail.data;
+
+		if(eventData.detail.errorNotifications?.filter(x => x === "api_key_not_valid" || x === "device_not_registered")) {
+			Logger.debug("Clearing message because the API doesn't allow this device access to the messages");
+			newState.messages = [];
+		} else if(messages.length > 0) {
 			// Compare the received messages with our state messages
 			// If there is a change, add them to the new state
 			// If there is no change we don't want to add them
