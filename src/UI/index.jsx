@@ -6,7 +6,10 @@ import Logger from "js-logger";
 Logger.useDefaults({
 	defaultLevel: Logger.ERROR,
 	formatter(messages, context) {
-		messages.unshift(`[${name}:${context.level.name}]`);
+		if(context.name)
+			messages.unshift(`[${name}:${context.level.name}][${context.name}]`);
+		 else
+			messages.unshift(`[${name}:${context.level.name}]`);
 	},
 });
 

@@ -113,7 +113,7 @@ export default class Api {
 	 * @param type
 	 * @param version
 	 * @param referer
-	 * @return {Promise<unknown>|boolean}
+	 * @return {Promise<unknown>}
 	 */
 	subscribeDevice(
 		pushToken,

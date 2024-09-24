@@ -39,6 +39,12 @@ export default class App extends React.Component {
 		this.visibilityChange = "visibilitychange";
 		this.cookieAgeRefreshIntervalId = null;
 		this._isMounted = false;
+		this.mainPollingServiceName = "main-polling-service";
+		this.slowPollingServiceName = "slow-polling-service";
+		this.unreadMessagesActions = {
+			openChatWindow: 0,
+			showMessageCounterBadge: 1,
+		};
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -92,6 +98,8 @@ export default class App extends React.Component {
 				: true,
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
+			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
+				|| this.unreadMessagesActions.openChatWindow, // TODO: @gerben; make reactive
 		};
 
 		this.Api = new Api(
@@ -101,7 +109,10 @@ export default class App extends React.Component {
 			ApiEventTarget,
 			this.state.apiCustomHeaders,
 		);
-		this.PollingService = new PollingService(this.Api);
+		this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
+		this.SlowPollingService = new PollingService(this.slowPollingServiceName, this.Api, [
+			"5m", "15m", "30m", "2h", "5h", "6h",
+		]);
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -281,11 +292,11 @@ export default class App extends React.Component {
 		if(!forceNewRegistration) {
 			if(this.Api.deviceRegistered) {
 				Logger.debug("Device is already registered, not registering a new one");
-				return; // Don't register if we already are registered
+				return Promise.resolve(); // Don't register if we already are registered
 			}
 			if(this.Api.isDeviceRegistrationPending) {
 				Logger.debug("There is already a device registration pending, not registering a new one");
-				return;
+				return Promise.resolve();
 			}
 		}
 
@@ -300,7 +311,7 @@ export default class App extends React.Component {
 		// Store the device identification, so we don't generate a new one on each registration
 		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
 
-		this.Api.subscribeDevice(
+		return this.Api.subscribeDevice(
 			pushToken,
 			pushType,
 			pushEnabled,
@@ -357,7 +368,7 @@ export default class App extends React.Component {
 				nextState.deviceIdentification,
 				ApiEventTarget,
 			);
-			this.PollingService = new PollingService(this.Api);
+			this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
 			this.subscribeDevice(
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,
@@ -447,7 +458,6 @@ export default class App extends React.Component {
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 
-
 		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
@@ -462,6 +472,25 @@ export default class App extends React.Component {
 			this.hideChat();
 		 else
 			this.saveMessengerOpenState(this.state.messengerOpenState);
+
+		// Start slow polling if there was a chat started sometime before
+		const lastReceivedAgentMessageId = localStorage.getItem("lastReceivedAgentMessageId");
+		if(lastReceivedAgentMessageId !== undefined) {
+			Logger.debug("Starting slow polling service because 'lastReceivedAgentMessageId' is set in local storage");
+			if(this.PollingService.isRunning) {
+				Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
+				this.PollingService.stopPolling();
+			}
+			if(this.Api.deviceRegistered) {
+				this.SlowPollingService.startPolling();
+			} else {
+				Logger.debug("Device was not registered, so registering device first");
+				this.subscribeDevice()
+					.then(() => {
+						this.SlowPollingService.startPolling();
+					});
+			}
+		}
 	}
 
 	componentWillUnmount() {
@@ -609,6 +638,7 @@ export default class App extends React.Component {
 				// Also, we don't use setState() so we don't trigger an update.
 				if(this.state.allowedMediaTypes)
 					this.state.allowedMediaTypes.splice(0, this.state.allowedMediaTypes.length);
+
 				objectToSaveIntoState = {allowedMediaTypes: value};
 			} else if(path[layer1] === "allowFileUpload") {
 				objectToSaveIntoState = {allowMediaUpload: value};
@@ -686,6 +716,11 @@ export default class App extends React.Component {
 	};
 
 	showChat = () => {
+		if(this.SlowPollingService.isRunning) {
+			Logger.debug("Show chat, stopping active slow polling service");
+			this.SlowPollingService.stopPolling();
+		}
+
 		Logger.debug("Show chat, registering device");
 
 		this.setState(() => ({
@@ -715,6 +750,12 @@ export default class App extends React.Component {
 	};
 
 	restartPolling = () => {
+		// Prevent (re)starting the polling service as long as slow polling is running
+		if(this.SlowPollingService.isRunning) {
+			Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
+			return;
+		}
+
 		this.PollingService.restartPolling();
 	};
 
@@ -737,11 +778,12 @@ export default class App extends React.Component {
 
 		// Show the chat when we received a new message
 		if(!this.state.showChat && foundNewMessages) {
-			// Update the number for the unread messages badge
-			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
-
-			// TODO: @gerben; we should either update the badge or show the chat. This should be a setting
-			// this.showChat();
+			if(this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge) {
+				// Update the number for the unread messages badge
+				this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
+			} else {
+				this.showChat();
+			}
 		}
 	};
 

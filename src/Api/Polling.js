@@ -19,13 +19,15 @@ const intervalTimeUnits = {
 };
 
 export default class PollingService {
-	constructor(api, customIntervals) {
+	constructor(name, api, customIntervals) {
+		ow(name, "name", ow.string);
 		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
 		ow(customIntervals, "customIntervals", ow.optional.array.nonEmpty);
 		ow(customIntervals, "customIntervals", ow.optional.array.ofType(ow.string));
 
 		this.resetIntervalTrackers();
 
+		this.name = name;
 		this.api = api;
 		this.currentIntervals = customIntervals || defaultIntervals;
 
@@ -33,6 +35,9 @@ export default class PollingService {
 		this.eventListenersInitialized = false;
 		this.eventListenersAbortController = undefined;
 		this.lastMessageIdReceived = undefined;
+
+		this.logger = Logger.get(name);
+		this.logger.setLevel(Logger.getLevel());
 	}
 
 	/**
@@ -135,7 +140,7 @@ export default class PollingService {
 
 	async pollInterval() {
 		if(!this.api.deviceRegistered) {
-			Logger.warn("Polling interval canceled because device is not yet registered!");
+			this.logger.warn("Polling interval canceled because device is not yet registered!");
 			return;
 		}
 
@@ -174,6 +179,8 @@ export default class PollingService {
 	 * on specific API events) and start with polling.
 	 */
 	startPolling() {
+		this.logger.debug("Starting polling service");
+
 		this.isRunning = true;
 
 		// Setup event listeners for events that may be sent
@@ -187,6 +194,8 @@ export default class PollingService {
 	 * Stops the polling interval
 	 */
 	stopPolling() {
+		this.logger.debug("Stopping polling service");
+
 		this.isRunning = false;
 		clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();

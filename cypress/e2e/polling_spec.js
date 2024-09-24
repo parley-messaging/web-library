@@ -54,6 +54,7 @@ describe("Polling Service", () => {
 			};
 
 			const pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -117,6 +118,7 @@ describe("Polling Service", () => {
 			};
 
 			const pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -173,6 +175,7 @@ describe("Polling Service", () => {
 			};
 
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -210,6 +213,7 @@ describe("Polling Service", () => {
 
 			// eslint-disable-next-line no-unused-vars
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -269,6 +273,7 @@ describe("Polling Service", () => {
 
 			// eslint-disable-next-line no-unused-vars
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -286,7 +291,7 @@ describe("Polling Service", () => {
 			});
 	});
 
-	it.only("should only poll from the last received message id", () => {
+	it("should only poll from the last received message id", () => {
 		const customIntervals = ["10ms"];
 		const maxIntervals = 4;
 		let currentInterval = 0;
@@ -376,6 +381,7 @@ describe("Polling Service", () => {
 					};
 
 					const pollingService = new PollingService(
+						"main-polling-service",
 						apiMock,
 						customIntervals,
 					);

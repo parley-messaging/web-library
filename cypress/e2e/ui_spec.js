@@ -3596,7 +3596,7 @@ describe("UI", () => {
 			});
 		});
 		describe("interface", () => {
-			describe("`hideChatAfterBusinessHours", () => {
+			describe("hideChatAfterBusinessHours", () => {
 				it("should hide the chat after business hours", () => {
 					const parleyConfig = {
 						weekdays: [
@@ -3644,6 +3644,119 @@ describe("UI", () => {
 					cy.get("@app")
 						.get("[class^=parley-messaging-launcher__]")
 						.should("not.exist");
+				});
+			});
+			describe("unreadMessagesAction", () => {
+				beforeEach(() => {
+					// Make sure `lastReceivedAgentMessageId` is set otherwise slow polling should not start
+					cy.window()
+						.then((win) => {
+							win.localStorage.setItem("lastReceivedAgentMessageId", "0");
+						});
+
+					// Intercept the get messages
+					cy.fixture("getMessagesResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = [
+								{
+									id: 1,
+									time: 1536739259,
+									message: "Message #1",
+									image: null,
+									typeId: 2,
+									agent: {
+										id: 2,
+										name: "Tracebuzz",
+										avatar: "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+										isTyping: null,
+									},
+									carousel: [],
+									quickReplies: [],
+									custom: [],
+									title: null,
+									media: null,
+									buttons: [],
+								}, {
+									id: 2,
+									time: 1536739265,
+									message: "Message #2",
+									image: null,
+									typeId: 2,
+									agent: {
+										id: 2,
+										name: "Tracebuzz",
+										avatar: "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+										isTyping: null,
+									},
+									carousel: [],
+									quickReplies: [],
+									custom: [],
+									title: null,
+									media: null,
+									buttons: [],
+								},
+							];
+							cy.intercept("GET", "*/**/messages", _fixture)
+								.as("getMessages");
+						});
+				});
+
+				it(`should show the chat when new agent messages are received (using value 0)`, () => {
+					visitHome({interface: {unreadMessagesAction: 0}});
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("button")
+						.should("be.visible");
+
+					cy.wait("@getMessages");
+
+					// Validate that the main chat window is visible
+					// and that the unread messages badge counter doesn't show up
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("not.exist");
+				});
+				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1)", () => {
+					// Make sure to set the correct unread message action
+					// otherwise the counter won't show up
+					visitHome({interface: {unreadMessagesAction: 1}});
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("button")
+						.should("be.visible");
+
+					cy.wait("@getMessages");
+
+					// Validate that the unread messages badge counter shows up
+					// and shows the correct number
+					// and that the main chat window is not visible
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("have.text", 2)
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("not.be.visible");
+
+					clickOnLauncher();
+
+					// Validate that the unread messages badge counter hides
+					// when opening the main screen
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("not.exist");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("be.visible");
 				});
 			});
 		});
