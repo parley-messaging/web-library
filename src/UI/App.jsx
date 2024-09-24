@@ -99,7 +99,7 @@ export default class App extends React.Component {
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
-				|| this.unreadMessagesActions.openChatWindow, // TODO: @gerben; make reactive
+				|| this.unreadMessagesActions.openChatWindow,
 		};
 
 		this.Api = new Api(
@@ -646,6 +646,8 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
 				objectToSaveIntoState = {hideChatOutsideWorkingHours: value};
+			else if(path[layer1] === "unreadMessagesAction")
+				objectToSaveIntoState = {unreadMessagesAction: value};
 		} else if(path[layer0] === "roomNumber") {
 			objectToSaveIntoState = {accountIdentification: value};
 		} else if(path[layer0] === "authHeader") {
