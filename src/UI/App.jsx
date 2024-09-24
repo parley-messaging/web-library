@@ -475,7 +475,7 @@ export default class App extends React.Component {
 
 		// Start slow polling if there was a chat started sometime before
 		const lastReceivedAgentMessageId = localStorage.getItem("lastReceivedAgentMessageId");
-		if(lastReceivedAgentMessageId !== undefined) {
+		if(lastReceivedAgentMessageId !== null) {
 			Logger.debug("Starting slow polling service because 'lastReceivedAgentMessageId' is set in local storage");
 			if(this.PollingService.isRunning) {
 				Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
