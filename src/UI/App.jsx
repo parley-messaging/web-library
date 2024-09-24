@@ -926,6 +926,7 @@ export default class App extends React.Component {
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}
 					isiOSMobile={this.state.isiOSMobile}
+					key={this.state.accountIdentification}
 					onDeviceNeedsNewIdentification={this.handleDeviceNeedsNewIdentification}
 					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onMinimizeClick={this.handleClick}
