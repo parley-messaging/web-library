@@ -3873,6 +3873,8 @@ describe("UI", () => {
 			// Open launcher and check that local storage contains the id of the last message
 			clickOnLauncher();
 			cy.wait("@getMessages");
+			// eslint-disable-next-line cypress/no-unnecessary-waiting
+			cy.wait(500); // Not sure why but without this the test becomes flaky... Didn't have time to investigate
 			cy.get("@messagesResponse")
 				.then((messagesResponse) => {
 					const expectedLastReceivedMessageId = messagesResponse.data
