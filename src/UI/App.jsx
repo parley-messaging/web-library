@@ -475,22 +475,24 @@ export default class App extends React.Component {
 		 else
 			this.saveMessengerOpenState(this.state.messengerOpenState);
 
-		// Start slow polling if there was a chat started sometime before
-		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
-		if(lastReadMessageId !== null) {
-			Logger.debug("Starting slow polling service because 'lastReadMessageId' is set in local storage");
-			if(this.PollingService.isRunning) {
-				Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
-				this.PollingService.stopPolling();
-			}
-			if(this.Api.deviceRegistered) {
-				this.SlowPollingService.startPolling();
-			} else {
-				Logger.debug("Device was not registered, so registering device first");
-				this.subscribeDevice()
-					.then(() => {
-						this.SlowPollingService.startPolling();
-					});
+		// Start slow polling if there was a chat started sometime before and chat starts minimized
+		if(messengerOpenState === MessengerOpenState.minimize) {
+			const devicePreviouslyRegistered = localStorage.getItem("deviceInformation") !== null;
+			if(devicePreviouslyRegistered !== null) {
+				Logger.debug("Starting slow polling service because device is previously registered");
+				if(this.PollingService.isRunning) {
+					Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
+					this.PollingService.stopPolling();
+				}
+				if(this.Api.deviceRegistered) {
+					this.SlowPollingService.startPolling();
+				} else {
+					Logger.debug("Registering device with Api using previously stored information"); // TODO: @gerben; shouldnt we do this always on mount when 'deviceInformation' is set?
+					this.subscribeDevice()
+						.then(() => {
+							this.SlowPollingService.startPolling();
+						});
+				}
 			}
 		}
 	}
@@ -756,6 +758,12 @@ export default class App extends React.Component {
 	};
 
 	restartPolling = () => {
+		// Ignore restart requests while device is not registered
+		if(!this.Api.deviceRegistered) {
+			Logger.debug("Restart requested of polling service, but device is not registered so ignoring this request");
+			return;
+		}
+
 		// Prevent (re)starting the polling service as long as slow polling is running
 		if(this.SlowPollingService.isRunning) {
 			Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
@@ -768,7 +776,6 @@ export default class App extends React.Component {
 	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs, so we can show the
 		// chat when we received a new message
-		let foundNewMessages = false;
 		let _amountOfNewAgentMessagesFound = this.state.amountOfNewAgentMessagesFound;
 		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
 		eventData.detail.data?.forEach((message) => {
@@ -782,12 +789,10 @@ export default class App extends React.Component {
 					&& (lastReadMessageId === null || message.id > lastReadMessageId)
 				)
 					_amountOfNewAgentMessagesFound++;
-
-				foundNewMessages = true;
 			}
 		});
 
-		if(!foundNewMessages)
+		if(_amountOfNewAgentMessagesFound === 0)
 			return;
 
 		if(this.state.showChat) {
@@ -924,6 +929,7 @@ export default class App extends React.Component {
 			return;
 
 		localStorage.setItem("lastReadMessageId", Array.from(this.messageIDs)[this.messageIDs.size - 1]);
+		this.setState(() => ({amountOfNewAgentMessagesFound: 0}));
 	}
 
 	render() {
