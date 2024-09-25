@@ -329,6 +329,9 @@ export default class App extends React.Component {
 					deviceIdentification: this.Api.deviceIdentification,
 					authorization: this.Api.authorization,
 				});
+
+				Logger.debug("Restarting polling because device has been registered");
+				this.restartPolling();
 			});
 	};
 
@@ -373,7 +376,6 @@ export default class App extends React.Component {
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,
 			);
-			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
