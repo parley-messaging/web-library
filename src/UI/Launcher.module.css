@@ -49,9 +49,9 @@
 	display: block;
 	width: fit-content;
 	padding: 2px 7px;
-	background: red;
+	background: var(--parley-messenger-unread-messages-badge-background-color, red);
 	border-radius: 25px;
-	color: white;
+	color: var(--parley-messenger-unread-messages-badge-font-color, white);
 	font-weight: bold;
 }
 
