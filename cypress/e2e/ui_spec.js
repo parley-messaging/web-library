@@ -3659,6 +3659,10 @@ describe("UI", () => {
 					cy.window()
 						.then((win) => {
 							win.localStorage.setItem("lastReadMessageId", "0");
+
+							// These things are necessary for slow polling to start
+							win.localStorage.setItem("messengerOpenState", "minimize");
+							win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
 						});
 
 					// Intercept the get messages
@@ -3709,7 +3713,7 @@ describe("UI", () => {
 						});
 				});
 
-				it(`should show the chat when new agent messages are received (using value 0)`, () => {
+				it(`should show the chat when new agent messages are received (using value 0) and device has ben registered before and previous state is minimized`, () => {
 					visitHome({interface: {unreadMessagesAction: 0}});
 
 					cy.get("@app")
@@ -3729,7 +3733,7 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-unreadMessagesBadge__]")
 						.should("not.exist");
 				});
-				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1)", () => {
+				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has ben registered before and previous state is minimized", () => {
 					// Make sure to set the correct unread message action
 					// otherwise the counter won't show up
 					const config = {interface: {unreadMessagesAction: 1}};
