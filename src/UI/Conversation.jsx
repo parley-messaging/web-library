@@ -31,6 +31,7 @@ class Conversation extends Component {
 		ApiEventTarget.addEventListener(messagesEvent, this.handleMessages);
 
 		// Get the new messages
+		Logger.debug("Restarting polling because Conversation has mounted");
 		this.props.restartPolling();
 	}
 

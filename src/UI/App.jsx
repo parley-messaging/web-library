@@ -128,8 +128,14 @@ export default class App extends React.Component {
 		window.parleySettings.version = version;
 
 		// Global functions
-		window.hideParleyMessenger = this.hideChat;
-		window.showParleyMessenger = this.showChat;
+		window.hideParleyMessenger = () => {
+			Logger.debug("Calling hideChat because window.hideParleyMessenger() is called");
+			this.hideChat();
+		};
+		window.showParleyMessenger = () => {
+			Logger.debug("Calling showChat because window.showParleyMessenger() is called");
+			this.showChat();
+		};
 
 		Logger.debug("App initialized");
 	}
@@ -487,7 +493,7 @@ export default class App extends React.Component {
 				if(this.Api.deviceRegistered) {
 					this.SlowPollingService.startPolling();
 				} else {
-					Logger.debug("Registering device with Api using previously stored information"); // TODO: @gerben; shouldnt we do this always on mount when 'deviceInformation' is set?
+					Logger.debug("Registering device with Api using previously stored information");
 					this.subscribeDevice()
 						.then(() => {
 							this.SlowPollingService.startPolling();
@@ -708,13 +714,16 @@ export default class App extends React.Component {
 
 	handleFocusWindow = () => {
 		// Restart polling when window receives focus
-		this.PollingService.restartPolling();
+		Logger.debug("Restarting polling because window got focus");
+		this.restartPolling();
 	};
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
-		if(!document.hidden)
-			this.PollingService.restartPolling();
+		if(!document.hidden) {
+			Logger.debug("Restarting polling because document became visible");
+			this.restartPolling();
+		}
 	};
 
 	handleClick = () => {
@@ -727,8 +736,6 @@ export default class App extends React.Component {
 			this.SlowPollingService.stopPolling();
 		}
 
-		Logger.debug("Show chat, registering device");
-
 		this.setState(() => ({
 			showChat: true,
 			messengerOpenState: MessengerOpenState.open,
@@ -738,6 +745,7 @@ export default class App extends React.Component {
 		this.markMessagesAsRead();
 
 		// Try to re-register the device if it is not yet registered
+		Logger.debug("Show chat, registering device");
 		this.subscribeDevice();
 	};
 
@@ -751,10 +759,13 @@ export default class App extends React.Component {
 	};
 
 	toggleChat = () => {
-		if(this.state.showChat)
+		if(this.state.showChat) {
+			Logger.debug("Calling hideChat because toggleChat is called");
 			this.hideChat();
-		 else
+		} else {
+			Logger.debug("Calling showChat because toggleChat is called");
 			this.showChat();
+		}
 	};
 
 	restartPolling = () => {
@@ -803,6 +814,7 @@ export default class App extends React.Component {
 			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
 		} else {
 			// Show the chat when we received a new message
+			Logger.debug("Calling showChat because we have found new messages");
 			this.showChat();
 		}
 	};
@@ -811,7 +823,7 @@ export default class App extends React.Component {
 		// Save registration in the device identification cookie
 		// (if the devicePersistence.domain setting is used)
 		if(this.state.devicePersistence.domain) {
-			Logger.debug("Subscribe done, saving identification in cookie because setting devicePersistence.domain is set");
+			Logger.debug("saving identification in cookie because setting devicePersistence.domain is set");
 
 			this.createDeviceIdentificationCookie(
 				this.state.deviceIdentification,
@@ -819,7 +831,7 @@ export default class App extends React.Component {
 			);
 		}
 
-		Logger.debug("Subscribe done, starting cookie age update interval");
+		Logger.debug("starting cookie age update interval");
 		this.startCookieAgeUpdateInterval(
 			this.state.deviceIdentification,
 			this.state.devicePersistence.domain,

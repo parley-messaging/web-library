@@ -92,6 +92,7 @@ export default class PollingService {
 	}
 
 	handleMessageSent = () => {
+		this.logger.debug("Restarting polling, because we sent a new message");
 		this.restartPolling();
 	};
 

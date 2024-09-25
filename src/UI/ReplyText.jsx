@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
 import {InterfaceTextsContext} from "./Scripts/Context";
+import Logger from "js-logger";
 
 class ReplyText extends Component {
 	constructor(props) {
@@ -25,6 +26,8 @@ class ReplyText extends Component {
 	handleFocus = () => {
 		if(this.props.isMobile)
 			this.props.fitToIDeviceScreen();
+
+		Logger.debug("Restarting polling because input field received focus");
 		this.props.restartPolling();
 	};
 
