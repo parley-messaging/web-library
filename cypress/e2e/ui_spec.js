@@ -1484,6 +1484,167 @@ describe("UI", () => {
 				.eq(3)
 				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageButtons);
 		});
+		it("should scroll to the newest message if the chat has not been scrolled manually", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Return a new message
+			const newMessageText = `This message should be visible ${Date.now()}`;
+			cy.get("@fixture")
+				.then((fixture) => {
+					// eslint-disable-next-line no-param-reassign
+					fixture.data = [
+						{
+							...fixture.data[0],
+							id: 999999, // Too lazy to find out what the latest id is from the previous batch
+							time: Date.now(),
+							message: newMessageText,
+						},
+					];
+					cy.intercept("GET", "*/**/messages/after:*", (req) => {
+						req.reply(fixture);
+					})
+						.as("getNewMessage");
+				});
+
+			cy.wait("@getNewMessage");
+
+			// Validate that we have scrolled to that message
+			findMessage(newMessageText);
+		});
+		it("should scroll to the newest message if the chat was closed but popped open by a new message", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					cy.wrap(fixture.data[fixture.data.length - 1].message)
+						.as("lastMessage");
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					}).as("getMessages");
+				});
+
+			cy.window()
+				.then((win) => {
+					// These things are necessary for slow polling to start
+					// and in turn for opening the chat window on new messages
+					win.localStorage.setItem("messengerOpenState", "minimize");
+					win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
+				});
+			visitHome();
+
+			cy.wait("@getMessages");
+
+			// Validate that we have scrolled to the latest message
+			cy.get("@lastMessage")
+				.then((lastMessage) => {
+					cy.get("@app")
+						.find("[class^=parley-messaging-wrapper__]")
+						.should("be.visible")
+						.find("[class^=parley-messaging-body__]")
+						.should("be.visible")
+						.contains(lastMessage)
+						.should("be.visible");
+				});
+		});
+		it("should not scroll to the newest message if the chat has been scrolled manually", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					}).as("getMessages");
+				});
+
+			visitHome();
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			// Scroll a bit up
+			cy.get("[class^=parley-messaging-body__]")
+				.realMouseWheel({deltaY: -500});
+
+			// Return a new message
+			const newMessageText = `This message should NOT be visible ${Date.now()}`;
+			cy.get("@fixture")
+				.then((fixture) => {
+					// eslint-disable-next-line no-param-reassign
+					fixture.data = [
+						{
+							...fixture.data[0],
+							id: 999999, // Too lazy to find out what the latest id is from the previous batch
+							time: Date.now(),
+							message: newMessageText,
+						},
+					];
+					cy.intercept("GET", "*/**/messages/after:*", (req) => {
+						req.reply(fixture);
+					})
+						.as("getNewMessage");
+				});
+
+			cy.wait("@getNewMessage");
+
+			// Validate that we have scrolled to that message
+			cy.get("@app")
+				.find("[class^=parley-messaging-wrapper__]")
+				.should("be.visible")
+				.find("[class^=parley-messaging-body__]")
+				.should("be.visible")
+				.contains(newMessageText)
+				.should("not.be.visible");
+		});
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {

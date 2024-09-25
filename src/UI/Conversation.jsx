@@ -18,6 +18,9 @@ class Conversation extends Component {
 
 		this.renderedDates = [];
 		this.conversationBottom = React.createRef();
+		this.bodyRef = React.createRef();
+		this.clientHasScrolledManually = false;
+		this.scrollDownOnShow = false;
 
 		// state
 		this.state = {
@@ -42,18 +45,40 @@ class Conversation extends Component {
 	// eslint-disable-next-line no-unused-vars
 	componentDidUpdate(prevProps, prevState, snapshot) {
 		// Scroll to bottom if there are new messages in the messages state
-		if(this.state.messages.length > 0 && prevState.messages.length > 0) {
-			const currentStateLastMessage = this.state.messages[this.state.messages.length - 1];
-			const prevStateLastMessage = prevState.messages[prevState.messages.length - 1];
+		// and client has not scrolled manually already
+		if(!this.clientHasScrolledManually) {
+			if(this.scrollDownOnShow) {
+				// There was a request to scroll to bottom but the conversation was hidden
+				// so now we execute it since the chat is visible again.
+				Logger.debug("Executing scroll to bottom, which was requested when Conversation was hidden but it is visible now");
+				this.scrollToBottom();
+			} else if(this.state.messages.length > 0 && prevState.messages.length > 0) {
+				const currentStateLastMessage = this.state.messages[this.state.messages.length - 1];
+				const prevStateLastMessage = prevState.messages[prevState.messages.length - 1];
 
-			// We have to compare ids here because the API has a limit on how many messages it returns
-			// So eventually the lengths would always be equal..
-			if(currentStateLastMessage.id !== prevStateLastMessage.id)
-				this.conversationBottom.current.scrollIntoView();
-		} else if(this.state.messages.length > 0 && prevState.messages.length === 0) {
-			// We also want to scroll down when we start receiving the messages
-			// for the first time
+				// We have to compare ids here because the API has a limit on how many messages it returns
+				// So eventually the lengths would always be equal...
+				if(currentStateLastMessage.id !== prevStateLastMessage.id) {
+					Logger.debug("Scroll to bottom, because latest message has a different id than the previous latest message");
+					this.scrollToBottom();
+				}
+			} else if(this.state.messages.length > 0 && prevState.messages.length === 0) {
+				// We also want to scroll down when we start receiving the messages
+				// for the first time
+				Logger.debug("Scroll to bottom, because we got messages when previously we didn't have any");
+				this.scrollToBottom();
+			}
+		}
+	}
+
+	scrollToBottom = () => {
+		if(this.props.isChatShown) {
 			this.conversationBottom.current.scrollIntoView();
+			this.scrollDownOnShow = false;
+		} else {
+			// Remember this for when chat is shown and then scroll down
+			Logger.debug("Scroll to bottom requested, but the Conversation is hidden. Executing this request when Conversation is visible");
+			this.scrollDownOnShow = true;
 		}
 	}
 
@@ -159,12 +184,37 @@ class Conversation extends Component {
 		};
 	}
 
+	handleScroll = (event) => {
+		if(!this.bodyRef.current)
+			return;
+
+		const scrollTopMargin = 100; // Roughly the size of 1,5 message bubble + margin
+		const scrollTopMax = this.bodyRef.current.scrollHeight - this.bodyRef.current.clientHeight;
+		const scrollCurrent = this.bodyRef.current.scrollTop + event.deltaY;
+
+		if(scrollCurrent >= scrollTopMax - scrollTopMargin) {
+			// Client probably scrolled back down so we should reset the flag so we can scroll to new messages again
+			this.clientHasScrolledManually = false;
+		} else {
+			this.clientHasScrolledManually = true;
+		}
+	}
+
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
+		const bodyRole = "feed"; // Used to keep jsx-a11y/no-static-element-interactions happy, not sure if this is the best fitting role...
 
 		return (
 			<div className={styles.wrapper}>
-				<div className={styles.body}>
+				<div
+					className={styles.body}
+					onKeyDown={this.handleScroll}
+					onTouchMove={this.handleScroll}
+					onWheel={this.handleScroll}
+					ref={this.bodyRef}
+					role={bodyRole}
+					tabIndex={-1} // tabIndex is required for onKeyDown to work
+				>
 					{
 						this.state.welcomeMessage
 						&& <Announcement message={this.state.welcomeMessage} />
@@ -230,6 +280,7 @@ class Conversation extends Component {
 Conversation.propTypes = {
 	api: PropTypes.instanceOf(Api),
 	defaultWelcomeMessage: PropTypes.string,
+	isChatShown: PropTypes.bool,
 	restartPolling: PropTypes.func,
 };
 
