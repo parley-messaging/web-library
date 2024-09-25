@@ -3655,10 +3655,10 @@ describe("UI", () => {
 			});
 			describe("unreadMessagesAction", () => {
 				beforeEach(() => {
-					// Make sure `lastReceivedAgentMessageId` is set otherwise slow polling should not start
+					// Make sure `lastReadMessageId` is set otherwise slow polling should not start
 					cy.window()
 						.then((win) => {
-							win.localStorage.setItem("lastReceivedAgentMessageId", "0");
+							win.localStorage.setItem("lastReadMessageId", "0");
 						});
 
 					// Intercept the get messages
@@ -3732,7 +3732,8 @@ describe("UI", () => {
 				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1)", () => {
 					// Make sure to set the correct unread message action
 					// otherwise the counter won't show up
-					visitHome({interface: {unreadMessagesAction: 1}});
+					const config = {interface: {unreadMessagesAction: 1}};
+					visitHome(config);
 
 					cy.get("@app")
 						.find("[class^=parley-messaging-launcher__]")
@@ -3744,6 +3745,18 @@ describe("UI", () => {
 					// Validate that the unread messages badge counter shows up
 					// and shows the correct number
 					// and that the main chat window is not visible
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("have.text", 2)
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("not.be.visible");
+
+					// Validate that it keeps showing up even after a refresh of the page
+					visitHome(config);
+					cy.wait("@getMessages");
 					cy.get("@app")
 						.find("[class^=parley-messaging-launcher__]")
 						.find("[class^=parley-messaging-unreadMessagesBadge__]")
@@ -3840,7 +3853,7 @@ describe("UI", () => {
 					});
 			});
 		});
-		it(`should contain the last received agent message id`, () => {
+		it(`should contain the last received message id`, () => {
 			visitHome();
 			cy.get("[id=app]")
 				.as("app");
@@ -3848,22 +3861,6 @@ describe("UI", () => {
 			// Mock get messages and give back a couple messages
 			cy.fixture("getMessagesResponse.json")
 				.then((json) => {
-					// Add another User message so we can verify that we ignore user message ID's
-					// (even if they are the newest message)
-					json.data.push({
-						id: json.data[0].id + 1,
-						time: json.data[0].time + 10,
-						typeId: MessageTypes.User,
-						message: "Here is my question...",
-						image: null,
-						agent: null,
-						carousel: [],
-						quickReplies: [],
-						custom: [],
-						title: null,
-						media: null,
-						buttons: [],
-					});
 					cy.intercept("GET", messagesUrlRegex, json)
 						.as("getMessages");
 					cy.wrap(json)
@@ -3882,7 +3879,7 @@ describe("UI", () => {
 
 					cy.window()
 						.then((win) => {
-							cy.wrap(win.localStorage.getItem("lastReceivedAgentMessageId"))
+							cy.wrap(win.localStorage.getItem("lastReadMessageId"))
 								.then((value) => {
 									cy.wrap(value)
 										.should("exist")

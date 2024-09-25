@@ -474,9 +474,9 @@ export default class App extends React.Component {
 			this.saveMessengerOpenState(this.state.messengerOpenState);
 
 		// Start slow polling if there was a chat started sometime before
-		const lastReceivedAgentMessageId = localStorage.getItem("lastReceivedAgentMessageId");
-		if(lastReceivedAgentMessageId !== null) {
-			Logger.debug("Starting slow polling service because 'lastReceivedAgentMessageId' is set in local storage");
+		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
+		if(lastReadMessageId !== null) {
+			Logger.debug("Starting slow polling service because 'lastReadMessageId' is set in local storage");
 			if(this.PollingService.isRunning) {
 				Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
 				this.PollingService.stopPolling();
@@ -731,6 +731,8 @@ export default class App extends React.Component {
 			amountOfNewAgentMessagesFound: 0,
 		}));
 
+		this.markMessagesAsRead();
+
 		// Try to re-register the device if it is not yet registered
 		this.subscribeDevice();
 	};
@@ -766,26 +768,35 @@ export default class App extends React.Component {
 		// chat when we received a new message
 		let foundNewMessages = false;
 		let _amountOfNewAgentMessagesFound = this.state.amountOfNewAgentMessagesFound;
+		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
 		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
-				if(message.typeId === MessageTypes.Agent) {
-					localStorage.setItem("lastReceivedAgentMessageId", message.id);
+				if(message.typeId === MessageTypes.Agent
+
+					// When initially starting the chat the state is empty and thus all messages are seen as "new"
+					// Making sure the message id is greater than the previously saved id we can assume these
+					// messages are actually new
+					&& (lastReadMessageId === null || message.id > lastReadMessageId)
+				)
 					_amountOfNewAgentMessagesFound++;
-				}
 
 				foundNewMessages = true;
 			}
 		});
 
-		// Show the chat when we received a new message
-		if(!this.state.showChat && foundNewMessages) {
-			if(this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge) {
-				// Update the number for the unread messages badge
-				this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
-			} else {
-				this.showChat();
-			}
+		if(!foundNewMessages)
+			return;
+
+		if(this.state.showChat) {
+			// Chat is already shown so mark messages as read
+			this.markMessagesAsRead();
+		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge) {
+			// Update the number for the unread messages badge
+			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
+		} else {
+			// Show the chat when we received a new message
+			this.showChat();
 		}
 	};
 
@@ -905,6 +916,13 @@ export default class App extends React.Component {
 	handleDeviceNeedsSubscribing = () => {
 		this.subscribeDevice();
 	};
+
+	markMessagesAsRead = () => {
+		if(this.messageIDs.size === 0)
+			return;
+
+		localStorage.setItem("lastReadMessageId", Array.from(this.messageIDs)[this.messageIDs.size - 1]);
+	}
 
 	render() {
 		return (
