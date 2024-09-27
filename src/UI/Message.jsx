@@ -52,7 +52,7 @@ class Message extends Component {
 									{this.props.message.agent.name}
 								</div>
 							}
-							<div className={styles.message}>
+							<article className={styles.message}>
 								{/* Title */}
 								{
 									this.props.message.title
@@ -130,7 +130,7 @@ class Message extends Component {
 								<span className={styles.time}>
 									{this.showTime(this.props.message.time)}
 								</span>
-							</div>
+							</article>
 						</div>
 					)
 				}

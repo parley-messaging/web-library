@@ -1029,7 +1029,7 @@ describe("UI", () => {
 
 			cy.wait("@getMessages");
 
-			cy.get("div[class^=parley-messaging-message__]")
+			cy.get("article[class^=parley-messaging-message__]")
 				.children()
 				.first()
 				.should("have.text", "Unsupported media")
