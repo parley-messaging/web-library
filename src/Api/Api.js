@@ -328,14 +328,14 @@ export default class Api {
 				.then((response) => {
 					const contentType = response.headers.get("Content-Type");
 
-					if(contentType && contentType.includes("application/json"))
+					if(contentType && contentType.includes("application/json")) {
+						// Handle JSON response
 						return response.json();
-
-					// Handle JSON response
-					else if(contentType && isSupportedMediaType(contentType))
+					} else if(contentType && isSupportedMediaType(contentType)) {
+						// Handle media binary response
 						return response.blob();
+					}
 
-					 // Handle media binary response
 					throw new Error("Unsupported response type");
 				})
 				.then((data) => {
