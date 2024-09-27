@@ -103,7 +103,7 @@ class Conversation extends Component {
 
 				// Add NEW messages to the newState
 				messages.forEach((message) => {
-					if(this.state.messages.filter(x => x.id === message.id).length > 0)
+					if(this.state.messages.some(x => x.id === message.id))
 						return; // Ignore messages we already have in our state
 
 					newState.messages.push(message);
