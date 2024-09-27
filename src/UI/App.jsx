@@ -487,7 +487,7 @@ export default class App extends React.Component {
 			if(devicePreviouslyRegistered !== null) {
 				Logger.debug("Starting slow polling service because device is previously registered");
 				if(this.PollingService.isRunning) {
-					Logger.debug("Polling service is running, stopping it because we only want slow polling at this moment");
+					Logger.debug("Main polling service is running, stopping it because we only want slow polling at this moment");
 					this.PollingService.stopPolling();
 				}
 				if(this.Api.deviceRegistered) {
