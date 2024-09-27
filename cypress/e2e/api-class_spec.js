@@ -791,17 +791,9 @@ describe("Api class", () => {
 		])
 			.forEach((set) => {
 				it(`should throw an error when using '${set.type}' as id`, () => {
-					// Don't know why but apparently "bigint" causes a different error messages than all other types...
-					if(set.type === "bigint") {
-						expect(() => config.api.getMessages(set.value))
-							.to
-							.throw(`Expected \`id\` to be of type \`number\` but received type \`${set.type}\``
-								+ `\nExpected number \`id\` to be greater than 0, got ${set.value}`);
-					} else {
-						expect(() => config.api.getMessages(set.value))
-							.to
-							.throw(`Expected \`id\` to be of type \`number\` but received type \`${set.type}\``);
-					}
+					expect(() => config.api.getMessages(set.value))
+						.to
+						.throw(`Expected \`id\` to be of type \`number\` but received type \`${set.type}\``);
 				});
 			});
 
