@@ -360,6 +360,7 @@ describe("Polling Service", () => {
 							idsRequested.push(id);
 
 							if(currentInterval === maxIntervals) {
+								// eslint-disable-next-line no-use-before-define
 								pollingService.stopPolling();
 								resolve();
 								return;
