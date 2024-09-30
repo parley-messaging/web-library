@@ -3893,6 +3893,36 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-launcher__]")
 						.find("[class^=parley-messaging-unreadMessagesBadge__]")
 						.should("not.exist");
+
+					// Test that it changes during runtime
+					cy.fixture("getMessagesResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = [
+								{
+									...fixture.data[0],
+									id: 9999,
+									time: Date.now(),
+								},
+							];
+							cy.intercept("GET", messagesUrlRegex, _fixture)
+								.as("getMessages2");
+						});
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.interface.unreadMessagesAction = 1;
+						});
+					clickOnLauncher();
+					cy.wait("@getMessages2");
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("have.text", 1)
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("not.be.visible");
 				});
 				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has ben registered before and previous state is minimized", () => {
 					// Make sure to set the correct unread message action
