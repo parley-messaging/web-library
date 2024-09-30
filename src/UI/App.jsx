@@ -123,6 +123,8 @@ export default class App extends React.Component {
 			= window.parleySettings.runOptions.interfaceTexts ? window.parleySettings.runOptions.interfaceTexts : {};
 		window.parleySettings.devicePersistence
 			= window.parleySettings.devicePersistence ? window.parleySettings.devicePersistence : {};
+		window.parleySettings.interface
+			= window.parleySettings.interface ? window.parleySettings.interface : {};
 
 		// Store library version into window
 		window.parleySettings.version = version;
