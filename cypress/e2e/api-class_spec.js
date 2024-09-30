@@ -5,11 +5,12 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {media, mediaUploaded, messageSent, subscribe} from "../../src/Api/Constants/Events";
+import {media, mediaUploaded, messages, messageSent, subscribe} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
 import {CUSTOMHEADER_BLACKLIST} from "../../src/Api/Constants/CustomHeaderBlacklist";
+import {interceptIndefinitely} from "../support/utils";
 
 const config = {
 	apiDomain: "https://fake.parley.nu",
@@ -96,6 +97,8 @@ describe("Api class", () => {
 				return new File([fixture], "pdf.pdf");
 			})
 			.as("mediaFile");
+		cy.fixture("getMessagesResponse.json")
+			.as("getMessagesResponse");
 		cy.get("@postDevicesResponse")
 			.then((json) => {
 				cy.intercept("POST", `${config.apiDomain}/**/devices`, (req) => {
@@ -133,6 +136,21 @@ describe("Api class", () => {
 
 					req.reply(json);
 				});
+			});
+		cy.get("@getMessagesResponse")
+			.then((json) => {
+				cy.intercept("GET", `${config.apiDomain}/**/messages/after:*`, (req) => {
+					requestExpectations(req);
+
+					req.reply(json);
+				})
+					.as("getMessagesWithId");
+				cy.intercept("GET", `${config.apiDomain}/**/messages`, (req) => {
+					requestExpectations(req);
+
+					req.reply(json);
+				})
+					.as("getMessages");
 			});
 
 
@@ -655,6 +673,10 @@ describe("Api class", () => {
 				.be
 				.equal(false);
 
+			// Intercept the devices call until we have confirmed that
+			// the isDeviceRegistrationPending flag is correctly set
+			const interception = interceptIndefinitely("POST", "*/**/devices");
+
 			config.api.subscribeDevice(
 				config.pushToken,
 				config.pushType,
@@ -679,6 +701,8 @@ describe("Api class", () => {
 				.to
 				.be
 				.equal(true);
+
+			interception.sendResponse();
 		});
 	});
 
@@ -758,6 +782,53 @@ describe("Api class", () => {
 						config.api.sendMessage(config.message);
 					});
 				});
+		});
+	});
+
+	describe("getMessages()", () => {
+		filterPrimitives([
+			"number", "undefined",
+		])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as id`, () => {
+					expect(() => config.api.getMessages(set.value))
+						.to
+						.throw(`Expected \`id\` to be of type \`number\` but received type \`${set.type}\``);
+				});
+			});
+
+		[
+			123, undefined,
+		].forEach((id) => {
+			it(`should fetch and return response using direct way (with id ${id})`, () => {
+				cy.get("@getMessagesResponse")
+					.then(async (fixture) => {
+						const data = await config.api.getMessages(1);
+						expect(JSON.stringify(data))
+							.to
+							.be
+							.equal(JSON.stringify(fixture));
+					});
+			});
+
+			it(`should fetch and return response using ApiEventTarget (with id ${id})`, () => {
+				cy.get("@getMessagesResponse")
+					.then(async (fixture) => {
+						return new Cypress.Promise((resolve) => {
+							// Subscribe to the "messages" event
+							ApiEventTarget.addEventListener(messages, (data) => {
+								// Validate that the response from the API is correct
+								expect(JSON.stringify(data.detail))
+									.to
+									.be
+									.equal(JSON.stringify(fixture));
+								resolve();
+							});
+
+							config.api.getMessages(1);
+						});
+					});
+			});
 		});
 	});
 

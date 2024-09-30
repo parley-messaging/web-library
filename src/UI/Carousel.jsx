@@ -58,10 +58,11 @@ export default class Carousel extends Component {
 
 		const previousButtonText = "<";
 		const nextButtonText = ">";
+		const feedRole = "feed";
 
 		return (
 			<div className={styles.carouselContainer}>
-				<div className={styles.carousel} ref={this.carouselRef}>
+				<div className={styles.carousel} ref={this.carouselRef} role={feedRole}>
 					{
 						this.props.items.map((item, index) => (
 							// eslint-disable-next-line react/no-array-index-key

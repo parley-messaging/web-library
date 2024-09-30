@@ -2,8 +2,10 @@ import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 import {interceptIndefinitely} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
+import MessageTypes from "../../src/Api/Constants/MessageTypes";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
+const messagesUrlRegex = /.*\/messages(?:\/after:\d+)?/u; // This matches /messages and /messages/after:123
 
 function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	cy.visit("/", {
@@ -228,7 +230,7 @@ describe("UI", () => {
 				.should("have.property", "statusCode", 400);
 		});
 		it("should show the `retrievingMessagesFailedError` error when retrieving messages fails", () => {
-			cy.intercept("GET", "*/**/messages", {
+			cy.intercept("GET", messagesUrlRegex, {
 				statusCode: 400,
 				body: {
 					status: "ERROR",
@@ -496,7 +498,7 @@ describe("UI", () => {
 			const parleyConfig = {xIrisIdentification: "aaaaaaaaaaaa"};
 			const testMessage = `Test message ${Date.now()}`;
 
-			cy.intercept("GET", "*/**/messages", {
+			cy.intercept("GET", messagesUrlRegex, {
 				statusCode: 400,
 				body: {
 					status: "ERROR",
@@ -520,7 +522,7 @@ describe("UI", () => {
 				.as("error")
 				.should("be.visible")
 				.should("have.text", "This conversation is continued in a logged-in environment, go back to that environment if you want to continue the conversation. Send a new message below if you want to start a new conversation.");
-			cy.intercept("GET", "*/**/messages", req => req.continue()); // Reset the previous interceptor
+			cy.intercept("GET", messagesUrlRegex, req => req.continue()); // Reset the previous interceptor
 
 			// Test that the identification changed and does not match the old identification anymore
 			cy.intercept("POST", "*/**/devices", (req) => {
@@ -569,14 +571,20 @@ describe("UI", () => {
 					fileName: "powerpoint.pptx",
 					expectedIcon: "file-powerpoint",
 				},
-				{
-					fileName: "powerpoint.ppt",
-					expectedIcon: "file-powerpoint",
-				},
-				{
-					fileName: "audio.mp3",
-					expectedIcon: "file-audio",
-				},
+
+				// {
+				// 	fileName: "powerpoint.ppt",
+				// 	expectedIcon: "file-powerpoint",
+				// },
+				// There are problems with .ppt files in the newest clientApi v1.8 update
+				// so they are disabled for now. Tracked in https://github.com/parley-messaging/client-api/issues/269
+				// {
+				// 	fileName: "audio.mp3",
+				// 	expectedIcon: "file-audio",
+				// },
+				// There are problems with .mp3 files in the newest clientApi v1.8 update
+				// so they are disabled for now. Tracked in https://github.com/parley-messaging/client-api/issues/269
+
 				{
 					fileName: "video.mp4",
 					expectedIcon: "file-video",
@@ -590,7 +598,7 @@ describe("UI", () => {
 				it(`should show the media file '${fileName}', after submitting it`, () => {
 					cy.intercept("POST", "*/**/messages")
 						.as("postMessage");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					cy.fixture(fileName, null) // The `null` encoding is very important, otherwise some files wont work
@@ -748,7 +756,7 @@ describe("UI", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with an image in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+			cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithImageResponse.json"});
 
 			// Intercept the request for the image binary
 			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
@@ -766,7 +774,7 @@ describe("UI", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with an image in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"})
+			cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithImageResponse.json"})
 				.as("getMessages");
 
 			// Don't intercept GET /media and let the API give use the error we want
@@ -783,7 +791,7 @@ describe("UI", () => {
 				.should("have.text", "Unable to load media");
 		});
 		it("should show the `deviceRequiresAuthorizationError` error when we receive the `device_requires_authorization` api error", () => {
-			cy.intercept("GET", "*/**/messages", {
+			cy.intercept("GET", messagesUrlRegex, {
 				statusCode: 400,
 				body: {
 					status: "ERROR",
@@ -816,7 +824,7 @@ describe("UI", () => {
 					.as("getMessageWithButtonsResponseFixture");
 				cy.get("@getMessageWithButtonsResponseFixture")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -856,7 +864,7 @@ describe("UI", () => {
 							});
 							return updatedMessage;
 						});
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixtureWithoutTitles);
 						})
 							.as("getMessages");
@@ -899,7 +907,7 @@ describe("UI", () => {
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -931,7 +939,7 @@ describe("UI", () => {
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -959,7 +967,7 @@ describe("UI", () => {
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -994,7 +1002,7 @@ describe("UI", () => {
 
 				// Disable the interception, so we can send the message from the reply button
 				// and also receive it.
-				cy.intercept("GET", "*/**/messages", (req) => {
+				cy.intercept("GET", messagesUrlRegex, (req) => {
 					req.continue();
 				});
 
@@ -1012,7 +1020,7 @@ describe("UI", () => {
 			});
 		});
 		it("should show an error, after rendering an unsupported media file", () => {
-			cy.intercept("GET", "*/**/messages", {fixture: "unsupportedMediaInMessage.json"})
+			cy.intercept("GET", messagesUrlRegex, {fixture: "unsupportedMediaInMessage.json"})
 				.as("getMessages");
 
 			visitHome();
@@ -1021,7 +1029,7 @@ describe("UI", () => {
 
 			cy.wait("@getMessages");
 
-			cy.get("div[class^=parley-messaging-message__]")
+			cy.get("article[class^=parley-messaging-message__]")
 				.children()
 				.first()
 				.should("have.text", "Unsupported media")
@@ -1099,7 +1107,7 @@ describe("UI", () => {
 						_fixture.data[0].media.mimeType = mimeType;
 						return _fixture;
 					})
-					.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+					.then(fixture => cy.intercept("GET", messagesUrlRegex, {body: fixture})
 						.as("getMessages"));
 
 				visitHome();
@@ -1129,7 +1137,7 @@ describe("UI", () => {
 					_fixture.data[0].media.description = null;
 					return _fixture;
 				})
-				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+				.then(fixture => cy.intercept("GET", messagesUrlRegex, {body: fixture})
 					.as("getMessages"));
 
 			cy.intercept("GET", "*/**/media/**", {fixture: "pdf.pdf"})
@@ -1154,7 +1162,7 @@ describe("UI", () => {
 				// Intercept GET messages and return a fixture message with an image in it
 				cy.get("@getMessageResponse")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -1249,7 +1257,7 @@ describe("UI", () => {
 				// Intercept GET messages and return a fixture message with an image in it
 				cy.get("@getMessageResponse")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -1343,7 +1351,7 @@ describe("UI", () => {
 								updatedFixture.data[0].carousel.push(carouselItem);
 							}
 
-							cy.intercept("GET", "*/**/messages", (req) => {
+							cy.intercept("GET", messagesUrlRegex, (req) => {
 								req.reply(updatedFixture);
 							});
 						});
@@ -1368,7 +1376,7 @@ describe("UI", () => {
 				// Intercept GET messages and return a fixture message with an image in it
 				cy.get("@getMessageResponse")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -1397,7 +1405,7 @@ describe("UI", () => {
 				// Intercept GET messages and return a fixture message with an image in it
 				cy.get("@getMessageResponse")
 					.then((fixture) => {
-						cy.intercept("GET", "*/**/messages", (req) => {
+						cy.intercept("GET", messagesUrlRegex, (req) => {
 							req.reply(fixture);
 						});
 					});
@@ -1427,7 +1435,7 @@ describe("UI", () => {
 
 			cy.get("@getMessageResponse")
 				.then((fixture) => {
-					cy.intercept("GET", "*/**/messages", (req) => {
+					cy.intercept("GET", messagesUrlRegex, (req) => {
 						req.reply(fixture);
 					});
 				});
@@ -1450,7 +1458,7 @@ describe("UI", () => {
 
 			cy.get("@getMessageResponse")
 				.then((fixture) => {
-					cy.intercept("GET", "*/**/messages", (req) => {
+					cy.intercept("GET", messagesUrlRegex, (req) => {
 						req.reply(fixture);
 					});
 				});
@@ -1475,6 +1483,167 @@ describe("UI", () => {
 			cy.get("@children")
 				.eq(3)
 				.should("have.attr", "aria-label", InterfaceTexts.english.ariaLabelMessageButtons);
+		});
+		it("should scroll to the newest message if the chat has not been scrolled manually", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					});
+				});
+
+			visitHome();
+			clickOnLauncher();
+
+			// Return a new message
+			const newMessageText = `This message should be visible ${Date.now()}`;
+			cy.get("@fixture")
+				.then((fixture) => {
+					// eslint-disable-next-line no-param-reassign
+					fixture.data = [
+						{
+							...fixture.data[0],
+							id: 999999, // Too lazy to find out what the latest id is from the previous batch
+							time: Date.now(),
+							message: newMessageText,
+						},
+					];
+					cy.intercept("GET", "*/**/messages/after:*", (req) => {
+						req.reply(fixture);
+					})
+						.as("getNewMessage");
+				});
+
+			cy.wait("@getNewMessage");
+
+			// Validate that we have scrolled to that message
+			findMessage(newMessageText);
+		});
+		it("should scroll to the newest message if the chat was closed but popped open by a new message", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					cy.wrap(fixture.data[fixture.data.length - 1].message)
+						.as("lastMessage");
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					}).as("getMessages");
+				});
+
+			cy.window()
+				.then((win) => {
+					// These things are necessary for slow polling to start
+					// and in turn for opening the chat window on new messages
+					win.localStorage.setItem("messengerOpenState", "minimize");
+					win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
+				});
+			visitHome();
+
+			cy.wait("@getMessages");
+
+			// Validate that we have scrolled to the latest message
+			cy.get("@lastMessage")
+				.then((lastMessage) => {
+					cy.get("@app")
+						.find("[class^=parley-messaging-wrapper__]")
+						.should("be.visible")
+						.find("[class^=parley-messaging-body__]")
+						.should("be.visible")
+						.contains(lastMessage)
+						.should("be.visible");
+				});
+		});
+		it("should not scroll to the newest message if the chat has been scrolled manually", () => {
+			// Return a bunch of messages initially
+			cy.fixture("getMessagesResponse.json")
+				.as("fixture");
+
+			cy.get("@fixture")
+				.then((fixture) => {
+					for(let i = 1; i < 10; i++) {
+						fixture.data.push({
+							...fixture.data[0],
+							id: fixture.data[i - 1].id + 1,
+							time: fixture.data[i - 1].time + 5,
+							message: `extra message #${i}`,
+						});
+					}
+
+					// Important to only intercept the GET /messages and not the GET /messages/after:xxx
+					// because we only want to intially return a bunch of messages
+					cy.intercept("GET", "*/**/messages", (req) => {
+						req.reply(fixture);
+					}).as("getMessages");
+				});
+
+			visitHome();
+			clickOnLauncher();
+
+			cy.wait("@getMessages");
+
+			// Scroll a bit up
+			cy.get("[class^=parley-messaging-body__]")
+				.realMouseWheel({deltaY: -500});
+
+			// Return a new message
+			const newMessageText = `This message should NOT be visible ${Date.now()}`;
+			cy.get("@fixture")
+				.then((fixture) => {
+					// eslint-disable-next-line no-param-reassign
+					fixture.data = [
+						{
+							...fixture.data[0],
+							id: 999999, // Too lazy to find out what the latest id is from the previous batch
+							time: Date.now(),
+							message: newMessageText,
+						},
+					];
+					cy.intercept("GET", "*/**/messages/after:*", (req) => {
+						req.reply(fixture);
+					})
+						.as("getNewMessage");
+				});
+
+			cy.wait("@getNewMessage");
+
+			// Validate that we have scrolled to that message
+			cy.get("@app")
+				.find("[class^=parley-messaging-wrapper__]")
+				.should("be.visible")
+				.find("[class^=parley-messaging-body__]")
+				.should("be.visible")
+				.contains(newMessageText)
+				.should("not.be.visible");
 		});
 	});
 	describe("parley config settings", () => {
@@ -1668,7 +1837,7 @@ describe("UI", () => {
 									...json,
 									welcomeMessage: null,
 								};
-								cy.intercept("GET", "*/**/messages", _json);
+								cy.intercept("GET", messagesUrlRegex, _json);
 							});
 
 						visitHome(parleyConfig);
@@ -1707,7 +1876,7 @@ describe("UI", () => {
 									...json,
 									welcomeMessage,
 								};
-								cy.intercept("GET", "*/**/messages", _json);
+								cy.intercept("GET", messagesUrlRegex, _json);
 							});
 
 						visitHome(parleyConfig);
@@ -1730,7 +1899,7 @@ describe("UI", () => {
 						// "loading" state
 						cy.fixture("getMessagesResponse.json")
 							.then((json) => {
-								cy.intercept("GET", "*/**/messages", (req) => {
+								cy.intercept("GET", messagesUrlRegex, (req) => {
 									req.reply({
 										statusCode: 200,
 										body: {...json},
@@ -1763,7 +1932,7 @@ describe("UI", () => {
 									...json,
 									welcomeMessage: null,
 								};
-								cy.intercept("GET", "*/**/messages", _json);
+								cy.intercept("GET", /.*\/messages(?:\/after:\d+)?/u, _json);
 							});
 
 						visitHome(parleyConfig);
@@ -1969,7 +2138,7 @@ describe("UI", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageTitle: "Custom text"}}};
 
-						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+						cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithTitleResponse"});
 
 						visitHome(parleyConfig);
 
@@ -2000,7 +2169,7 @@ describe("UI", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageBody: "Custom text"}}};
 
-						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithTitleResponse"});
+						cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithTitleResponse"});
 
 						visitHome(parleyConfig);
 
@@ -2031,7 +2200,7 @@ describe("UI", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageMedia: "Custom text"}}};
 
-						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse"});
+						cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithImageResponse"});
 						cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
 
 						visitHome(parleyConfig);
@@ -2063,7 +2232,7 @@ describe("UI", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {ariaLabelMessageButtons: "Custom text"}}};
 
-						cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithButtonsResponse"});
+						cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithButtonsResponse"});
 
 						visitHome(parleyConfig);
 
@@ -2094,7 +2263,7 @@ describe("UI", () => {
 					it("should change the text", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {retrievingMessagesFailedError: "Custom text"}}};
 
-						cy.intercept("GET", "*/**/messages", {
+						cy.intercept("GET", messagesUrlRegex, {
 							statusCode: 400,
 							body: {
 								status: "ERROR",
@@ -2220,7 +2389,7 @@ describe("UI", () => {
 					it("should change the error message", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {deviceRequiresAuthorizationError: "This is the deviceRequiresAuthorizationError text"}}};
 
-						cy.intercept("GET", "*/**/messages", {
+						cy.intercept("GET", messagesUrlRegex, {
 							statusCode: 400,
 							body: {
 								status: "ERROR",
@@ -3188,7 +3357,7 @@ describe("UI", () => {
 
 					cy.intercept("POST", "*/**/devices")
 						.as("postDevices");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					visitHome(parleyConfig);
@@ -3230,7 +3399,7 @@ describe("UI", () => {
 
 					cy.intercept("POST", "*/**/devices")
 						.as("postDevices");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					clickOnLauncher();
@@ -3312,7 +3481,7 @@ describe("UI", () => {
 							.as("app");
 						cy.waitFor("@app");
 
-						cy.intercept("GET", "*/**/messages")
+						cy.intercept("GET", messagesUrlRegex)
 							.as("getMessages");
 
 						clickOnLauncher(); // Start the device registration
@@ -3345,7 +3514,7 @@ describe("UI", () => {
 
 					cy.intercept("POST", "*/**/devices")
 						.as("postDevices");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					visitHome(parleyConfig);
@@ -3383,7 +3552,7 @@ describe("UI", () => {
 
 					cy.intercept("POST", "*/**/devices")
 						.as("postDevices");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					visitHome(parleyConfig);
@@ -3430,7 +3599,7 @@ describe("UI", () => {
 
 					cy.intercept("POST", "*/**/devices")
 						.as("postDevices");
-					cy.intercept("GET", "*/**/messages")
+					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
 					cy.clock(new Date().getTime()); // Start the clock override
@@ -3517,7 +3686,7 @@ describe("UI", () => {
 
 						cy.intercept("POST", "*/**/devices")
 							.as("postDevices");
-						cy.intercept("GET", "*/**/messages")
+						cy.intercept("GET", messagesUrlRegex)
 							.as("getMessages");
 
 						cy.clock(new Date().getTime()); // Start the clock override
@@ -3595,7 +3764,7 @@ describe("UI", () => {
 			});
 		});
 		describe("interface", () => {
-			describe("`hideChatAfterBusinessHours", () => {
+			describe("hideChatAfterBusinessHours", () => {
 				it("should hide the chat after business hours", () => {
 					const parleyConfig = {
 						weekdays: [
@@ -3643,6 +3812,136 @@ describe("UI", () => {
 					cy.get("@app")
 						.get("[class^=parley-messaging-launcher__]")
 						.should("not.exist");
+				});
+			});
+			describe("unreadMessagesAction", () => {
+				beforeEach(() => {
+					// Make sure `lastReadMessageId` is set otherwise slow polling should not start
+					cy.window()
+						.then((win) => {
+							win.localStorage.setItem("lastReadMessageId", "0");
+
+							// These things are necessary for slow polling to start
+							win.localStorage.setItem("messengerOpenState", "minimize");
+							win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
+						});
+
+					// Intercept the get messages
+					cy.fixture("getMessagesResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = [
+								{
+									id: 1,
+									time: 1536739259,
+									message: "Message #1",
+									image: null,
+									typeId: 2,
+									agent: {
+										id: 2,
+										name: "Tracebuzz",
+										avatar: "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+										isTyping: null,
+									},
+									carousel: [],
+									quickReplies: [],
+									custom: [],
+									title: null,
+									media: null,
+									buttons: [],
+								}, {
+									id: 2,
+									time: 1536739265,
+									message: "Message #2",
+									image: null,
+									typeId: 2,
+									agent: {
+										id: 2,
+										name: "Tracebuzz",
+										avatar: "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+										isTyping: null,
+									},
+									carousel: [],
+									quickReplies: [],
+									custom: [],
+									title: null,
+									media: null,
+									buttons: [],
+								},
+							];
+							cy.intercept("GET", messagesUrlRegex, _fixture)
+								.as("getMessages");
+						});
+				});
+
+				it(`should show the chat when new agent messages are received (using value 0) and device has ben registered before and previous state is minimized`, () => {
+					visitHome({interface: {unreadMessagesAction: 0}});
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("button")
+						.should("be.visible");
+
+					cy.wait("@getMessages");
+
+					// Validate that the main chat window is visible
+					// and that the unread messages badge counter doesn't show up
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("not.exist");
+				});
+				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has ben registered before and previous state is minimized", () => {
+					// Make sure to set the correct unread message action
+					// otherwise the counter won't show up
+					const config = {interface: {unreadMessagesAction: 1}};
+					visitHome(config);
+
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("button")
+						.should("be.visible");
+
+					cy.wait("@getMessages");
+
+					// Validate that the unread messages badge counter shows up
+					// and shows the correct number
+					// and that the main chat window is not visible
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("have.text", 2)
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("not.be.visible");
+
+					// Validate that it keeps showing up even after a refresh of the page
+					visitHome(config);
+					cy.wait("@getMessages");
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("have.text", 2)
+						.should("be.visible");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("not.be.visible");
+
+					clickOnLauncher();
+
+					// Validate that the unread messages badge counter hides
+					// when opening the main screen
+					cy.get("@app")
+						.find("[class^=parley-messaging-launcher__]")
+						.find("[class^=parley-messaging-unreadMessagesBadge__]")
+						.should("not.exist");
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("be.visible");
 				});
 			});
 		});
@@ -3718,6 +4017,41 @@ describe("UI", () => {
 							});
 					});
 			});
+		});
+		it(`should contain the last received message id`, () => {
+			visitHome();
+			cy.get("[id=app]")
+				.as("app");
+
+			// Mock get messages and give back a couple messages
+			cy.fixture("getMessagesResponse.json")
+				.then((json) => {
+					cy.intercept("GET", messagesUrlRegex, json)
+						.as("getMessages");
+					cy.wrap(json)
+						.as("messagesResponse");
+				});
+
+			// Open launcher and check that local storage contains the id of the last message
+			clickOnLauncher();
+			cy.wait("@getMessages");
+			// eslint-disable-next-line cypress/no-unnecessary-waiting
+			cy.wait(500); // Not sure why but without this the test becomes flaky... Didn't have time to investigate
+			cy.get("@messagesResponse")
+				.then((messagesResponse) => {
+					const expectedLastReceivedMessageId = messagesResponse.data
+						.filter(x => x.typeId === MessageTypes.Agent)[0].id;
+
+					cy.window()
+						.then((win) => {
+							cy.wrap(win.localStorage.getItem("lastReadMessageId"))
+								.then((value) => {
+									cy.wrap(value)
+										.should("exist")
+										.should("equal", expectedLastReceivedMessageId.toString());
+								});
+						});
+				});
 		});
 	});
 	describe("chat open state", () => {
@@ -3828,7 +4162,7 @@ describe("UI", () => {
 			visitHome();
 
 			// Intercept GET messages and return a fixture message with an image in it
-			cy.intercept("GET", "*/**/messages", {fixture: "getMessageWithImageResponse.json"});
+			cy.intercept("GET", messagesUrlRegex, {fixture: "getMessageWithImageResponse.json"});
 
 			// Intercept the request for the image binary
 			cy.intercept("GET", "*/**/media/**/*", {fixture: "image.png"});
@@ -3871,7 +4205,7 @@ describe("UI", () => {
 					_fixture.data[0].media.description = null;
 					return _fixture;
 				})
-				.then(fixture => cy.intercept("GET", "*/**/messages", {body: fixture})
+				.then(fixture => cy.intercept("GET", messagesUrlRegex, {body: fixture})
 					.as("getMessages"));
 
 			// We don't want to return a file otherwise the chat will download this file everytime we run the test

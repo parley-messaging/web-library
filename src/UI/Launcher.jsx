@@ -10,14 +10,23 @@ class Launcher extends Component {
 		const buttonType = "button";
 		const buttonId = "launcher";
 		const stateClass = this.props.messengerOpenState === MessengerOpenState.open ? styles["state-open"] : styles["state-minimize"];
-		const launcherClasses = `${styles.launcher} ${stateClass}`;
+		let launcherClasses = `${styles.launcher} ${stateClass}`;
 		const imgAltText = "icon";
+
+		// Add animation class when there are new unread messages
+		if(this.props.amountOfUnreadMessages > 0)
+			launcherClasses += ` ${styles.shake}`;
 
 		return (
 			<InterfaceTextsContext.Consumer>
 				{
 					interfaceTexts => (
-						<div className={launcherClasses}>
+
+						// Key is added on purpose here to always re-render the <div>
+						// when the amountOfUnreadMessages changes. Otherwise the animation
+						// only plays the first time this class is set, because react only updates
+						// the <div> around amountOfUnreadMessages
+						<div className={launcherClasses} key={this.props.amountOfUnreadMessages}>
 							<button
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
@@ -25,8 +34,18 @@ class Launcher extends Component {
 								type={buttonType}
 							>
 								{/* eslint-disable-next-line max-len */}
-								{this.props.icon === undefined ? <LauncherSVG /> : <img alt={imgAltText} src={this.props.icon} />}
+								{
+									this.props.icon === undefined
+										? <LauncherSVG />
+										: <img alt={imgAltText} src={this.props.icon} />
+								}
 							</button>
+							{
+								this.props.amountOfUnreadMessages > 0
+								&& <div className={styles.unreadMessagesBadge}>
+									{this.props.amountOfUnreadMessages}
+								</div>
+							}
 						</div>
 					)
 				}
@@ -36,6 +55,7 @@ class Launcher extends Component {
 }
 
 Launcher.propTypes = {
+	amountOfUnreadMessages: PropTypes.number,
 	icon: PropTypes.string,
 	messengerOpenState: PropTypes.string.isRequired,
 	onClick: PropTypes.func,

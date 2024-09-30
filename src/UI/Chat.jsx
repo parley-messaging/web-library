@@ -212,6 +212,7 @@ class Chat extends Component {
 				<Conversation
 					api={this.props.api}
 					defaultWelcomeMessage={this.props.welcomeMessage}
+					isChatShown={this.props.showChat}
 					restartPolling={this.props.restartPolling}
 				/>
 				{

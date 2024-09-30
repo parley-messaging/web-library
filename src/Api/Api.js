@@ -75,26 +75,28 @@ export default class Api {
 		if(!customHeaders)
 			return;
 
+
 		ow(customHeaders, "customHeaders", ow.object);
 
-		Object.keys(customHeaders).forEach((customHeader) => {
-			const lowerCaseCustomHeader = customHeader.toLowerCase();
+		Object.keys(customHeaders)
+			.forEach((customHeader) => {
+				const lowerCaseCustomHeader = customHeader.toLowerCase();
 
-			ow(lowerCaseCustomHeader, customHeader, ow.string.nonEmpty);
+				ow(lowerCaseCustomHeader, customHeader, ow.string.nonEmpty);
 
-			// Headers must start with a `x-` prefix
-			ow(lowerCaseCustomHeader, customHeader, ow.string.startsWith("x-"));
+				// Headers must start with a `x-` prefix
+				ow(lowerCaseCustomHeader, customHeader, ow.string.startsWith("x-"));
 
-			// Headers must not start with OUR prefix
-			ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-parley-"));
-			ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-iris-"));
+				// Headers must not start with OUR prefix
+				ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-parley-"));
+				ow(lowerCaseCustomHeader, customHeader, ow.string.not.startsWith("x-iris-"));
 
-			// Headers must not be in blocked list
-			ow(lowerCaseCustomHeader, customHeader, ow.string.validate(header => ({
-				validator: !CUSTOMHEADER_BLACKLIST.includes(header),
-				message: CustomHeaderBlacklistError,
-			})));
-		});
+				// Headers must not be in blocked list
+				ow(lowerCaseCustomHeader, customHeader, ow.string.validate(header => ({
+					validator: !CUSTOMHEADER_BLACKLIST.includes(header),
+					message: CustomHeaderBlacklistError,
+				})));
+			});
 
 		this.customHeaders = customHeaders;
 	}
@@ -111,7 +113,7 @@ export default class Api {
 	 * @param type
 	 * @param version
 	 * @param referer
-	 * @return {Promise<unknown>|boolean}
+	 * @return {Promise<unknown>}
 	 */
 	subscribeDevice(
 		pushToken,
@@ -128,7 +130,8 @@ export default class Api {
 		ow(pushEnabled, "pushEnabled", ow.optional.boolean);
 		if(pushEnabled === true) {
 			// Somehow `.message()` doesn't work with `nonEmpty`
-			ow(pushToken, "pushToken", ow.string.minLength(0).message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
+			ow(pushToken, "pushToken", ow.string.minLength(0)
+				.message((value, label) => `${label} is required when using \`pushEnabled\` = \`true\``));
 		}
 		ow(userAdditionalInformation, "userAdditionalInformation", ow.optional.object.nonEmpty);
 		ow(type, "type", ow.optional.number.oneOf(Object.values(DeviceTypes)));
@@ -141,6 +144,7 @@ export default class Api {
 		let refererCopy = referer;
 		if(!refererCopy)
 			refererCopy = window.location.href;
+
 
 		this.isDeviceRegistrationPending = true;
 
@@ -206,8 +210,14 @@ export default class Api {
 			});
 	}
 
-	getMessages() {
-		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {method: "GET"})
+	getMessages(id) {
+		ow(id, "id", ow.optional.number.greaterThan(0));
+
+		let url = `${this.config.apiUrl}/messages`;
+		if(id !== undefined)
+			url = `${this.config.apiUrl}/messages/after:${id}`;
+
+		return this.fetchWrapper(url, {method: "GET"})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
 				return data;
@@ -279,6 +289,7 @@ export default class Api {
 		if(!refererCopy)
 			refererCopy = window.location.href;
 
+
 		return this.fetchWrapper(`${this.config.apiUrl}/messages`, {
 			method: "POST",
 			body: JSON.stringify({
@@ -317,11 +328,15 @@ export default class Api {
 				.then((response) => {
 					const contentType = response.headers.get("Content-Type");
 
-					if(contentType && contentType.includes("application/json"))
-						return response.json(); // Handle JSON response
-					 else if(contentType && isSupportedMediaType(contentType))
-						return response.blob(); // Handle media binary response
-					 throw new Error("Unsupported response type");
+					if(contentType && contentType.includes("application/json")) {
+						// Handle JSON response
+						return response.json();
+					} else if(contentType && isSupportedMediaType(contentType)) {
+						// Handle media binary response
+						return response.blob();
+					}
+
+					throw new Error("Unsupported response type");
 				})
 				.then((data) => {
 					// Check if we have an API error and throw it

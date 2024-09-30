@@ -1,6 +1,6 @@
 import ow from "ow";
 import ApiEventTarget from "./ApiEventTarget";
-import {messageSent, subscribe} from "./Constants/Events";
+import {messages, messageSent, subscribe} from "./Constants/Events";
 import Logger from "js-logger";
 
 const maxIntervalAmount = 5;
@@ -19,18 +19,25 @@ const intervalTimeUnits = {
 };
 
 export default class PollingService {
-	constructor(api, customIntervals) {
+	constructor(name, api, customIntervals) {
+		ow(name, "name", ow.string);
 		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
 		ow(customIntervals, "customIntervals", ow.optional.array.nonEmpty);
 		ow(customIntervals, "customIntervals", ow.optional.array.ofType(ow.string));
 
 		this.resetIntervalTrackers();
 
+		this.name = name;
 		this.api = api;
 		this.currentIntervals = customIntervals || defaultIntervals;
 
 		this.isRunning = false;
 		this.eventListenersInitialized = false;
+		this.eventListenersAbortController = undefined;
+		this.lastMessageIdReceived = undefined;
+
+		this.logger = Logger.get(name);
+		this.logger.setLevel(Logger.getLevel());
 	}
 
 	/**
@@ -51,8 +58,23 @@ export default class PollingService {
 		if(this.eventListenersInitialized)
 			return;
 
-		ApiEventTarget.addEventListener(messageSent, this.handleMessageSent);
-		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		this.eventListenersAbortController = new AbortController();
+
+		ApiEventTarget.addEventListener(
+			messageSent,
+			this.handleMessageSent,
+			{signal: this.eventListenersAbortController.signal},
+		);
+		ApiEventTarget.addEventListener(
+			subscribe,
+			this.handleSubscribe,
+			{signal: this.eventListenersAbortController.signal},
+		);
+		ApiEventTarget.addEventListener(
+			messages,
+			this.handleNewMessages,
+			{signal: this.eventListenersAbortController.signal},
+		);
 
 		this.eventListenersInitialized = true;
 	}
@@ -64,22 +86,42 @@ export default class PollingService {
 		if(!this.eventListenersInitialized)
 			return;
 
-		ApiEventTarget.removeEventListener(messageSent, this.handleMessageSent);
-		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+		this.eventListenersAbortController.abort(); // This removes all event listeners connected to this abort controller
 
 		this.eventListenersInitialized = false;
 	}
 
 	handleMessageSent = () => {
+		this.logger.debug("Restarting polling, because we sent a new message");
 		this.restartPolling();
-	}
+	};
 
 	handleSubscribe = (event) => {
 		// We don't want to start polling for messages when the subscribe-call returned errors
 		if(event.detail.errorNotifications)
 			return;
 
+
 		this.startPolling();
+	};
+
+	/**
+	 *
+	 * @param event {{detail: {data: []}}}
+	 */
+	handleNewMessages = (event) => {
+		if(event.detail.data === null)
+			return; // API returned no messages
+
+		if(event.detail.data.length === 0)
+			return; // There are no new messages
+
+		const messageIds = event.detail.data.map(message => message.id);
+
+		if(messageIds.length > 1)
+			messageIds.sort((a, b) => b - a);
+
+		this.lastMessageIdReceived = messageIds[0];
 	}
 
 	/**
@@ -93,19 +135,24 @@ export default class PollingService {
 		ow(intervalAsString, "intervalAsString", ow.string.nonEmpty);
 
 		const regex = /(?<timeValue>\d+)(?<timeUnit>\w+)/u;
-		const {groups: {timeValue, timeUnit}} = regex.exec(intervalAsString);
+		const {
+			groups: {
+				timeValue,
+				timeUnit,
+			},
+		} = regex.exec(intervalAsString);
 
 		return timeValue * intervalTimeUnits[timeUnit];
 	}
 
 	async pollInterval() {
 		if(!this.api.deviceRegistered) {
-			Logger.warn("Polling interval canceled because device is not yet registered!");
+			this.logger.warn("Polling interval canceled because device is not yet registered!");
 			return;
 		}
 
 		// Get messages
-		await this.api.getMessages();
+		await this.api.getMessages(this.lastMessageIdReceived);
 
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;
@@ -119,11 +166,13 @@ export default class PollingService {
 			if(this.currentIntervalStep < this.currentIntervals.length - 1)
 				this.currentIntervalStep++;
 
+
 			// Else; just keep this interval running indefinitely
 		}
 
 		if(this.timeoutID)
 			clearTimeout(this.timeoutID);
+
 		if(this.isRunning) {
 			this.timeoutID = setTimeout(
 				this.pollInterval.bind(this),
@@ -137,6 +186,8 @@ export default class PollingService {
 	 * on specific API events) and start with polling.
 	 */
 	startPolling() {
+		this.logger.debug("Starting polling service");
+
 		this.isRunning = true;
 
 		// Setup event listeners for events that may be sent
@@ -150,6 +201,8 @@ export default class PollingService {
 	 * Stops the polling interval
 	 */
 	stopPolling() {
+		this.logger.debug("Stopping polling service");
+
 		this.isRunning = false;
 		clearTimeout(this.timeoutID);
 		this.resetIntervalTrackers();

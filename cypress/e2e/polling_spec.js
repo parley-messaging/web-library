@@ -1,7 +1,8 @@
 import PollingService from "../../src/Api/Polling";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import ApiResponseEvent from "../../src/Api/Private/ApiResponseEvent";
-import {messageSent, subscribe} from "../../src/Api/Constants/Events";
+import {messages, messageSent, subscribe} from "../../src/Api/Constants/Events";
+import MessageTypes from "../../src/Api/Constants/MessageTypes";
 
 describe("Polling Service", () => {
 	it("should poll with increasing intervals when using startPolling()", () => {
@@ -53,6 +54,7 @@ describe("Polling Service", () => {
 			};
 
 			const pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -116,6 +118,7 @@ describe("Polling Service", () => {
 			};
 
 			const pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -172,6 +175,7 @@ describe("Polling Service", () => {
 			};
 
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -209,6 +213,7 @@ describe("Polling Service", () => {
 
 			// eslint-disable-next-line no-unused-vars
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -234,28 +239,41 @@ describe("Polling Service", () => {
 		let pollingService;
 		let gotFirstRestart = false;
 		let gotSecondRestart = false;
+		let gotThirdRestart = false;
 
 		const promise = new Cypress.Promise((resolve) => {
 			const apiMock = {
 				deviceRegistered: true,
 				getMessages: () => {
-					if(!gotFirstRestart) {
+					if(gotFirstRestart === false) {
 						gotFirstRestart = true;
 						pollingService.stopPolling();
 						pollingService.initializeEventListeners(); // Re-init event listeners
 
 						// Second re-start of the polling mechanism through an Event
 						ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
-					} else if(!gotSecondRestart) {
+					} else if(gotSecondRestart === false) {
 						gotSecondRestart = true;
 						pollingService.stopPolling();
+
+						// Make sure the event listeners are stopped correctly
+						// by triggering an event after calling stopPolling()
+						// and later checking if that event caused a third restart
+						ApiEventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {}));
+
 						resolve();
+					} else {
+						gotThirdRestart = true;
+
+						// This should never trigger
+						// because polling is never restart at this point
 					}
 				},
 			};
 
 			// eslint-disable-next-line no-unused-vars
 			pollingService = new PollingService(
+				"main-polling-service",
 				apiMock,
 				customIntervals,
 			);
@@ -269,6 +287,120 @@ describe("Polling Service", () => {
 			.then(() => {
 				expect(gotFirstRestart).to.equal(true);
 				expect(gotSecondRestart).to.equal(true);
+				expect(gotThirdRestart).to.equal(false);
+			});
+	});
+
+	it("should only poll from the last received message id", () => {
+		const customIntervals = ["10ms"];
+		const maxIntervals = 4;
+		let currentInterval = 0;
+		const idsRequested = [];
+		let firstResponseAllMessages;
+		let secondResponseUserMessage;
+		let thirdResponseAgentMessage;
+		let expectedIdsRequested;
+
+		cy.fixture("getMessagesResponse.json")
+			.then((fixture) => {
+				firstResponseAllMessages = fixture;
+
+				const anotherUserMessage = {
+					id: fixture.data[0].id + 1,
+					time: fixture.data[0].time + 10,
+					typeId: MessageTypes.User,
+					message: "Here is my question...",
+					image: null,
+					agent: null,
+					carousel: [],
+					quickReplies: [],
+					custom: [],
+					title: null,
+					media: null,
+					buttons: [],
+				};
+				secondResponseUserMessage = {
+					...fixture,
+					data: [anotherUserMessage],
+				};
+
+				const anotherAgentMessage = {
+					id: anotherUserMessage.id + 1,
+					time: anotherUserMessage.time + 10,
+					typeId: MessageTypes.Agent,
+					message: "I can help you with that",
+					image: null,
+					agent: null,
+					carousel: [],
+					quickReplies: [],
+					custom: [],
+					title: null,
+					media: null,
+					buttons: [],
+				};
+				thirdResponseAgentMessage = {
+					...fixture,
+					data: [anotherAgentMessage],
+				};
+
+				expectedIdsRequested = [
+					undefined, // First interval always fetches all messages
+					fixture.data.map(message => message.id).sort((a, b) => b - a)[0],
+					anotherUserMessage.id,
+					anotherAgentMessage.id,
+				];
+
+				return new Cypress.Promise((resolve) => {
+					const apiMock = {
+						deviceRegistered: true,
+						getMessages: (id) => {
+							console.log(`getMessages(${id})`);
+
+							currentInterval++;
+							idsRequested.push(id);
+
+							if(currentInterval === maxIntervals) {
+								// eslint-disable-next-line no-use-before-define
+								pollingService.stopPolling();
+								resolve();
+								return;
+							}
+
+							console.log(currentInterval, idsRequested);
+
+							if(currentInterval === 1) {
+								console.log("1", firstResponseAllMessages.data[0].message);
+								ApiEventTarget.dispatchEvent(new ApiResponseEvent(messages, firstResponseAllMessages));
+							} else if(currentInterval === 2) {
+								console.log("2", secondResponseUserMessage.data[0].message);
+								ApiEventTarget.dispatchEvent(new ApiResponseEvent(messages, secondResponseUserMessage));
+							} else if(currentInterval === 3) {
+								console.log("3", thirdResponseAgentMessage.data[0].message);
+								ApiEventTarget.dispatchEvent(new ApiResponseEvent(messages, thirdResponseAgentMessage));
+							}
+						},
+					};
+
+					const pollingService = new PollingService(
+						"main-polling-service",
+						apiMock,
+						customIntervals,
+					);
+
+					// Start the polling mechanism
+					pollingService.startPolling();
+				});
+			})
+			.as("promise");
+
+		cy.get("@promise")
+			.then((promise) => {
+				cy.wrap(promise, {timeout: 20000})
+					.then(() => {
+						idsRequested.forEach((id, index) => {
+							expect(id).equal(expectedIdsRequested[index]);
+						});
+					});
 			});
 	});
 });

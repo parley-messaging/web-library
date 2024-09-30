@@ -12,6 +12,7 @@
 	bottom: 0;
 	width: 55px;
 	height: 55px;
+	padding: 8px;
 	border: none;
 	background: var(--parley-messenger-icon-background-color, #4A5E83);
 	border-radius: 50%;
@@ -28,7 +29,36 @@
 }
 
 .launcher.state-open {
+	/* Deliberately left empty */
 }
 
 .launcher.state-minimize {
+	/* Deliberately left empty */
+}
+
+.launcher.shake {
+	animation-duration: 0.2s;
+	animation-iteration-count: 3;
+	animation-name: horizontal-shaking;
+}
+
+.unreadMessagesBadge {
+	position: relative;
+	top: -10px;
+	right: -37px;
+	display: block;
+	width: fit-content;
+	padding: 2px 7px;
+	background: var(--parley-messenger-unread-messages-badge-background-color, red);
+	border-radius: 25px;
+	color: var(--parley-messenger-unread-messages-badge-color, white);
+	font-weight: bold;
+}
+
+@keyframes horizontal-shaking {
+	0% { transform: translateX(0); }
+	25% { transform: translateX(5px); }
+	50% { transform: translateX(-5px); }
+	75% { transform: translateX(5px); }
+	100% { transform: translateX(0); }
 }

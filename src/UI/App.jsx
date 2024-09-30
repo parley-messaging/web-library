@@ -27,6 +27,7 @@ import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 import Cookies from "js-cookie";
+import MessageTypes from "../Api/Constants/MessageTypes";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -38,6 +39,12 @@ export default class App extends React.Component {
 		this.visibilityChange = "visibilitychange";
 		this.cookieAgeRefreshIntervalId = null;
 		this._isMounted = false;
+		this.mainPollingServiceName = "main-polling-service";
+		this.slowPollingServiceName = "slow-polling-service";
+		this.unreadMessagesActions = {
+			openChatWindow: 0,
+			showMessageCounterBadge: 1,
+		};
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -90,6 +97,9 @@ export default class App extends React.Component {
 				? window?.parleySettings?.runOptions?.allowFileUpload
 				: true,
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
+			amountOfNewAgentMessagesFound: 0,
+			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
+				|| this.unreadMessagesActions.openChatWindow,
 		};
 
 		this.Api = new Api(
@@ -99,7 +109,10 @@ export default class App extends React.Component {
 			ApiEventTarget,
 			this.state.apiCustomHeaders,
 		);
-		this.PollingService = new PollingService(this.Api);
+		this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
+		this.SlowPollingService = new PollingService(this.slowPollingServiceName, this.Api, [
+			"5m", "15m", "30m", "2h", "5h", "6h",
+		]);
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -115,8 +128,14 @@ export default class App extends React.Component {
 		window.parleySettings.version = version;
 
 		// Global functions
-		window.hideParleyMessenger = this.hideChat;
-		window.showParleyMessenger = this.showChat;
+		window.hideParleyMessenger = () => {
+			Logger.debug("Calling hideChat because window.hideParleyMessenger() is called");
+			this.hideChat();
+		};
+		window.showParleyMessenger = () => {
+			Logger.debug("Calling showChat because window.showParleyMessenger() is called");
+			this.showChat();
+		};
 
 		Logger.debug("App initialized");
 	}
@@ -279,11 +298,11 @@ export default class App extends React.Component {
 		if(!forceNewRegistration) {
 			if(this.Api.deviceRegistered) {
 				Logger.debug("Device is already registered, not registering a new one");
-				return; // Don't register if we already are registered
+				return Promise.resolve(); // Don't register if we already are registered
 			}
 			if(this.Api.isDeviceRegistrationPending) {
 				Logger.debug("There is already a device registration pending, not registering a new one");
-				return;
+				return Promise.resolve();
 			}
 		}
 
@@ -298,7 +317,7 @@ export default class App extends React.Component {
 		// Store the device identification, so we don't generate a new one on each registration
 		const storeIntoLocalStorage = JSON.stringify({deviceIdentification: this.Api.deviceIdentification});
 
-		this.Api.subscribeDevice(
+		return this.Api.subscribeDevice(
 			pushToken,
 			pushType,
 			pushEnabled,
@@ -316,6 +335,9 @@ export default class App extends React.Component {
 					deviceIdentification: this.Api.deviceIdentification,
 					authorization: this.Api.authorization,
 				});
+
+				Logger.debug("Restarting polling because device has been registered");
+				this.restartPolling();
 			});
 	};
 
@@ -355,12 +377,11 @@ export default class App extends React.Component {
 				nextState.deviceIdentification,
 				ApiEventTarget,
 			);
-			this.PollingService = new PollingService(this.Api);
+			this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
 			this.subscribeDevice(
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,
 			);
-			this.PollingService.restartPolling();
 		}
 
 		// Re-register device when deviceAuthorization changes
@@ -445,7 +466,6 @@ export default class App extends React.Component {
 		if(typeof document.hidden !== "undefined")
 			document.addEventListener(this.visibilityChange, this.handleVisibilityChange);
 
-
 		// Create proxy for parley settings to track any changes
 		// We do this after the mount because `createParleyProxy` contains
 		// `setState()` calls, which should not be called before mounting
@@ -460,6 +480,27 @@ export default class App extends React.Component {
 			this.hideChat();
 		 else
 			this.saveMessengerOpenState(this.state.messengerOpenState);
+
+		// Start slow polling if there was a chat started sometime before and chat starts minimized
+		if(messengerOpenState === MessengerOpenState.minimize) {
+			const devicePreviouslyRegistered = localStorage.getItem("deviceInformation") !== null;
+			if(devicePreviouslyRegistered !== null) {
+				Logger.debug("Starting slow polling service because device is previously registered");
+				if(this.PollingService.isRunning) {
+					Logger.debug("Main polling service is running, stopping it because we only want slow polling at this moment");
+					this.PollingService.stopPolling();
+				}
+				if(this.Api.deviceRegistered) {
+					this.SlowPollingService.startPolling();
+				} else {
+					Logger.debug("Registering device with Api using previously stored information");
+					this.subscribeDevice()
+						.then(() => {
+							this.SlowPollingService.startPolling();
+						});
+				}
+			}
+		}
 	}
 
 	componentWillUnmount() {
@@ -607,6 +648,7 @@ export default class App extends React.Component {
 				// Also, we don't use setState() so we don't trigger an update.
 				if(this.state.allowedMediaTypes)
 					this.state.allowedMediaTypes.splice(0, this.state.allowedMediaTypes.length);
+
 				objectToSaveIntoState = {allowedMediaTypes: value};
 			} else if(path[layer1] === "allowFileUpload") {
 				objectToSaveIntoState = {allowMediaUpload: value};
@@ -614,6 +656,8 @@ export default class App extends React.Component {
 		} else if(path[layer0] === "interface") {
 			if(path[layer1] === "hideChatAfterBusinessHours")
 				objectToSaveIntoState = {hideChatOutsideWorkingHours: value};
+			else if(path[layer1] === "unreadMessagesAction")
+				objectToSaveIntoState = {unreadMessagesAction: value};
 		} else if(path[layer0] === "roomNumber") {
 			objectToSaveIntoState = {accountIdentification: value};
 		} else if(path[layer0] === "authHeader") {
@@ -670,13 +714,16 @@ export default class App extends React.Component {
 
 	handleFocusWindow = () => {
 		// Restart polling when window receives focus
-		this.PollingService.restartPolling();
+		Logger.debug("Restarting polling because window got focus");
+		this.restartPolling();
 	};
 
 	handleVisibilityChange = () => {
 		// Restart polling when page is becoming visible
-		if(!document.hidden)
-			this.PollingService.restartPolling();
+		if(!document.hidden) {
+			Logger.debug("Restarting polling because document became visible");
+			this.restartPolling();
+		}
 	};
 
 	handleClick = () => {
@@ -684,14 +731,21 @@ export default class App extends React.Component {
 	};
 
 	showChat = () => {
-		Logger.debug("Show chat, registering device");
+		if(this.SlowPollingService.isRunning) {
+			Logger.debug("Show chat, stopping active slow polling service");
+			this.SlowPollingService.stopPolling();
+		}
 
 		this.setState(() => ({
 			showChat: true,
 			messengerOpenState: MessengerOpenState.open,
+			amountOfNewAgentMessagesFound: 0,
 		}));
 
+		this.markMessagesAsRead();
+
 		// Try to re-register the device if it is not yet registered
+		Logger.debug("Show chat, registering device");
 		this.subscribeDevice();
 	};
 
@@ -705,37 +759,71 @@ export default class App extends React.Component {
 	};
 
 	toggleChat = () => {
-		if(this.state.showChat)
+		if(this.state.showChat) {
+			Logger.debug("Calling hideChat because toggleChat is called");
 			this.hideChat();
-		 else
+		} else {
+			Logger.debug("Calling showChat because toggleChat is called");
 			this.showChat();
+		}
 	};
 
 	restartPolling = () => {
+		// Ignore restart requests while device is not registered
+		if(!this.Api.deviceRegistered) {
+			Logger.debug("Restart requested of polling service, but device is not registered so ignoring this request");
+			return;
+		}
+
+		// Prevent (re)starting the polling service as long as slow polling is running
+		if(this.SlowPollingService.isRunning) {
+			Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
+			return;
+		}
+
 		this.PollingService.restartPolling();
 	};
 
 	handleNewMessage = (eventData) => {
 		// Keep track of all the message IDs, so we can show the
 		// chat when we received a new message
-		let foundNewMessages = false;
+		let _amountOfNewAgentMessagesFound = this.state.amountOfNewAgentMessagesFound;
+		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
 		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
-				foundNewMessages = true;
+				if(message.typeId === MessageTypes.Agent
+
+					// When initially starting the chat the state is empty and thus all messages are seen as "new"
+					// Making sure the message id is greater than the previously saved id we can assume these
+					// messages are actually new
+					&& (lastReadMessageId === null || message.id > lastReadMessageId)
+				)
+					_amountOfNewAgentMessagesFound++;
 			}
 		});
 
-		// Show the chat when we received a new message
-		if(!this.state.showChat && foundNewMessages)
+		if(_amountOfNewAgentMessagesFound === 0)
+			return;
+
+		if(this.state.showChat) {
+			// Chat is already shown so mark messages as read
+			this.markMessagesAsRead();
+		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge) {
+			// Update the number for the unread messages badge
+			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
+		} else {
+			// Show the chat when we received a new message
+			Logger.debug("Calling showChat because we have found new messages");
 			this.showChat();
+		}
 	};
 
 	handleSubscribe = () => {
 		// Save registration in the device identification cookie
 		// (if the devicePersistence.domain setting is used)
 		if(this.state.devicePersistence.domain) {
-			Logger.debug("Subscribe done, saving identification in cookie because setting devicePersistence.domain is set");
+			Logger.debug("saving identification in cookie because setting devicePersistence.domain is set");
 
 			this.createDeviceIdentificationCookie(
 				this.state.deviceIdentification,
@@ -743,7 +831,7 @@ export default class App extends React.Component {
 			);
 		}
 
-		Logger.debug("Subscribe done, starting cookie age update interval");
+		Logger.debug("starting cookie age update interval");
 		this.startCookieAgeUpdateInterval(
 			this.state.deviceIdentification,
 			this.state.devicePersistence.domain,
@@ -848,12 +936,21 @@ export default class App extends React.Component {
 		this.subscribeDevice();
 	};
 
+	markMessagesAsRead = () => {
+		if(this.messageIDs.size === 0)
+			return;
+
+		localStorage.setItem("lastReadMessageId", Array.from(this.messageIDs)[this.messageIDs.size - 1]);
+		this.setState(() => ({amountOfNewAgentMessagesFound: 0}));
+	}
+
 	render() {
 		return (
 			<InterfaceTextsContext.Provider value={this.state.interfaceTexts}>
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 					&& <Launcher
+						amountOfUnreadMessages={this.state.amountOfNewAgentMessagesFound}
 						icon={this.state.launcherIcon}
 						messengerOpenState={this.state.messengerOpenState}
 						onClick={this.handleClick}
@@ -867,6 +964,7 @@ export default class App extends React.Component {
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}
 					isiOSMobile={this.state.isiOSMobile}
+					key={this.state.accountIdentification}
 					onDeviceNeedsNewIdentification={this.handleDeviceNeedsNewIdentification}
 					onDeviceNeedsSubscribing={this.handleDeviceNeedsSubscribing}
 					onMinimizeClick={this.handleClick}
