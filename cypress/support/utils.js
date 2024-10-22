@@ -24,3 +24,40 @@ export function interceptIndefinitely(method, routeMatcher, response = undefined
 
 	return {sendResponse};
 }
+
+export function generateParleyMessages(amount) {
+	const messages = [];
+	const timeBetweenMessages = 30; // seconds
+	const beginTime = Date.now() - (amount * timeBetweenMessages);
+	const chanceForAgentMessage = 0.4;
+
+	for(let i = 0; i < amount; i++) {
+		const newMessage = {
+			id: i + 1,
+			time: beginTime + (i * timeBetweenMessages),
+			message: `Message number ${i}`,
+			image: null,
+			typeId: 1,
+			carousel: [],
+			quickReplies: [],
+			custom: [],
+			title: null,
+			media: null,
+			buttons: [],
+		};
+
+		if(Math.random() <= chanceForAgentMessage) {
+			newMessage.typeId = 2;
+			newMessage.agent = {
+				id: 2,
+				name: "Tracebuzz",
+				avatar: "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				isTyping: null,
+			};
+		}
+
+		messages[i] = newMessage;
+	}
+
+	return messages;
+}

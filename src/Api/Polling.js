@@ -152,7 +152,7 @@ export default class PollingService {
 		}
 
 		// Get messages
-		await this.api.getMessages(this.lastMessageIdReceived);
+		await this.api.getMessages(this.lastMessageIdReceived, "after");
 
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;

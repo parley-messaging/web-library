@@ -10,5 +10,7 @@ module.exports = defineConfig({
 		},
 		baseUrl: "https://chat-dev.parley.nu:8181",
 		specPattern: "cypress/e2e/**/*.{js,jsx,ts,tsx}",
+		watchForFileChanges: false,
+		experimentalRunAllSpecs: true
 	},
 });
