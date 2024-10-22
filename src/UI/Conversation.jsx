@@ -21,6 +21,8 @@ class Conversation extends Component {
 		this.bodyRef = React.createRef();
 		this.clientHasScrolledManually = false;
 		this.scrollDownOnShow = false;
+		this.isFetchingOlderMessages = false;
+		this.hasOlderMessages = true;
 
 		// state
 		this.state = {
@@ -108,6 +110,10 @@ class Conversation extends Component {
 
 					newState.messages.push(message);
 				});
+
+				// Sort messages again after pushing to the array
+				// so that any old messages are at the front
+				newState.messages = Conversation.sortMessagesByID(newState.messages);
 			}
 		}
 
@@ -156,6 +162,7 @@ class Conversation extends Component {
 			return false;
 
 
+		// noinspection RedundantIfStatementJS
 		if(this.state.messages[previousMessageId]
 			&& this.state.messages[previousMessageId].typeId === MessageTypes.Agent)
 			return false;
@@ -184,19 +191,47 @@ class Conversation extends Component {
 		};
 	}
 
-	handleScroll = (event) => {
+	handleScroll = () => {
 		if(!this.bodyRef.current)
 			return;
 
-		const scrollTopMargin = 100; // Roughly the size of 1,5 message bubble + margin
-		const scrollTopMax = this.bodyRef.current.scrollHeight - this.bodyRef.current.clientHeight;
-		const scrollCurrent = this.bodyRef.current.scrollTop + event.deltaY;
 
+		const scrollTopMax = this.bodyRef.current.scrollHeight - this.bodyRef.current.clientHeight;
+		const scrollCurrent = this.bodyRef.current.scrollTop;
+
+		this.handleScrollCloseToBottom(scrollCurrent, scrollTopMax);
+		this.handleScrollCloseToTop(scrollCurrent);
+	}
+
+	handleScrollCloseToBottom = (scrollCurrent, scrollTopMax) => {
+		const scrollTopMargin = 100; // Roughly the size of 1,5 message bubble + margin
+
+		// noinspection RedundantIfStatementJS
 		if(scrollCurrent >= scrollTopMax - scrollTopMargin) {
 			// Client probably scrolled back down so we should reset the flag so we can scroll to new messages again
 			this.clientHasScrolledManually = false;
 		} else {
 			this.clientHasScrolledManually = true;
+		}
+	}
+
+	handleScrollCloseToTop = (scrollCurrent) => {
+		const scrollTopMargin = 500; // Roughly the size of 5 * 1,5 message bubble + margin
+
+		// Fetch older messages when scrolling to close to the top
+		if(this.hasOlderMessages
+			&& !this.isFetchingOlderMessages
+			&& scrollCurrent <= scrollTopMargin
+		) {
+			this.isFetchingOlderMessages = true;
+			this.props.api.getMessages(this.state.messages[0].id, "before")
+				.then((data) => {
+					if(data.data.length === 0)
+						this.hasOlderMessages = false;
+				})
+				.finally(() => {
+					this.isFetchingOlderMessages = false;
+				});
 		}
 	}
 
@@ -208,9 +243,7 @@ class Conversation extends Component {
 			<div className={styles.wrapper}>
 				<div
 					className={styles.body}
-					onKeyDown={this.handleScroll}
-					onTouchMove={this.handleScroll}
-					onWheel={this.handleScroll}
+					onScroll={this.handleScroll}
 					ref={this.bodyRef}
 					role={bodyRole}
 					tabIndex={-1} // tabIndex is required for onKeyDown to work

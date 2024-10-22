@@ -36,7 +36,7 @@
 		"start": "npx parcel serve --host chat-dev.parley.nu --https --cert ssl/ssl.cert --key ssl/ssl.key --no-autoinstall --port 8181 --target ui-for-watcher index.html",
 		"build": "npx parcel build --target ui-minimized --target ui-sourcemapped index.html",
 		"build-cdn-demo": "npx parcel build --target cdn-demo-live --target cdn-demo-local parleycdn-demo/index.html",
-		"test:open": "./bin/start_cypress.sh",
+		"test:open": "cypress open",
 		"test:coverage": "npx nyc report --reporter=lcov --reporter=text-summary && echo '\nOpen coverage/lcov-report/index.html for html view'",
 		"test:coverage:host": "npx light-server -s ./coverage/lcov-report/ -w \"./coverage/lcov-report/**\" -b 127.0.0.1 -o",
 		"zip": "cd ./dist/ui && for i in */; do zip -r \"${i%/}.zip\" \"$i\"; done",

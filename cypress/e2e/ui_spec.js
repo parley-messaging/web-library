@@ -1,6 +1,6 @@
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
-import {interceptIndefinitely} from "../support/utils";
+import {generateParleyMessages, interceptIndefinitely} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
 import MessageTypes from "../../src/Api/Constants/MessageTypes";
 
@@ -1644,6 +1644,89 @@ describe("UI", () => {
 				.should("be.visible")
 				.contains(newMessageText)
 				.should("not.be.visible");
+		});
+		describe("history", () => {
+			it("should fetch and show older messages when scrolling to the top", () => {
+				const generatedMessages = generateParleyMessages(150);
+				const secondBatchOldMessages = generatedMessages.slice(0, 50);
+				const firstBatchOldMessages = generatedMessages.slice(50, 100);
+				const initialMessages = generatedMessages.slice(100, 150);
+
+				cy.fixture("getMessagesResponse.json")
+					.then((fixture) => {
+						// eslint-disable-next-line no-param-reassign
+
+						cy.intercept("GET", messagesUrlRegex, req => req.reply({
+							...fixture,
+							data: initialMessages,
+						}))
+							.as("fetchInitialMessages");
+						cy.intercept("GET", `/**/messages/before:${initialMessages[0].id}`, req => req.reply({
+							...fixture,
+							data: firstBatchOldMessages,
+						}))
+							.as("fetchFirstBatch");
+						cy.intercept("GET", `/**/messages/before:${firstBatchOldMessages[0].id}`, req => req.reply({
+							...fixture,
+							data: secondBatchOldMessages,
+						}))
+							.as("fetchSecondBatch");
+						cy.intercept("GET", `/**/messages/before:${secondBatchOldMessages[0].id}`, req => req.reply({
+							...fixture,
+							data: [],
+						}))
+							.as("fetchEmptyBatch");
+						cy.intercept("GET", "/**/messages/before:*", cy.spy().as("fetchOlderMessages"));
+					});
+
+				visitHome();
+				clickOnLauncher();
+
+				cy.wait("@fetchInitialMessages");
+
+				// Scroll to oldest message
+				cy.get("[class^=parley-messaging-message__")
+					.contains(initialMessages[0].message)
+					.scrollIntoView();
+
+				// Validate that the older messages are being fetch
+				cy.wait("@fetchFirstBatch");
+
+				// Scroll to the oldest message again
+				cy.get("[class^=parley-messaging-message__")
+					.contains(firstBatchOldMessages[0].message)
+					.scrollIntoView();
+
+				// Validate that the older messages are being fetch
+				cy.wait("@fetchSecondBatch");
+
+				// Scroll to the oldest message again
+				cy.get("[class^=parley-messaging-message__")
+					.contains(secondBatchOldMessages[0].message)
+					.scrollIntoView();
+
+				// Validate that we try to fetch older messages (this returns an empty array)
+				cy.wait("@fetchEmptyBatch");
+
+				// Scroll down a bit
+				cy.get("[class^=parley-messaging-message__")
+					.contains(initialMessages[0].message)
+					.scrollIntoView();
+
+				// Scroll back up
+				cy.get("[class^=parley-messaging-message__")
+					.contains(secondBatchOldMessages[0].message)
+					.scrollIntoView();
+
+				// This should NOT trigger another fetch since the last fetch
+				// resulted in an empty array so the chat knows it should stop
+				// checking for old messages
+
+				// Validate that we have tried to get messages 3 times and not more than that
+				// even when we scroll to the top multiple times
+				cy.get("@fetchOlderMessages")
+					.should("have.been.calledThrice");
+			});
 		});
 	});
 	describe("parley config settings", () => {
