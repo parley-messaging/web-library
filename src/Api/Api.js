@@ -210,12 +210,28 @@ export default class Api {
 			});
 	}
 
-	getMessages(id) {
+	/**
+	 * Fetch all messages or message before/after a certain id
+	 * @param id {number}
+	 * @param filter {"before"|"after"}
+	 * @return {Promise<unknown>}
+	 */
+	getMessages(id, filter) {
 		ow(id, "id", ow.optional.number.greaterThan(0));
+
+		const filters = [
+			"after", "before",
+		];
+		let filterValidator = () => ow.optional.string.oneOf(filters);
+		if(id !== undefined) {
+			// Make filter required if `id` is set
+			filterValidator = () => ow.string.oneOf(filters);
+		}
+		ow(filter, "filter", filterValidator(filters));
 
 		let url = `${this.config.apiUrl}/messages`;
 		if(id !== undefined)
-			url = `${this.config.apiUrl}/messages/after:${id}`;
+			url = `${this.config.apiUrl}/messages/${filter}:${id}`;
 
 		return this.fetchWrapper(url, {method: "GET"})
 			.then((data) => {

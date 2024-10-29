@@ -139,12 +139,18 @@ describe("Api class", () => {
 			});
 		cy.get("@getMessagesResponse")
 			.then((json) => {
+				cy.intercept("GET", `${config.apiDomain}/**/messages/before:*`, (req) => {
+					requestExpectations(req);
+
+					req.reply(json);
+				})
+					.as("getMessagesBeforeId");
 				cy.intercept("GET", `${config.apiDomain}/**/messages/after:*`, (req) => {
 					requestExpectations(req);
 
 					req.reply(json);
 				})
-					.as("getMessagesWithId");
+					.as("getMessagesAfterId");
 				cy.intercept("GET", `${config.apiDomain}/**/messages`, (req) => {
 					requestExpectations(req);
 
@@ -703,6 +709,9 @@ describe("Api class", () => {
 				.equal(true);
 
 			interception.sendResponse();
+
+			// eslint-disable-next-line cypress/no-unnecessary-waiting
+			cy.wait(1000); // Wat for expectations from subscribeDevice.then, not sure how else i can do this...
 		});
 	});
 
@@ -797,13 +806,50 @@ describe("Api class", () => {
 				});
 			});
 
+		filterPrimitives(["string"])
+			.forEach((set) => {
+				it(`should throw an error when using '${set.type}' as filter when id is supplied`, () => {
+					if(set.type === "string")
+						// eslint-disable-next-line no-param-reassign
+						set.value = "after";
+					expect(() => config.api.getMessages(1, set.value))
+						.to
+						.throw(`Expected \`filter\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
+		filterPrimitives([
+			"string", "undefined",
+		])
+			.forEach((set) => {
+				if(set.type === "string")
+					// eslint-disable-next-line no-param-reassign
+					set.value = "after";
+				it(`should throw an error when using '${set.type}' as filter when id is not supplied`, () => {
+					expect(() => config.api.getMessages(undefined, set.value))
+						.to
+						.throw(`Expected \`filter\` to be of type \`string\` but received type \`${set.type}\``);
+				});
+			});
+
 		[
-			123, undefined,
-		].forEach((id) => {
-			it(`should fetch and return response using direct way (with id ${id})`, () => {
+			{
+				id: 1,
+				filter: "before",
+			},
+			{
+				id: 1,
+				filter: "after",
+			},
+			{
+				id: undefined,
+				filter: undefined,
+			},
+		].forEach(({id, filter}) => {
+			it(`should fetch and return response using direct way (with id ${id} and filter "${filter}")`, () => {
 				cy.get("@getMessagesResponse")
 					.then(async (fixture) => {
-						const data = await config.api.getMessages(1);
+						const data = await config.api.getMessages(id, filter);
 						expect(JSON.stringify(data))
 							.to
 							.be
@@ -811,7 +857,7 @@ describe("Api class", () => {
 					});
 			});
 
-			it(`should fetch and return response using ApiEventTarget (with id ${id})`, () => {
+			it(`should fetch and return response using ApiEventTarget (with id ${id} and filter "${filter}")`, () => {
 				cy.get("@getMessagesResponse")
 					.then(async (fixture) => {
 						return new Cypress.Promise((resolve) => {
@@ -825,7 +871,7 @@ describe("Api class", () => {
 								resolve();
 							});
 
-							config.api.getMessages(1);
+							config.api.getMessages(id, filter);
 						});
 					});
 			});
