@@ -164,7 +164,7 @@ class Conversation extends Component {
 
 		const previousMessage = this.state.messages[previousMessageId];
 		if(previousMessage?.typeId === MessageTypes.Agent) {
-			if(currentMessage.agent.name !== previousMessage.agent.name)
+			if(currentMessage?.agent?.name !== previousMessage?.agent?.name)
 				return true;
 
 			return false;

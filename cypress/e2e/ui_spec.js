@@ -752,6 +752,34 @@ describe("UI", () => {
 		});
 	});
 	describe("receiving messages", () => {
+		describe("agent names", () => {
+			it("should the same agent name only once when multiple consequitive messages are from the same agent", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.intercept("GET", messagesUrlRegex, {fixture: "getMessagesWithOneAgent.json"});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-name__]")
+					.should("exist")
+					.should("have.length", 1);
+			});
+			it("should show the new agent new when it changed between agent messages", () => {
+				visitHome();
+
+				// Intercept GET messages and return a fixture message with an image in it
+				cy.intercept("GET", messagesUrlRegex, {fixture: "getMessagesWithMultipleAgents.json"});
+
+				clickOnLauncher();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-name__]")
+					.should("exist")
+					.should("have.length", 2);
+			});
+		});
 		it("should render images when received", () => {
 			visitHome();
 
