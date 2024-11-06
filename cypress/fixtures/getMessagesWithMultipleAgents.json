@@ -1,0 +1,71 @@
+{
+	"data": [
+		{
+			"id": 10737,
+			"time": 1536739259,
+			"message": "Can you tell me the question so I can help you?",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 3,
+				"name": "Letonya Mustafa",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/5423.jpg",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": []
+		},
+		{
+			"id": 10737,
+			"time": 1536739259,
+			"message": "hi!",
+			"image": null,
+			"typeId": 2,
+			"agent": {
+				"id": 2,
+				"name": "Rulon Ferretti",
+				"avatar": "https://beta.tracebuzz.com/images/avatars/1912991618/6033.jpg",
+				"isTyping": null
+			},
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": []
+		},
+		{
+			"id": 10736,
+			"time": 1536739157,
+			"message": "Hello, i have a question",
+			"image": null,
+			"typeId": 1,
+			"agent": null,
+			"carousel": [],
+			"quickReplies": [],
+			"custom": [],
+			"title": null,
+			"media": null,
+			"buttons": []
+		}
+	],
+	"paging": {
+		"before": "",
+		"after": "/messages/after:10737"
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages"
+		},
+		"method": "get",
+		"duration": 0.01
+	},
+	"stickyMessage": "Some sticky message",
+	"welcomeMessage": "Welcome to our support chat, you can expect a response in ~1 minute."
+}
