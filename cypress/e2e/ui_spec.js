@@ -753,10 +753,10 @@ describe("UI", () => {
 	});
 	describe("receiving messages", () => {
 		describe("agent names", () => {
-			it("should the same agent name only once when multiple consequitive messages are from the same agent", () => {
+			it("should show the same agent name only once when multiple consequitive messages are from the same agent", () => {
 				visitHome();
 
-				// Intercept GET messages and return a fixture message with an image in it
+				// Intercept GET messages and return a fixture message with one agent in it
 				cy.intercept("GET", messagesUrlRegex, {fixture: "getMessagesWithOneAgent.json"});
 
 				clickOnLauncher();
@@ -766,10 +766,10 @@ describe("UI", () => {
 					.should("exist")
 					.should("have.length", 1);
 			});
-			it("should show the new agent new when it changed between agent messages", () => {
+			it("should show the new agent name when it changed between agent messages", () => {
 				visitHome();
 
-				// Intercept GET messages and return a fixture message with an image in it
+				// Intercept GET messages and return a fixture message with multiple agents in it
 				cy.intercept("GET", messagesUrlRegex, {fixture: "getMessagesWithMultipleAgents.json"});
 
 				clickOnLauncher();
