@@ -158,15 +158,17 @@ class Conversation extends Component {
 	};
 
 	shouldRenderAgentName = (currentMessageId, previousMessageId) => {
-		if(this.state.messages[currentMessageId].typeId !== MessageTypes.Agent)
+		const currentMessage = this.state.messages[currentMessageId];
+		if(currentMessage.typeId !== MessageTypes.Agent)
 			return false;
 
+		const previousMessage = this.state.messages[previousMessageId];
+		if(previousMessage?.typeId === MessageTypes.Agent) {
+			if(currentMessage.agent.name !== previousMessage.agent.name)
+				return true;
 
-		// noinspection RedundantIfStatementJS
-		if(this.state.messages[previousMessageId]
-			&& this.state.messages[previousMessageId].typeId === MessageTypes.Agent)
 			return false;
-
+		}
 
 		return true;
 	};
