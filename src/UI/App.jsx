@@ -486,7 +486,7 @@ export default class App extends React.Component {
 		// Start slow polling if there was a chat started sometime before and chat starts minimized
 		if(messengerOpenState === MessengerOpenState.minimize) {
 			const devicePreviouslyRegistered = localStorage.getItem("deviceInformation") !== null;
-			if(devicePreviouslyRegistered !== null) {
+			if(devicePreviouslyRegistered) {
 				Logger.debug("Starting slow polling service because device is previously registered");
 				if(this.PollingService.isRunning) {
 					Logger.debug("Main polling service is running, stopping it because we only want slow polling at this moment");
