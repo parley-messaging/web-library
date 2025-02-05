@@ -4297,6 +4297,60 @@ describe("UI", () => {
 					.should("not.exist");
 			});
 		});
+		describe("using value 'minimize' in storage", () => {
+			beforeEach(() => {
+				cy.window()
+					.then((win) => {
+						win.localStorage.setItem("messengerOpenState", "minimize");
+					});
+			});
+			it(`should not show the chat if the value is 'minimize' but you have not registered your device yet`, () => {
+				cy.intercept("POST", "*/**/devices", cy.spy().as("postDevicesSpy"));
+
+				visitHome({interface: {unreadMessagesAction: 0}});
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-launcher__]")
+					.find("button")
+					.should("be.visible");
+
+				// We need to wait for the chat to complete it's `componentDidMount()`
+				// to see if it decides to start the polling service or not.
+				// I don't see a better way of checking this...
+				// eslint-disable-next-line cypress/no-unnecessary-waiting
+				cy.wait(2000);
+
+				// POST devices should not have been called on app startup
+				cy.get("@postDevicesSpy").should("not.have.been.called");
+
+				// Chat window should not be visible since there is no device registration
+				cy.get("@app")
+					.find("[class^=parley-messaging-chat__]")
+					.should("not.be.visible");
+
+				// Refresh page
+				cy.reload();
+
+				cy.get("@app")
+					.find("[class^=parley-messaging-launcher__]")
+					.find("button")
+					.should("be.visible");
+
+				// We need to wait for the chat to complete it's `componentDidMount()`
+				// to see if it decides to start the polling service or not.
+				// I don't see a better way of checking this...
+				// eslint-disable-next-line cypress/no-unnecessary-waiting
+				cy.wait(2000);
+
+				// POST devices should still not have been called on app startup
+				cy.get("@postDevicesSpy").should("not.have.been.called");
+
+				// Chat window should not be visible since there is still no device registration
+				cy.get("@app")
+					.find("[class^=parley-messaging-chat__]")
+					.should("not.be.visible");
+			});
+		});
 	});
 	describe("images", () => {
 		it("should open the fullscreen view on click and close it with the close button", () => {
