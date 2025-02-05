@@ -15,9 +15,9 @@ Logger.useDefaults({
 
 const mountNode = document.getElementById("app");
 
-window.initParleyMessenger = () => {
+window.initParleyMessenger = (debug = false) => {
 	// eslint-disable-next-line no-undef
-	if(process.env.NODE_ENV === "development") {
+	if(process.env.NODE_ENV === "development" || debug === true) {
 		Logger.setLevel(Logger.DEBUG); // Make sure you enable "verbose" logging in your console to see DEBUG logs
 		ReactDOM.render(<App debug={true} />, mountNode);
 	} else {
