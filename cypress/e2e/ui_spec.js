@@ -1593,7 +1593,7 @@ describe("UI", () => {
 					// These things are necessary for slow polling to start
 					// and in turn for opening the chat window on new messages
 					win.localStorage.setItem("messengerOpenState", "minimize");
-					win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
+					win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "aaaaaaaa-ac09-4ee5-8631-abf4d9f4885b"}));
 				});
 			visitHome();
 
@@ -3934,7 +3934,7 @@ describe("UI", () => {
 
 							// These things are necessary for slow polling to start
 							win.localStorage.setItem("messengerOpenState", "minimize");
-							win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "d5629d6f-ac09-4ee5-8631-abf4d9f4885b"}));
+							win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "aaaaaaaa-ac09-4ee5-8631-abf4d9f4885b"}));
 						});
 
 					// Intercept the get messages
