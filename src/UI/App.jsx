@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages, subscribe} from "../Api/Constants/Events";
+import {messages, subscribe, unreadMessagesCount} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -27,7 +27,9 @@ import {areWeOnline} from "./Scripts/WorkingHours";
 import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 import Cookies from "js-cookie";
+import UnreadMessagesCountPollingService from "../Api/UnreadMessagesCountPolling";
 import MessageTypes from "../Api/Constants/MessageTypes";
+import {STATUS_SEEN} from "../Api/Constants/Statuses";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -98,6 +100,7 @@ export default class App extends React.Component {
 				: true,
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
+			newAgentMessages: [],
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
 				|| this.unreadMessagesActions.openChatWindow,
 		};
@@ -110,9 +113,15 @@ export default class App extends React.Component {
 			this.state.apiCustomHeaders,
 		);
 		this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
-		this.SlowPollingService = new PollingService(this.slowPollingServiceName, this.Api, [
+		this.SlowPollingService = new UnreadMessagesCountPollingService(this.slowPollingServiceName, this.Api, [
 			"5m", "15m", "30m", "2h", "5h", "6h",
 		]);
+
+		// TODO: @gerben; is 5 minutes as a minimum too long?
+		//  Lets say an agent sends a message, you see the badge with '1' in it on web.
+		//  You read the message on mobile, which would update the status of the agent message to READ
+		//  Now it could take a min of 5 minutes before this update in status is seen on web
+		//  depending on where you are in the intervals...
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -454,6 +463,15 @@ export default class App extends React.Component {
 			);
 		}
 
+		if(nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound) {
+			// We want to restart the slow polling when the number of new agent messages that we found is different
+			// from what is in memory, because this means there is activity going on that might indicate
+			// future activity which we don't want to miss.
+			// (for example, an agent sends 2 messages with some time in between)
+			Logger.debug("Restart slow polling, because the amount of new agent messages found has been changed");
+			this.SlowPollingService.restartPolling();
+		}
+
 		return true;
 	}
 
@@ -463,6 +481,7 @@ export default class App extends React.Component {
 
 		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.addEventListener(unreadMessagesCount, this.handleUnreadMessagesCount);
 		window.addEventListener("focus", this.handleFocusWindow);
 
 		if(typeof document.hidden !== "undefined")
@@ -510,6 +529,7 @@ export default class App extends React.Component {
 
 		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
+		ApiEventTarget.removeEventListener(unreadMessagesCount, this.handleUnreadMessagesCount);
 		window.removeEventListener("focus", this.handleFocusWindow);
 
 		this.stopCookieAgeUpdateInterval();
@@ -744,7 +764,7 @@ export default class App extends React.Component {
 			amountOfNewAgentMessagesFound: 0,
 		}));
 
-		this.markMessagesAsRead();
+		this.markMessagesAsRead(this.state.newAgentMessages);
 
 		// Try to re-register the device if it is not yet registered
 		Logger.debug("Show chat, registering device");
@@ -787,39 +807,49 @@ export default class App extends React.Component {
 	};
 
 	handleNewMessage = (eventData) => {
-		// Keep track of all the message IDs, so we can show the
-		// chat when we received a new message
-		let _amountOfNewAgentMessagesFound = this.state.amountOfNewAgentMessagesFound;
-		const lastReadMessageId = localStorage.getItem("lastReadMessageId");
+		// Keep track of all the message IDs, so we can restart the slow
+		// polling service when we notice a new agent message.
+		// This is important otherwise the slow polling can become really
+		// slow due to never restarting
+		let foundNewAgentMessages = false;
 		eventData.detail.data?.forEach((message) => {
 			if(!this.messageIDs.has(message.id)) {
 				this.messageIDs.add(message.id);
-				if(message.typeId === MessageTypes.Agent
-
-					// When initially starting the chat the state is empty and thus all messages are seen as "new"
-					// Making sure the message id is greater than the previously saved id we can assume these
-					// messages are actually new
-					&& (lastReadMessageId === null || message.id > lastReadMessageId)
-				)
-					_amountOfNewAgentMessagesFound++;
+				if(message.typeId === MessageTypes.Agent)
+					foundNewAgentMessages = true;
 			}
 		});
 
-		if(_amountOfNewAgentMessagesFound === 0)
+		if(foundNewAgentMessages) {
+			// We should restart the slow polling when we receive a new message, otherwise we need to wait
+			// on the next iteration of the slow polling service which could be very long
+			Logger.debug("Restarting slow polling, because a new agent message was received");
+			this.SlowPollingService.restartPolling();
+		}
+	};
+
+	handleUnreadMessagesCount = (eventData) => {
+		const amountOfNewAgentMessagesFound = eventData.detail.data.count;
+		const {messageIds} = eventData.detail.data;
+
+		this.setState(() => ({
+			amountOfNewAgentMessagesFound,
+			newAgentMessages: messageIds,
+		}));
+
+		if(amountOfNewAgentMessagesFound === 0)
 			return;
 
 		if(this.state.showChat) {
-			// Chat is already shown so mark messages as read
-			this.markMessagesAsRead();
-		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge) {
-			// Update the number for the unread messages badge
-			this.setState(() => ({amountOfNewAgentMessagesFound: _amountOfNewAgentMessagesFound}));
-		} else {
+			// Chat is already shown, so mark messages as read
+			Logger.debug("Marking messages as read, because we have found new messages and the chat is already open");
+			this.markMessagesAsRead(messageIds);
+		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
 			// Show the chat when we received a new message
-			Logger.debug("Calling showChat because we have found new messages");
+			Logger.debug("Calling showChat, because we have found new messages and unreadMessagesAction is set to openChatWindow");
 			this.showChat();
 		}
-	};
+	}
 
 	handleSubscribe = () => {
 		// Save registration in the device identification cookie
@@ -938,11 +968,14 @@ export default class App extends React.Component {
 		this.subscribeDevice();
 	};
 
-	markMessagesAsRead = () => {
-		if(this.messageIDs.size === 0)
+	/**
+	 * @param {int[]} messageIds
+	 */
+	markMessagesAsRead = (messageIds) => {
+		if(messageIds.length === 0)
 			return;
 
-		localStorage.setItem("lastReadMessageId", Array.from(this.messageIDs)[this.messageIDs.size - 1]);
+		this.Api.updateMessagesStatus(STATUS_SEEN, messageIds);
 		this.setState(() => ({amountOfNewAgentMessagesFound: 0}));
 	}
 
