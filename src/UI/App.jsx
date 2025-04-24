@@ -764,7 +764,7 @@ export default class App extends React.Component {
 			amountOfNewAgentMessagesFound: 0,
 		}));
 
-		this.markMessagesAsRead(this.state.newAgentMessages);
+		this.markMessagesAsRead(this.state.newAgentMessages); // TODO: @gerben; dont do this, only mark them as read when rendering them (could probably also remove state.newAgentMessages since it was only used for this)
 
 		// Try to re-register the device if it is not yet registered
 		Logger.debug("Show chat, registering device");
@@ -843,7 +843,7 @@ export default class App extends React.Component {
 		if(this.state.showChat) {
 			// Chat is already shown, so mark messages as read
 			Logger.debug("Marking messages as read, because we have found new messages and the chat is already open");
-			this.markMessagesAsRead(messageIds);
+			this.markMessagesAsRead(messageIds); // TODO: @gerben; dont do this, only mark them as read when rendering them (could probably also remove state.newAgentMessages since it was only used for this)
 		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
 			// Show the chat when we received a new message
 			Logger.debug("Calling showChat, because we have found new messages and unreadMessagesAction is set to openChatWindow");
