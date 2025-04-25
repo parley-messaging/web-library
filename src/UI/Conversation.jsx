@@ -99,6 +99,8 @@ class Conversation extends Component {
 			this.markMessagesAsSeen(this.state.messages
 				.filter(message => message.status < STATUS_SEEN)
 				.map(message => message.id));
+
+			this.hasNewUnreadMessages = false;
 		}
 	}
 

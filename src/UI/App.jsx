@@ -470,6 +470,14 @@ export default class App extends React.Component {
 			this.SlowPollingService.restartPolling();
 		}
 
+		if(nextState.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge && nextState.unreadMessagesAction !== this.state.unreadMessagesAction) {
+			// We want to restart slow polling when the unreadMessagesAction turned into showMessageCounterBadge
+			// so we have immediate feedback on how many unread messages there are. Otherwise you might have to wait
+			// pretty long for the next interval.
+			Logger.debug("Unread messages action changed into showMessageCounterBadge, restarting slow polling");
+			this.SlowPollingService.restartPolling();
+		}
+
 		return true;
 	}
 
@@ -822,27 +830,25 @@ export default class App extends React.Component {
 			}
 		});
 
-		if(foundNewAgentMessages) {
-			// We should restart the slow polling when we receive a new message, otherwise we need to wait
-			// on the next iteration of the slow polling service which could be very long
-			Logger.debug("Restarting slow polling, because a new agent message was received");
-			this.SlowPollingService.restartPolling();
-		}
-	};
-
-	handleUnreadMessagesCount = (eventData) => {
-		const amountOfNewAgentMessagesFound = eventData.detail.data.count;
-
-		this.setState(() => ({amountOfNewAgentMessagesFound}));
-
-		if(amountOfNewAgentMessagesFound === 0)
+		if(!foundNewAgentMessages)
 			return;
+
+
+		// We should restart the slow polling when we receive a new message, otherwise we need to wait
+		// on the next iteration of the slow polling service which could be very long
+		Logger.debug("Restarting slow polling, because a new agent message was received");
+		this.SlowPollingService.restartPolling();
 
 		if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
 			// Show the chat when we received a new message
 			Logger.debug("Calling showChat, because we have found new messages and unreadMessagesAction is set to openChatWindow");
 			this.showChat();
 		}
+	};
+
+	handleUnreadMessagesCount = (eventData) => {
+		const amountOfNewAgentMessagesFound = eventData.detail.data.count;
+		this.setState(() => ({amountOfNewAgentMessagesFound}));
 	}
 
 	handleSubscribe = () => {
@@ -968,7 +974,14 @@ export default class App extends React.Component {
 				{
 					!(this.state.offline && this.state.hideChatOutsideWorkingHours)
 					&& <Launcher
-						amountOfUnreadMessages={this.state.amountOfNewAgentMessagesFound}
+						amountOfUnreadMessages={
+
+							// Only do something with unread messages if the counter badge is supposed to show
+							// Otherwise just pass 0 as the amount to the launcher so it won't show anything
+							this.state.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge
+								? this.state.amountOfNewAgentMessagesFound
+								: 0
+						}
 						icon={this.state.launcherIcon}
 						messengerOpenState={this.state.messengerOpenState}
 						onClick={this.handleClick}

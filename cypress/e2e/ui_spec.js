@@ -2,11 +2,10 @@ import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
 import {generateParleyMessages, interceptIndefinitely} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
-import MessageTypes from "../../src/Api/Constants/MessageTypes";
 import {STATUS_AVAILABLE} from "../../src/Api/Constants/Statuses";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
-const messagesUrlRegex = /.*\/messages(?:\/after:\d+)?/u; // This matches /messages and /messages/after:123
+const messagesUrlRegex = /.*\/messages(?:\/after:\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
 
 function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	cy.visit("/", {
@@ -3928,11 +3927,8 @@ describe("UI", () => {
 			});
 			describe("unreadMessagesAction", () => {
 				beforeEach(() => {
-					// Make sure `lastReadMessageId` is set otherwise slow polling should not start
 					cy.window()
 						.then((win) => {
-							win.localStorage.setItem("lastReadMessageId", "0");
-
 							// These things are necessary for slow polling to start
 							win.localStorage.setItem("messengerOpenState", "minimize");
 							win.localStorage.setItem("deviceInformation", JSON.stringify({deviceIdentification: "aaaaaaaa-ac09-4ee5-8631-abf4d9f4885b"}));
@@ -3994,7 +3990,7 @@ describe("UI", () => {
 						.as("putMessageStatus");
 				});
 
-				it(`should show the chat when new agent messages are received (using value 0) and device has ben registered before and previous state is minimized`, () => {
+				it(`should show the chat when new agent messages are received (using value 0), device has been registered before and previous state is minimized`, () => {
 					visitHome({interface: {unreadMessagesAction: 0}});
 
 					cy.get("@app")
@@ -4014,7 +4010,29 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-unreadMessagesBadge__]")
 						.should("not.exist");
 
+					// Validate that the message statuses have been updated
+					cy.wait("@putMessageStatus");
+
+					// From this point on the counter should return 0 since all messages
+					// have been marked as read
+					cy.fixture("getMessagesUnreadCountResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = {
+								messageIds: [],
+								count: 0,
+							};
+							cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
+						});
+
 					// Test that it changes during runtime
+					clickOnLauncher(); // Close the chat
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.interface.unreadMessagesAction = 1;
+						});
+
 					cy.fixture("getMessagesResponse.json")
 						.then((fixture) => {
 							const _fixture = fixture;
@@ -4022,19 +4040,24 @@ describe("UI", () => {
 								{
 									...fixture.data[0],
 									id: 9999,
-									time: Date.now(),
+									time: Math.round(Date.now() / 1000),
 								},
 							];
 							cy.intercept("GET", messagesUrlRegex, _fixture)
 								.as("getMessages2");
 						});
-					cy.window()
-						.then((win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings.interface.unreadMessagesAction = 1;
+					cy.fixture("getMessagesUnreadCountResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = {
+								messageIds: [9999],
+								count: 1,
+							};
+							cy.intercept("GET", "*/**/messages/unseen/count", _fixture)
+								.as("getUnreadMessagesCount");
 						});
-					clickOnLauncher();
 					cy.wait("@getMessages2");
+					cy.wait("@getUnreadMessagesCount");
 					cy.get("@app")
 						.find("[class^=parley-messaging-launcher__]")
 						.find("[class^=parley-messaging-unreadMessagesBadge__]")
@@ -4090,15 +4113,13 @@ describe("UI", () => {
 								messageIds: [],
 								count: 0,
 							};
-							cy.intercept("GET", "*/**/messages/unseen/count", _fixture)
-								.as("getUnseenMessagesCount2");
+							cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
 						});
 
 					clickOnLauncher();
 
 					cy.wait("@getMessages");
 					cy.wait("@putMessageStatus");
-					cy.wait("@getUnseenMessagesCount2");
 
 					// Validate that the unread messages badge counter hides
 					// when opening the main screen
@@ -4184,41 +4205,6 @@ describe("UI", () => {
 							});
 					});
 			});
-		});
-		it(`should contain the last received message id`, () => {
-			visitHome();
-			cy.get("[id=app]")
-				.as("app");
-
-			// Mock get messages and give back a couple messages
-			cy.fixture("getMessagesResponse.json")
-				.then((json) => {
-					cy.intercept("GET", messagesUrlRegex, json)
-						.as("getMessages");
-					cy.wrap(json)
-						.as("messagesResponse");
-				});
-
-			// Open launcher and check that local storage contains the id of the last message
-			clickOnLauncher();
-			cy.wait("@getMessages");
-			// eslint-disable-next-line cypress/no-unnecessary-waiting
-			cy.wait(500); // Not sure why but without this the test becomes flaky... Didn't have time to investigate
-			cy.get("@messagesResponse")
-				.then((messagesResponse) => {
-					const expectedLastReceivedMessageId = messagesResponse.data
-						.filter(x => x.typeId === MessageTypes.Agent)[0].id;
-
-					cy.window()
-						.then((win) => {
-							cy.wrap(win.localStorage.getItem("lastReadMessageId"))
-								.then((value) => {
-									cy.wrap(value)
-										.should("exist")
-										.should("equal", expectedLastReceivedMessageId.toString());
-								});
-						});
-				});
 		});
 	});
 	describe("chat open state", () => {
