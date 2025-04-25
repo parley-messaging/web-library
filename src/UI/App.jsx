@@ -348,7 +348,7 @@ export default class App extends React.Component {
 				});
 
 				Logger.debug("Restarting polling because device has been registered");
-				this.restartPolling();
+				this.PollingService.startPolling();
 			});
 	};
 
@@ -803,7 +803,9 @@ export default class App extends React.Component {
 			return;
 		}
 
-		this.PollingService.restartPolling();
+
+		if(this.PollingService.isRunning)
+			this.PollingService.restartPolling();
 	};
 
 	handleNewMessage = (eventData) => {
