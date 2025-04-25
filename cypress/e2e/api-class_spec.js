@@ -36,10 +36,6 @@ const primitiveTypes = [
 		value: 123,
 	},
 	{
-		type: "bigint",
-		value: 2n,
-	},
-	{
 		type: "boolean",
 		value: false,
 	},
