@@ -28,7 +28,8 @@
 					"payload": "Ik heb een vraag over meubels",
 					"type": "reply"
 				}
-			]
+			],
+			"status": 2
 		},
 		{
 			"id": 10697,
@@ -58,7 +59,8 @@
 					"payload": "Ik heb een vraag over meubels",
 					"type": "reply"
 				}
-			]
+			],
+			"status": 2
 		}
 	],
 	"paging": {

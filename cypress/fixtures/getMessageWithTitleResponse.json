@@ -17,7 +17,8 @@
 			"custom": [],
 			"title": "This is a title",
 			"media": null,
-			"buttons": []
+			"buttons": [],
+			"status": 2
 		}
 	],
 	"paging": {
