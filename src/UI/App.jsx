@@ -29,7 +29,6 @@ import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 import Cookies from "js-cookie";
 import UnreadMessagesCountPollingService from "../Api/UnreadMessagesCountPolling";
 import MessageTypes from "../Api/Constants/MessageTypes";
-import {STATUS_SEEN} from "../Api/Constants/Statuses";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -100,7 +99,6 @@ export default class App extends React.Component {
 				: true,
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
-			newAgentMessages: [],
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
 				|| this.unreadMessagesActions.openChatWindow,
 		};
@@ -463,7 +461,7 @@ export default class App extends React.Component {
 			);
 		}
 
-		if(nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound) {
+		if(this.SlowPollingService.isRunning && nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound) {
 			// We want to restart the slow polling when the number of new agent messages that we found is different
 			// from what is in memory, because this means there is activity going on that might indicate
 			// future activity which we don't want to miss.
@@ -764,8 +762,6 @@ export default class App extends React.Component {
 			amountOfNewAgentMessagesFound: 0,
 		}));
 
-		this.markMessagesAsRead(this.state.newAgentMessages); // TODO: @gerben; dont do this, only mark them as read when rendering them (could probably also remove state.newAgentMessages since it was only used for this)
-
 		// Try to re-register the device if it is not yet registered
 		Logger.debug("Show chat, registering device");
 		this.subscribeDevice();
@@ -797,11 +793,15 @@ export default class App extends React.Component {
 			return;
 		}
 
+		// TODO: @gerben; check if this code can really be removed
 		// Prevent (re)starting the polling service as long as slow polling is running
-		if(this.SlowPollingService.isRunning) {
-			Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
-			return;
-		}
+		// if(this.SlowPollingService.isRunning) {
+		// 	Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
+		// 	return;
+		// }
+
+		if(this.SlowPollingService.isRunning)
+			this.SlowPollingService.restartPolling();
 
 
 		if(this.PollingService.isRunning)
@@ -832,21 +832,13 @@ export default class App extends React.Component {
 
 	handleUnreadMessagesCount = (eventData) => {
 		const amountOfNewAgentMessagesFound = eventData.detail.data.count;
-		const {messageIds} = eventData.detail.data;
 
-		this.setState(() => ({
-			amountOfNewAgentMessagesFound,
-			newAgentMessages: messageIds,
-		}));
+		this.setState(() => ({amountOfNewAgentMessagesFound}));
 
 		if(amountOfNewAgentMessagesFound === 0)
 			return;
 
-		if(this.state.showChat) {
-			// Chat is already shown, so mark messages as read
-			Logger.debug("Marking messages as read, because we have found new messages and the chat is already open");
-			this.markMessagesAsRead(messageIds); // TODO: @gerben; dont do this, only mark them as read when rendering them (could probably also remove state.newAgentMessages since it was only used for this)
-		} else if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
+		if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
 			// Show the chat when we received a new message
 			Logger.debug("Calling showChat, because we have found new messages and unreadMessagesAction is set to openChatWindow");
 			this.showChat();
@@ -969,17 +961,6 @@ export default class App extends React.Component {
 	handleDeviceNeedsSubscribing = () => {
 		this.subscribeDevice();
 	};
-
-	/**
-	 * @param {int[]} messageIds
-	 */
-	markMessagesAsRead = (messageIds) => {
-		if(messageIds.length === 0)
-			return;
-
-		this.Api.updateMessagesStatus(STATUS_SEEN, messageIds);
-		this.setState(() => ({amountOfNewAgentMessagesFound: 0}));
-	}
 
 	render() {
 		return (

@@ -3,6 +3,7 @@ import {version} from "../../package.json";
 import {generateParleyMessages, interceptIndefinitely} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
 import MessageTypes from "../../src/Api/Constants/MessageTypes";
+import {STATUS_AVAILABLE} from "../../src/Api/Constants/Statuses";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 const messagesUrlRegex = /.*\/messages(?:\/after:\d+)?/u; // This matches /messages and /messages/after:123
@@ -753,7 +754,7 @@ describe("UI", () => {
 	});
 	describe("receiving messages", () => {
 		describe("agent names", () => {
-			it("should show the same agent name only once when multiple consequitive messages are from the same agent", () => {
+			it("should show the same agent name only once when multiple consecutive messages are from the same agent", () => {
 				visitHome();
 
 				// Intercept GET messages and return a fixture message with one agent in it
@@ -3960,6 +3961,7 @@ describe("UI", () => {
 									title: null,
 									media: null,
 									buttons: [],
+									status: STATUS_AVAILABLE,
 								}, {
 									id: 2,
 									time: 1536739265,
@@ -3978,11 +3980,18 @@ describe("UI", () => {
 									title: null,
 									media: null,
 									buttons: [],
+									status: STATUS_AVAILABLE,
 								},
 							];
 							cy.intercept("GET", messagesUrlRegex, _fixture)
 								.as("getMessages");
 						});
+
+					cy.intercept("GET", "*/**/messages/unseen/count", {fixture: "getMessagesUnreadCountResponse.json"})
+						.as("getUnseenMessagesCount");
+
+					cy.intercept("PUT", "*/**/messages/status/*")
+						.as("putMessageStatus");
 				});
 
 				it(`should show the chat when new agent messages are received (using value 0) and device has ben registered before and previous state is minimized`, () => {
@@ -4035,7 +4044,7 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-chat__]")
 						.should("not.be.visible");
 				});
-				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has ben registered before and previous state is minimized", () => {
+				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has been registered before and previous state is minimized", () => {
 					// Make sure to set the correct unread message action
 					// otherwise the counter won't show up
 					const config = {interface: {unreadMessagesAction: 1}};
@@ -4046,7 +4055,7 @@ describe("UI", () => {
 						.find("button")
 						.should("be.visible");
 
-					cy.wait("@getMessages");
+					cy.wait("@getUnseenMessagesCount");
 
 					// Validate that the unread messages badge counter shows up
 					// and shows the correct number
@@ -4072,7 +4081,24 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-chat__]")
 						.should("not.be.visible");
 
+					// Update the interception for unseen messages count, because the app should mark
+					// the messages as seen in the api when showing the conversation
+					cy.fixture("getMessagesUnreadCountResponse.json")
+						.then((fixture) => {
+							const _fixture = fixture;
+							_fixture.data = {
+								messageIds: [],
+								count: 0,
+							};
+							cy.intercept("GET", "*/**/messages/unseen/count", _fixture)
+								.as("getUnseenMessagesCount2");
+						});
+
 					clickOnLauncher();
+
+					cy.wait("@getMessages");
+					cy.wait("@putMessageStatus");
+					cy.wait("@getUnseenMessagesCount2");
 
 					// Validate that the unread messages badge counter hides
 					// when opening the main screen

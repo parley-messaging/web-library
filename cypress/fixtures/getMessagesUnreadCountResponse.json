@@ -1,0 +1,18 @@
+{
+	"data": {
+		"messageIds": [
+			1,
+			2
+		],
+		"count": 2
+	},
+	"notifications": [],
+	"status": "SUCCESS",
+	"metadata": {
+		"values": {
+			"url": "messages/unseen/count"
+		},
+		"method": "get",
+		"duration": 0.01
+	}
+}
