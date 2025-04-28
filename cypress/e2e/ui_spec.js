@@ -3990,146 +3990,148 @@ describe("UI", () => {
 						.as("putMessageStatus");
 				});
 
-				it(`should show the chat when new agent messages are received (using value 0), device has been registered before and previous state is minimized`, () => {
-					visitHome({interface: {unreadMessagesAction: 0}});
+				describe("using value 0 (openChatWindow)", () => {
+					it(`should show the chat when new agent messages are received, device has been registered before and previous state is minimized`, () => {
+						cy.intercept("GET", messagesUrlRegex, cy.spy().as("getMessagesSpy"));
 
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("button")
-						.should("be.visible");
+						// Intercept the count call indefinitely, because it will trigger
+						// the chat window to open up. We first need to validate that there
+						// are no GET messages calls while the chat is closed.
+						const countInterception = interceptIndefinitely("GET", "*/**/messages/unseen/count", {fixture: "getMessagesUnreadCountResponse.json"});
 
-					cy.wait("@getMessages");
+						visitHome({interface: {unreadMessagesAction: 0}});
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("button")
+							.should("be.visible");
 
-					// Validate that the main chat window is visible
-					// and that the unread messages badge counter doesn't show up
-					cy.get("@app")
-						.find("[class^=parley-messaging-chat__]")
-						.should("be.visible");
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("[class^=parley-messaging-unreadMessagesBadge__]")
-						.should("not.exist");
+						// Validate that there are no GET messages calls while the chat is closed.
+						cy.get("@getMessagesSpy").should("not.have.been.called");
+						cy.then(countInterception.sendResponse); // Use then() to schedule this AFTER the getMessagesSpy validation
 
-					// Validate that the message statuses have been updated
-					cy.wait("@putMessageStatus");
+						// Validate that the main chat window is visible
+						// and that the unread messages badge counter doesn't show up
+						cy.get("@app")
+							.find("[class^=parley-messaging-chat__]")
+							.should("be.visible");
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("[class^=parley-messaging-unreadMessagesBadge__]")
+							.should("not.exist");
 
-					// From this point on the counter should return 0 since all messages
-					// have been marked as read
-					cy.fixture("getMessagesUnreadCountResponse.json")
-						.then((fixture) => {
-							const _fixture = fixture;
-							_fixture.data = {
-								messageIds: [],
-								count: 0,
-							};
-							cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
-						});
+						// Validate that the message statuses have been updated
+						cy.wait("@putMessageStatus");
 
-					// Test that it changes during runtime
-					clickOnLauncher(); // Close the chat
-					cy.window()
-						.then((win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings.interface.unreadMessagesAction = 1;
-						});
+						// From this point on the counter should return 0 since all messages
+						// have been marked as read
+						cy.fixture("getMessagesUnreadCountResponse.json")
+							.then((fixture) => {
+								const _fixture = fixture;
+								_fixture.data = {
+									messageIds: [],
+									count: 0,
+								};
+								cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
+							});
 
-					cy.fixture("getMessagesResponse.json")
-						.then((fixture) => {
-							const _fixture = fixture;
-							_fixture.data = [
-								{
-									...fixture.data[0],
-									id: 9999,
-									time: Math.round(Date.now() / 1000),
-								},
-							];
-							cy.intercept("GET", messagesUrlRegex, _fixture)
-								.as("getMessages2");
-						});
-					cy.fixture("getMessagesUnreadCountResponse.json")
-						.then((fixture) => {
-							const _fixture = fixture;
-							_fixture.data = {
-								messageIds: [9999],
-								count: 1,
-							};
-							cy.intercept("GET", "*/**/messages/unseen/count", _fixture)
-								.as("getUnreadMessagesCount");
-						});
-					cy.wait("@getMessages2");
-					cy.wait("@getUnreadMessagesCount");
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("[class^=parley-messaging-unreadMessagesBadge__]")
-						.should("have.text", 1)
-						.should("be.visible");
-					cy.get("@app")
-						.find("[class^=parley-messaging-chat__]")
-						.should("not.be.visible");
+						// Test that it changes during runtime
+						cy.window()
+							.then((win) => {
+								// eslint-disable-next-line no-param-reassign
+								win.parleySettings.interface.unreadMessagesAction = 1;
+							});
+						clickOnLauncher(); // Close the chat
+
+						cy.intercept("GET", messagesUrlRegex, cy.spy().as("getMessagesSpy2"));
+						cy.fixture("getMessagesUnreadCountResponse.json")
+							.then((fixture) => {
+								const _fixture = fixture;
+								_fixture.data = {
+									messageIds: [9999],
+									count: 1,
+								};
+								cy.intercept("GET", "*/**/messages/unseen/count", _fixture)
+									.as("getUnreadMessagesCount");
+							});
+						cy.wait("@getUnreadMessagesCount");
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("[class^=parley-messaging-unreadMessagesBadge__]")
+							.should("have.text", 1)
+							.should("be.visible");
+						cy.get("@app")
+							.find("[class^=parley-messaging-chat__]")
+							.should("not.be.visible");
+						cy.get("@getMessagesSpy2").should("not.have.been.called");
+					});
 				});
-				it("should show an unread messages counter when new agent messages are received while the chat is closed (using value 1) and device has been registered before and previous state is minimized", () => {
-					// Make sure to set the correct unread message action
-					// otherwise the counter won't show up
-					const config = {interface: {unreadMessagesAction: 1}};
-					visitHome(config);
+				describe("using value 1 (showMessageCounterBadge)", () => {
+					it("should show an unread messages counter when new agent messages are received while the chat is closed and device has been registered before and previous state is minimized", () => {
+						cy.intercept("GET", messagesUrlRegex, cy.spy().as("getMessagesSpy"));
 
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("button")
-						.should("be.visible");
+						// Make sure to set the correct unread message action
+						// otherwise the counter won't show up
+						const config = {interface: {unreadMessagesAction: 1}};
+						visitHome(config);
 
-					cy.wait("@getUnseenMessagesCount");
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("button")
+							.should("be.visible");
 
-					// Validate that the unread messages badge counter shows up
-					// and shows the correct number
-					// and that the main chat window is not visible
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("[class^=parley-messaging-unreadMessagesBadge__]")
-						.should("have.text", 2)
-						.should("be.visible");
-					cy.get("@app")
-						.find("[class^=parley-messaging-chat__]")
-						.should("not.be.visible");
+						cy.wait("@getUnseenMessagesCount");
 
-					// Validate that it keeps showing up even after a refresh of the page
-					visitHome(config);
-					cy.wait("@getMessages");
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("[class^=parley-messaging-unreadMessagesBadge__]")
-						.should("have.text", 2)
-						.should("be.visible");
-					cy.get("@app")
-						.find("[class^=parley-messaging-chat__]")
-						.should("not.be.visible");
+						// Validate that the unread messages badge counter shows up
+						// and shows the correct number
+						// and that the main chat window is not visible
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("[class^=parley-messaging-unreadMessagesBadge__]")
+							.should("have.text", 2)
+							.should("be.visible");
+						cy.get("@app")
+							.find("[class^=parley-messaging-chat__]")
+							.should("not.be.visible");
 
-					// Update the interception for unseen messages count, because the app should mark
-					// the messages as seen in the api when showing the conversation
-					cy.fixture("getMessagesUnreadCountResponse.json")
-						.then((fixture) => {
-							const _fixture = fixture;
-							_fixture.data = {
-								messageIds: [],
-								count: 0,
-							};
-							cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
-						});
+						// Validate that it keeps showing up even after a refresh of the page
+						visitHome(config);
+						cy.get("@getMessagesSpy").should("not.have.been.called");
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("[class^=parley-messaging-unreadMessagesBadge__]")
+							.should("have.text", 2)
+							.should("be.visible");
+						cy.get("@app")
+							.find("[class^=parley-messaging-chat__]")
+							.should("not.be.visible");
 
-					clickOnLauncher();
+						// Update the interception for unseen messages count, because the app should mark
+						// the messages as seen in the api when showing the conversation
+						cy.fixture("getMessagesUnreadCountResponse.json")
+							.then((fixture) => {
+								const _fixture = fixture;
+								_fixture.data = {
+									messageIds: [],
+									count: 0,
+								};
+								cy.intercept("GET", "*/**/messages/unseen/count", _fixture);
+							});
 
-					cy.wait("@getMessages");
-					cy.wait("@putMessageStatus");
+						clickOnLauncher();
 
-					// Validate that the unread messages badge counter hides
-					// when opening the main screen
-					cy.get("@app")
-						.find("[class^=parley-messaging-launcher__]")
-						.find("[class^=parley-messaging-unreadMessagesBadge__]")
-						.should("not.exist");
-					cy.get("@app")
-						.find("[class^=parley-messaging-chat__]")
-						.should("be.visible");
+						cy.wait("@getMessages");
+						cy.wait("@putMessageStatus");
+
+						// Validate that the unread messages badge counter hides
+						// when opening the main screen
+						cy.get("@app")
+							.find("[class^=parley-messaging-launcher__]")
+							.find("[class^=parley-messaging-unreadMessagesBadge__]")
+							.should("not.exist");
+						cy.get("@app")
+							.find("[class^=parley-messaging-chat__]")
+							.should("be.visible");
+					});
 				});
 			});
 		});

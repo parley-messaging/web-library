@@ -19,7 +19,7 @@ const intervalTimeUnits = {
 };
 
 export default class PollingService {
-	constructor(name, api, customIntervals) {
+	constructor(name, api, customIntervals = undefined) {
 		ow(name, "name", ow.string);
 		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
 		ow(customIntervals, "customIntervals", ow.optional.array.nonEmpty);

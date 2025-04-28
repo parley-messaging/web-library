@@ -169,7 +169,7 @@ describe("Polling Service", () => {
 						}
 
 						calls = 0;
-						pollingService.restartPolling();
+						pollingService.restartMainPolling();
 					}
 				},
 			};

@@ -16,7 +16,7 @@ import Api from "../Api/Api";
 import ApiEventTarget from "../Api/ApiEventTarget";
 import {version} from "../../package.json";
 import PollingService from "../Api/Polling";
-import {messages, subscribe, unreadMessagesCount} from "../Api/Constants/Events";
+import {subscribe, unreadMessagesCount} from "../Api/Constants/Events";
 import DeviceTypes from "../Api/Constants/DeviceTypes";
 import {ApiOptions, InterfaceTexts, InterfaceTextsContext} from "./Scripts/Context";
 import deepMerge from "deepmerge";
@@ -28,7 +28,6 @@ import {isiOSMobileDevice, isMobile} from "./Scripts/OSRecognition";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
 import Cookies from "js-cookie";
 import UnreadMessagesCountPollingService from "../Api/UnreadMessagesCountPolling";
-import MessageTypes from "../Api/Constants/MessageTypes";
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -36,12 +35,9 @@ export default class App extends React.Component {
 
 		super(props);
 
-		this.messageIDs = new Set();
 		this.visibilityChange = "visibilitychange";
 		this.cookieAgeRefreshIntervalId = null;
 		this._isMounted = false;
-		this.mainPollingServiceName = "main-polling-service";
-		this.slowPollingServiceName = "slow-polling-service";
 		this.unreadMessagesActions = {
 			openChatWindow: 0,
 			showMessageCounterBadge: 1,
@@ -100,7 +96,7 @@ export default class App extends React.Component {
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
-				|| this.unreadMessagesActions.openChatWindow,
+				|| this.unreadMessagesActions.showMessageCounterBadge, // this.unreadMessagesActions.openChatWindow,
 		};
 
 		this.Api = new Api(
@@ -110,16 +106,8 @@ export default class App extends React.Component {
 			ApiEventTarget,
 			this.state.apiCustomHeaders,
 		);
-		this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
-		this.SlowPollingService = new UnreadMessagesCountPollingService(this.slowPollingServiceName, this.Api, [
-			"5m", "15m", "30m", "2h", "5h", "6h",
-		]);
 
-		// TODO: @gerben; is 5 minutes as a minimum too long?
-		//  Lets say an agent sends a message, you see the badge with '1' in it on web.
-		//  You read the message on mobile, which would update the status of the agent message to READ
-		//  Now it could take a min of 5 minutes before this update in status is seen on web
-		//  depending on where you are in the intervals...
+		this.initializePollingServices();
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -147,6 +135,23 @@ export default class App extends React.Component {
 		};
 
 		Logger.debug("App initialized");
+	}
+
+	initializePollingServices = (activePollingService) => {
+		this.MessagePollingService = new PollingService("message-polling-service", this.Api);
+		this.UnreadMessagePollingServiceSlow = new UnreadMessagesCountPollingService(
+			"unread-messages-polling-service-slow",
+			this.Api,
+			[
+				"5m", "15m", "30m", "2h", "5h", "6h",
+			],
+		);
+		this.UnreadMessagePollingService = new UnreadMessagesCountPollingService(
+			"unread-messages-polling-service",
+			this.Api,
+		);
+
+		this.switchActivePollingService(activePollingService ?? this.UnreadMessagePollingServiceSlow);
 	}
 
 	/**
@@ -346,7 +351,7 @@ export default class App extends React.Component {
 				});
 
 				Logger.debug("Restarting polling because device has been registered");
-				this.PollingService.startPolling();
+				this.activePollingService.restartPolling();
 			});
 	};
 
@@ -378,7 +383,8 @@ export default class App extends React.Component {
 			this.removeDeviceIdentificationCookie(this.state.devicePersistence.domain);
 
 			// Make sure we stop otherwise it will poll for the old device info
-			this.PollingService.stopPolling();
+			if(this.activePollingService === this.MessagePollingService)
+				this.activePollingService.stopPolling();
 
 			this.Api = new Api(
 				nextState.apiDomain,
@@ -386,7 +392,7 @@ export default class App extends React.Component {
 				nextState.deviceIdentification,
 				ApiEventTarget,
 			);
-			this.PollingService = new PollingService(this.mainPollingServiceName, this.Api);
+			this.initializePollingServices(this.activePollingService);
 			this.subscribeDevice(
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,
@@ -461,21 +467,44 @@ export default class App extends React.Component {
 			);
 		}
 
-		if(this.SlowPollingService.isRunning && nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound) {
-			// We want to restart the slow polling when the number of new agent messages that we found is different
-			// from what is in memory, because this means there is activity going on that might indicate
+		if(this.activePollingService.isRunning
+			&& this.activePollingService instanceof UnreadMessagesCountPollingService
+			&& nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound
+		) {
+			// We want to restart polling when the number of new agent messages that we found
+			// is different from what is in memory, because this means there is activity going on that might indicate
 			// future activity which we don't want to miss.
 			// (for example, an agent sends 2 messages with some time in between)
-			Logger.debug("Restart slow polling, because the amount of new agent messages found has been changed");
-			this.SlowPollingService.restartPolling();
+			Logger.debug("Restart polling, because the amount of new agent messages found has been changed");
+			this.restartPolling();
 		}
 
-		if(nextState.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge && nextState.unreadMessagesAction !== this.state.unreadMessagesAction) {
-			// We want to restart slow polling when the unreadMessagesAction turned into showMessageCounterBadge
-			// so we have immediate feedback on how many unread messages there are. Otherwise you might have to wait
-			// pretty long for the next interval.
-			Logger.debug("Unread messages action changed into showMessageCounterBadge, restarting slow polling");
-			this.SlowPollingService.restartPolling();
+		if(nextState.unreadMessagesAction === this.unreadMessagesActions.showMessageCounterBadge
+			&& nextState.unreadMessagesAction !== this.state.unreadMessagesAction
+		) {
+			// We want to restart unread-messages polling when the unread-messagesAction turned
+			// into showMessageCounterBadge, so we have immediate feedback on how many unread messages there are.
+			// Otherwise, you might have to wait pretty long for the next interval.
+			Logger.debug("Unread messages action changed into showMessageCounterBadge, restarting polling");
+
+			// this.restartUnreadMessagePolling();
+			this.restartPolling();
+		}
+
+		if(nextState.showChat !== this.state.showChat
+			&& nextState.showChat === false
+			&& this.activePollingService === this.MessagePollingService
+		) {
+			Logger.debug(`Switching polling service since the chat is hidden and we don't need the ${this.activePollingService.name}`);
+			this.switchActivePollingService(this.UnreadMessagePollingService);
+		}
+
+		if(nextState.amountOfNewAgentMessagesFound !== this.state.amountOfNewAgentMessagesFound
+			&& nextState.unreadMessagesAction === this.unreadMessagesActions.openChatWindow
+			&& nextState.showChat === false
+		) {
+			Logger.debug("Opening chat because there is a change in the amount of new agent messages that we found");
+			this.showChat();
 		}
 
 		return true;
@@ -485,7 +514,6 @@ export default class App extends React.Component {
 		this._isMounted = true;
 		this.checkWorkingHours();
 
-		ApiEventTarget.addEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.addEventListener(subscribe, this.handleSubscribe);
 		ApiEventTarget.addEventListener(unreadMessagesCount, this.handleUnreadMessagesCount);
 		window.addEventListener("focus", this.handleFocusWindow);
@@ -508,22 +536,22 @@ export default class App extends React.Component {
 		 else
 			this.saveMessengerOpenState(this.state.messengerOpenState);
 
-		// Start slow polling if there was a chat started sometime before and chat starts minimized
+		// Start unread-messages (slow) polling if there was a chat started sometime before and chat starts minimized
 		if(messengerOpenState === MessengerOpenState.minimize) {
 			const devicePreviouslyRegistered = localStorage.getItem("deviceInformation") !== null;
 			if(devicePreviouslyRegistered) {
-				Logger.debug("Starting slow polling service because device is previously registered");
-				if(this.PollingService.isRunning) {
-					Logger.debug("Main polling service is running, stopping it because we only want slow polling at this moment");
-					this.PollingService.stopPolling();
+				Logger.debug("Starting unread-messages (slow) polling service because device is previously registered");
+				if(this.activePollingService === this.MessagePollingService) {
+					Logger.debug("Message polling service is running, stopping it because we only want unread-messages polling at this moment");
+					this.switchActivePollingService(this.UnreadMessagePollingServiceSlow);
 				}
 				if(this.Api.deviceRegistered) {
-					this.SlowPollingService.startPolling();
+					this.switchActivePollingService(this.UnreadMessagePollingServiceSlow);
 				} else {
 					Logger.debug("Registering device with Api using previously stored information");
 					this.subscribeDevice()
 						.then(() => {
-							this.SlowPollingService.startPolling();
+							this.switchActivePollingService(this.UnreadMessagePollingServiceSlow);
 						});
 				}
 			}
@@ -533,7 +561,6 @@ export default class App extends React.Component {
 	componentWillUnmount() {
 		this._isMounted = false;
 
-		ApiEventTarget.removeEventListener(messages, this.handleNewMessage);
 		ApiEventTarget.removeEventListener(subscribe, this.handleSubscribe);
 		ApiEventTarget.removeEventListener(unreadMessagesCount, this.handleUnreadMessagesCount);
 		window.removeEventListener("focus", this.handleFocusWindow);
@@ -545,7 +572,7 @@ export default class App extends React.Component {
 
 
 		// Stop polling and remove any event listeners created by the Polling Service
-		this.PollingService.stopPolling();
+		this.activePollingService.stopPolling();
 
 		// Remove Proxy from parleySettings which will remove set() trap from proxy
 		// so it doesn't call `setState()` anymore
@@ -742,7 +769,7 @@ export default class App extends React.Component {
 
 	handleFocusWindow = () => {
 		// Restart polling when window receives focus
-		Logger.debug("Restarting polling because window got focus");
+		Logger.debug("Restarting polling, because window got focus");
 		this.restartPolling();
 	};
 
@@ -758,10 +785,45 @@ export default class App extends React.Component {
 		this.toggleChat();
 	};
 
+	/**
+	 * @param {PollingService} newPollingService
+	 */
+	switchActivePollingService = (newPollingService) => {
+		if(newPollingService === undefined) {
+			// eslint-disable-next-line no-console
+			console.error("newPollingService is undefined!");
+			return;
+		}
+
+		if(this.activePollingService === newPollingService) {
+			// Only restart the polling service if it is already
+			// the active one
+			Logger.debug("No change in polling services, just restarting the active one");
+			this.activePollingService.restartPolling();
+			return;
+		}
+
+		Logger.debug(`Switching active polling service from '${this.activePollingService?.name}' to '${newPollingService.name}'`);
+		this.activePollingService?.stopPolling();
+		this.activePollingService = newPollingService;
+
+		if(!this.Api.deviceRegistered) {
+			// Only start the polling if we have a registered device,
+			// otherwise we get a warning from the polling service that
+			// the device is not registered.
+			Logger.debug(`Device is not yet registered, ignoring request to start ${this.activePollingService.name}`);
+			return;
+		}
+
+		this.activePollingService.startPolling();
+	}
+
 	showChat = () => {
-		if(this.SlowPollingService.isRunning) {
-			Logger.debug("Show chat, stopping active slow polling service");
-			this.SlowPollingService.stopPolling();
+		Logger.debug("Show chat");
+
+		if(this.activePollingService instanceof UnreadMessagesCountPollingService) {
+			Logger.debug(`Stopping active ${this.activePollingService.name}, because the chat is shown`);
+			this.switchActivePollingService(this.MessagePollingService);
 		}
 
 		this.setState(() => ({
@@ -771,7 +833,7 @@ export default class App extends React.Component {
 		}));
 
 		// Try to re-register the device if it is not yet registered
-		Logger.debug("Show chat, registering device");
+		Logger.debug("(re)registering device, because the chat is shown");
 		this.subscribeDevice();
 	};
 
@@ -795,58 +857,24 @@ export default class App extends React.Component {
 	};
 
 	restartPolling = () => {
-		// Ignore restart requests while device is not registered
 		if(!this.Api.deviceRegistered) {
 			Logger.debug("Restart requested of polling service, but device is not registered so ignoring this request");
 			return;
 		}
 
-		// TODO: @gerben; check if this code can really be removed
-		// Prevent (re)starting the polling service as long as slow polling is running
-		// if(this.SlowPollingService.isRunning) {
-		// 	Logger.debug("Restart requested of polling service, but slow polling is still running so ignoring this request");
-		// 	return;
-		// }
-
-		if(this.SlowPollingService.isRunning)
-			this.SlowPollingService.restartPolling();
-
-
-		if(this.PollingService.isRunning)
-			this.PollingService.restartPolling();
-	};
-
-	handleNewMessage = (eventData) => {
-		// Keep track of all the message IDs, so we can restart the slow
-		// polling service when we notice a new agent message.
-		// This is important otherwise the slow polling can become really
-		// slow due to never restarting
-		let foundNewAgentMessages = false;
-		eventData.detail.data?.forEach((message) => {
-			if(!this.messageIDs.has(message.id)) {
-				this.messageIDs.add(message.id);
-				if(message.typeId === MessageTypes.Agent)
-					foundNewAgentMessages = true;
-			}
-		});
-
-		if(!foundNewAgentMessages)
-			return;
-
-
-		// We should restart the slow polling when we receive a new message, otherwise we need to wait
-		// on the next iteration of the slow polling service which could be very long
-		Logger.debug("Restarting slow polling, because a new agent message was received");
-		this.SlowPollingService.restartPolling();
-
-		if(this.state.unreadMessagesAction === this.unreadMessagesActions.openChatWindow) {
-			// Show the chat when we received a new message
-			Logger.debug("Calling showChat, because we have found new messages and unreadMessagesAction is set to openChatWindow");
-			this.showChat();
-		}
-	};
+		this.activePollingService.restartPolling();
+	}
 
 	handleUnreadMessagesCount = (eventData) => {
+		if(this.state.showChat) {
+			// When the chat is shown we don't want to handle any count updates.
+			// Otherwise it is possible that the counter will still show `1`
+			// after clicking open the chat. I think this is due to a race condition
+			// between the (stopped) UnreadMessagePollingService and the setState
+			// from showChat().
+			return;
+		}
+
 		const amountOfNewAgentMessagesFound = eventData.detail.data.count;
 		this.setState(() => ({amountOfNewAgentMessagesFound}));
 	}
