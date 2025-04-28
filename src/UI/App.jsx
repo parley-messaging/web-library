@@ -96,7 +96,7 @@ export default class App extends React.Component {
 			allowedMediaTypes: window?.parleySettings?.runOptions?.allowedMediaTypes || undefined,
 			amountOfNewAgentMessagesFound: 0,
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
-				|| this.unreadMessagesActions.showMessageCounterBadge, // this.unreadMessagesActions.openChatWindow,
+				|| this.unreadMessagesActions.openChatWindow,
 		};
 
 		this.Api = new Api(
