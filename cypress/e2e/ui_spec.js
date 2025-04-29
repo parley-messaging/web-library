@@ -1567,6 +1567,10 @@ describe("UI", () => {
 			cy.fixture("getMessagesResponse.json")
 				.as("fixture");
 
+			// Intercept the count which is responsible for popping open the chat window
+			cy.intercept("GET", "*/**/messages/unseen/count", {fixture: "getMessagesUnreadCountResponse.json"})
+				.as("getUnseenMessagesCount");
+
 			cy.get("@fixture")
 				.then((fixture) => {
 					for(let i = 1; i < 10; i++) {
@@ -1597,6 +1601,7 @@ describe("UI", () => {
 				});
 			visitHome();
 
+			cy.wait("@getUnseenMessagesCount");
 			cy.wait("@getMessages");
 
 			// Validate that we have scrolled to the latest message
