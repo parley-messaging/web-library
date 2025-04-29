@@ -108,6 +108,7 @@ export default class App extends React.Component {
 		);
 
 		this.initializePollingServices();
+		this.switchActivePollingService(this.UnreadMessagePollingServiceSlow);
 
 		// Make sure layers to proxy exist
 		window.parleySettings
@@ -137,7 +138,7 @@ export default class App extends React.Component {
 		Logger.debug("App initialized");
 	}
 
-	initializePollingServices = (activePollingService) => {
+	initializePollingServices = () => {
 		this.MessagePollingService = new PollingService("message-polling-service", this.Api);
 		this.UnreadMessagePollingServiceSlow = new UnreadMessagesCountPollingService(
 			"unread-messages-polling-service-slow",
@@ -150,8 +151,6 @@ export default class App extends React.Component {
 			"unread-messages-polling-service",
 			this.Api,
 		);
-
-		this.switchActivePollingService(activePollingService ?? this.UnreadMessagePollingServiceSlow);
 	}
 
 	/**
@@ -392,7 +391,8 @@ export default class App extends React.Component {
 				nextState.deviceIdentification,
 				ApiEventTarget,
 			);
-			this.initializePollingServices(this.activePollingService);
+			this.initializePollingServices(); // Update the polling services with the new Api instance
+			this.switchActivePollingService(this.MessagePollingService); // Restart the new message polling service
 			this.subscribeDevice(
 				nextState.userAdditionalInformation,
 				nextState.deviceAuthorization,

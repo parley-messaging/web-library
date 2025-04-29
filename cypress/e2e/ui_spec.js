@@ -1953,7 +1953,8 @@ describe("UI", () => {
 									...json,
 									welcomeMessage: null,
 								};
-								cy.intercept("GET", messagesUrlRegex, _json);
+								cy.intercept("GET", messagesUrlRegex, _json)
+									.as("getMessages");
 							});
 
 						visitHome(parleyConfig);
@@ -1975,6 +1976,8 @@ describe("UI", () => {
 								// eslint-disable-next-line no-param-reassign
 								win.parleySettings.runOptions.interfaceTexts.infoText = newInfoText;
 							});
+
+						cy.wait("@getMessages");
 
 						cy.get("@app")
 							.find("[class*=parley-messaging-announcement__]")
