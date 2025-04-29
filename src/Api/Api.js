@@ -336,7 +336,6 @@ export default class Api {
 			});
 	}
 
-	// TODO: @gerben; make tests
 	getUnreadMessagesCount() {
 		return this.fetchWrapper(`${this.config.apiUrl}/messages/unseen/count`, {method: "GET"})
 			.then((data) => {
@@ -352,7 +351,6 @@ export default class Api {
 			});
 	}
 
-	// TODO: @gerben; make tests
 	updateMessagesStatus(newStatus, messageIds) {
 		ow(newStatus, "newStatus", ow.number.oneOf([
 			STATUS_AVAILABLE, STATUS_RECEIVED, STATUS_SEEN,

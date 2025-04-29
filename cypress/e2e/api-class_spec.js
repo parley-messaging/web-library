@@ -5,7 +5,14 @@
 import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
-import {media, mediaUploaded, messages, messageSent, subscribe} from "../../src/Api/Constants/Events";
+import {
+	media,
+	mediaUploaded,
+	messages,
+	messageSent,
+	subscribe,
+	unreadMessagesCount,
+} from "../../src/Api/Constants/Events";
 import {FCMWeb} from "../../src/Api/Constants/PushTypes";
 import {Web} from "../../src/Api/Constants/DeviceTypes";
 import {DeviceVersionRegex} from "../../src/Api/Constants/Other";
@@ -95,6 +102,8 @@ describe("Api class", () => {
 			.as("mediaFile");
 		cy.fixture("getMessagesResponse.json")
 			.as("getMessagesResponse");
+		cy.fixture("getMessagesUnreadCountResponse.json")
+			.as("getMessagesUnreadCountResponse");
 		cy.get("@postDevicesResponse")
 			.then((json) => {
 				cy.intercept("POST", `${config.apiDomain}/**/devices`, (req) => {
@@ -153,6 +162,15 @@ describe("Api class", () => {
 					req.reply(json);
 				})
 					.as("getMessages");
+			});
+		cy.get("@getMessagesUnreadCountResponse")
+			.then((json) => {
+				cy.intercept("GET", `${config.apiDomain}/**/messages/unseen/count`, (req) => {
+					requestExpectations(req);
+
+					req.reply(json);
+				})
+					.as("getMessagesUnreadCount");
 			});
 
 
@@ -1148,6 +1166,38 @@ describe("Api class", () => {
 						});
 
 						config.api.sendMedia("67eb4e69-b086-4654-b15e-bc606f3ea56b", "pdf.pdf");
+					});
+				});
+		});
+	});
+
+	describe("getUnreadMessagesCount()", () => {
+		it("should fetch and return response using direct way", () => {
+			cy.get("@getMessagesUnreadCountResponse")
+				.then(async (fixture) => {
+					const data = await config.api.getUnreadMessagesCount();
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(fixture));
+				});
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.get("@getMessagesUnreadCountResponse")
+				.then(async (fixture) => {
+					return new Cypress.Promise((resolve) => {
+						// Subscribe to the "messagesent" event
+						ApiEventTarget.addEventListener(unreadMessagesCount, (data) => {
+							// Validate that the response from the API is correct
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(fixture));
+							resolve();
+						});
+
+						config.api.getUnreadMessagesCount();
 					});
 				});
 		});
