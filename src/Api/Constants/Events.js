@@ -5,3 +5,5 @@ export const messageSent = "messagesent";
 export const messages = "messages";
 export const media = "media";
 export const mediaUploaded = "mediauploaded";
+export const unreadMessagesCount = "unreadMessagesCount";
+export const messageStatusUpdated = "messageStatusUpdated";

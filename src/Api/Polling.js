@@ -19,7 +19,7 @@ const intervalTimeUnits = {
 };
 
 export default class PollingService {
-	constructor(name, api, customIntervals) {
+	constructor(name, api, customIntervals = undefined) {
 		ow(name, "name", ow.string);
 		ow(api, "api", ow.object.partialShape({getMessages: ow.function}));
 		ow(customIntervals, "customIntervals", ow.optional.array.nonEmpty);
@@ -145,6 +145,10 @@ export default class PollingService {
 		return timeValue * intervalTimeUnits[timeUnit];
 	}
 
+	async pollFunction() {
+		await this.api.getMessages(this.lastMessageIdReceived, "after");
+	}
+
 	async pollInterval() {
 		if(!this.api.deviceRegistered) {
 			this.logger.warn("Polling interval canceled because device is not yet registered!");
@@ -152,7 +156,7 @@ export default class PollingService {
 		}
 
 		// Get messages
-		await this.api.getMessages(this.lastMessageIdReceived, "after");
+		await this.pollFunction();
 
 		// Increase poll counter for this interval
 		this.currentIntervalAmount++;

@@ -41,7 +41,8 @@
 					"payload": "Ik heb een vraag over meubels",
 					"type": "reply"
 				}
-			]
+			],
+			"status": 2
 		}
 	],
 	"paging": {

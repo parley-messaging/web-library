@@ -11,6 +11,7 @@ import Logger from "js-logger";
 import Api from "../Api/Api";
 import Message from "./Message";
 import Carousel from "./Carousel";
+import {STATUS_SEEN} from "../Api/Constants/Statuses";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -23,6 +24,7 @@ class Conversation extends Component {
 		this.scrollDownOnShow = false;
 		this.isFetchingOlderMessages = false;
 		this.hasOlderMessages = true;
+		this.hasNewUnreadMessages = false;
 
 		// state
 		this.state = {
@@ -71,6 +73,35 @@ class Conversation extends Component {
 				this.scrollToBottom();
 			}
 		}
+
+		// Check for changes in messages status
+		if(
+			this.state.messages.filter(message => message.status < STATUS_SEEN).length
+			> prevState.messages.filter(message => message.status < STATUS_SEEN).length
+		) {
+			// We cannot mark the messages as seen yet here, because this can trigger if
+			// the chat is not yet visible. So we should keep track of if we have found
+			// new unread messages and later, once the chat is shown, we can mark them as seen.
+			this.hasNewUnreadMessages = true;
+		}
+
+		// Check for changes in visibility
+		if(this.props.isChatShown && this.hasNewUnreadMessages) {
+			Logger.debug("Updating messages status because there are unseen messages that now have been rendered");
+
+			// If the current state has more seen messages
+			// compared to the previous state,
+			// we should mark them locally as seen.
+			// We can assume they have been rendered because of the isChatShown property.
+			// Apparently this component renders even when not shown, so it is important
+			// we only do this if isChatShown is true, otherwise the message would be marked
+			// as seen while the client can't "see" them yet because the chat is not shown.
+			this.markMessagesAsSeen(this.state.messages
+				.filter(message => message.status < STATUS_SEEN)
+				.map(message => message.id));
+
+			this.hasNewUnreadMessages = false;
+		}
 	}
 
 	scrollToBottom = () => {
@@ -82,7 +113,7 @@ class Conversation extends Component {
 			Logger.debug("Scroll to bottom requested, but the Conversation is hidden. Executing this request when Conversation is visible");
 			this.scrollDownOnShow = true;
 		}
-	}
+	};
 
 	handleMessages = (eventData) => {
 		const newState = {};
@@ -203,7 +234,7 @@ class Conversation extends Component {
 
 		this.handleScrollCloseToBottom(scrollCurrent, scrollTopMax);
 		this.handleScrollCloseToTop(scrollCurrent);
-	}
+	};
 
 	handleScrollCloseToBottom = (scrollCurrent, scrollTopMax) => {
 		const scrollTopMargin = 100; // Roughly the size of 1,5 message bubble + margin
@@ -215,7 +246,7 @@ class Conversation extends Component {
 		} else {
 			this.clientHasScrolledManually = true;
 		}
-	}
+	};
 
 	handleScrollCloseToTop = (scrollCurrent) => {
 		const scrollTopMargin = 500; // Roughly the size of 5 * 1,5 message bubble + margin
@@ -235,7 +266,28 @@ class Conversation extends Component {
 					this.isFetchingOlderMessages = false;
 				});
 		}
-	}
+	};
+
+	markMessagesAsSeen = (messageIds) => {
+		if(messageIds.length === 0)
+			return;
+
+		Logger.debug(`Marking the following messages as seen, because they have been rendered: ${messageIds.join(",")}`);
+
+		// Mark them seen locally first, so subsequent renders would not cause this method to update them again
+		this.setState((prevState) => {
+			const stateMessages = prevState.messages;
+			messageIds.forEach((id) => {
+				const stateMessageIndex = stateMessages.findIndex(x => x.id === id);
+				if(stateMessageIndex > -1)
+					stateMessages[stateMessageIndex].status = STATUS_SEEN;
+			});
+			return {messages: stateMessages};
+		});
+
+		// Mark them externally as seen
+		this.props.api.updateMessagesStatus(STATUS_SEEN, messageIds);
+	};
 
 	render() {
 		this.renderedDates = []; // Reset the rendered dates

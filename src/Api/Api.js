@@ -12,7 +12,15 @@ import {
 	DeviceVersionMinLength, DeviceVersionRegex, MinUdidLength,
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
-import {media, mediaUploaded, messages, messageSent, subscribe} from "./Constants/Events";
+import {
+	media,
+	mediaUploaded,
+	messages,
+	messageSent,
+	messageStatusUpdated,
+	subscribe,
+	unreadMessagesCount,
+} from "./Constants/Events";
 import PushTypes from "./Constants/PushTypes";
 import DeviceTypes from "./Constants/DeviceTypes";
 import {
@@ -22,6 +30,7 @@ import {
 import {error as ErrorStatus} from "./Constants/ApiResponseStatuses";
 import {CUSTOMHEADER_BLACKLIST} from "./Constants/CustomHeaderBlacklist";
 import {isSupportedMediaType} from "./Constants/SupportedMediaTypes";
+import {STATUS_AVAILABLE, STATUS_RECEIVED, STATUS_SEEN} from "./Constants/Statuses";
 
 export default class Api {
 	constructor(
@@ -233,6 +242,7 @@ export default class Api {
 		if(id !== undefined)
 			url = `${this.config.apiUrl}/messages/${filter}:${id}`;
 
+
 		return this.fetchWrapper(url, {method: "GET"})
 			.then((data) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messages, data));
@@ -319,6 +329,44 @@ export default class Api {
 			})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageSent, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	getUnreadMessagesCount() {
+		return this.fetchWrapper(`${this.config.apiUrl}/messages/unseen/count`, {method: "GET"})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(unreadMessagesCount, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(unreadMessagesCount, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	updateMessagesStatus(newStatus, messageIds) {
+		ow(newStatus, "newStatus", ow.number.oneOf([
+			STATUS_AVAILABLE, STATUS_RECEIVED, STATUS_SEEN,
+		]));
+		ow(messageIds, "messageIds", ow.array.nonEmpty);
+
+		return this.fetchWrapper(`${this.config.apiUrl}/messages/status/${newStatus}`, {
+			method: "PUT",
+			body: JSON.stringify({messageIds}),
+		})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageStatusUpdated, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(messageStatusUpdated, {
 					errorNotifications,
 					warningNotifications,
 					data: null,

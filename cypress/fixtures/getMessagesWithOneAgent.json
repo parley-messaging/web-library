@@ -17,7 +17,8 @@
 			"custom": [],
 			"title": null,
 			"media": null,
-			"buttons": []
+			"buttons": [],
+			"status": 2
 		},
 		{
 			"id": 10737,
@@ -36,7 +37,8 @@
 			"custom": [],
 			"title": null,
 			"media": null,
-			"buttons": []
+			"buttons": [],
+			"status": 2
 		},
 		{
 			"id": 10736,
@@ -50,7 +52,8 @@
 			"custom": [],
 			"title": null,
 			"media": null,
-			"buttons": []
+			"buttons": [],
+			"status": 2
 		}
 	],
 	"paging": {
