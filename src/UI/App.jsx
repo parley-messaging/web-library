@@ -31,7 +31,7 @@ import UnreadMessagesCountPollingService from "../Api/UnreadMessagesCountPolling
 
 export default class App extends React.Component {
 	constructor(props) {
-		Logger.debug("Initializing app");
+		Logger.debug(`Initializing app, version: ${version}`);
 
 		super(props);
 
