@@ -25,6 +25,7 @@ class Conversation extends Component {
 		this.isFetchingOlderMessages = false;
 		this.hasOlderMessages = true;
 		this.hasNewUnreadMessages = false;
+		this.welcomeMessageAnnouncementRendered = false;
 
 		// state
 		this.state = {
@@ -289,9 +290,29 @@ class Conversation extends Component {
 		this.props.api.updateMessagesStatus(STATUS_SEEN, messageIds);
 	};
 
+	shouldRenderWelcomeMessageUnderDate = (message) => {
+		const msInSecond = 1000;
+		const isMessageTimeToday
+			= this.getDateFromTimestamp(message.time) === this.getDateFromTimestamp(Date.now() / msInSecond);
+		const isDateRendered = this.renderedDates.includes(this.getDateFromTimestamp(message.time));
+
+		return isMessageTimeToday && isDateRendered;
+	}
+
+	renderWelcomeMessageAnnouncement = () => {
+		if(!this.state.welcomeMessage)
+			return null;
+		if(this.welcomeMessageAnnouncementRendered)
+			return null;
+
+		this.welcomeMessageAnnouncementRendered = true;
+		return <Announcement message={this.state.welcomeMessage} />;
+	}
+
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
 		const bodyRole = "feed"; // Used to keep jsx-a11y/no-static-element-interactions happy, not sure if this is the best fitting role...
+		this.welcomeMessageAnnouncementRendered = false;
 
 		return (
 			<div className={styles.wrapper}>
@@ -303,15 +324,15 @@ class Conversation extends Component {
 					tabIndex={-1} // tabIndex is required for onKeyDown to work
 				>
 					{
-						this.state.welcomeMessage
-						&& <Announcement message={this.state.welcomeMessage} />
-					}
-					{
 						this.state.messages.map((message, index, array) => (
 							<React.Fragment key={message.id}>
 								{
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
 									&& <DateGroup timestamp={message.time} />
+								}
+								{
+									this.shouldRenderWelcomeMessageUnderDate(message)
+									&& this.renderWelcomeMessageAnnouncement()
 								}
 								{
 									message.carousel.length === 0
@@ -353,6 +374,7 @@ class Conversation extends Component {
 							</React.Fragment>
 						))
 					}
+					{this.renderWelcomeMessageAnnouncement()}
 					{
 						this.state.stickyMessage
 						&& <Announcement message={this.state.stickyMessage} />
