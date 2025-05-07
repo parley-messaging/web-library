@@ -374,10 +374,7 @@ class Conversation extends Component {
 							</React.Fragment>
 						))
 					}
-					{
-						this.welcomeMessageAnnouncementRendered === false
-						&& this.renderWelcomeMessageAnnouncement()
-					}
+					{this.renderWelcomeMessageAnnouncement()}
 					{
 						this.state.stickyMessage
 						&& <Announcement message={this.state.stickyMessage} />
