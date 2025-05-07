@@ -6,7 +6,7 @@ import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes
 import {STATUS_AVAILABLE} from "../../src/Api/Constants/Statuses";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
-const messagesUrlRegex = /.*\/messages(?:\/after:\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
+const messagesUrlRegex = /.*\/messages(?:\/(?:after|before):\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
 
 function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	cy.visit("/", {
@@ -4193,7 +4193,8 @@ describe("UI", () => {
 
 					cy.get("[class*=parley-messaging-announcement__]").first()
 						.as("announcement");
-					cy.get("[class*=parley-messaging-date]").as("date");
+					cy.get("[class*=parley-messaging-date]").last()
+						.as("date");
 
 					// eslint-disable-next-line func-names
 					cy.then(function () {
