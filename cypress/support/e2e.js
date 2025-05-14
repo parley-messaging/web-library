@@ -21,6 +21,7 @@ import "./commands";
 
 import "@cypress/code-coverage/support";
 
+import "cypress-axe";
 Cypress.on("window:before:load", (win) => {
 	// this lets React DevTools "see" components inside application's iframe
 	// eslint-disable-next-line no-param-reassign
