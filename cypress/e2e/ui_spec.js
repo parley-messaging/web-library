@@ -1,14 +1,14 @@
 /* eslint-disable @babel/no-invalid-this */
 import {InterfaceTexts} from "../../src/UI/Scripts/Context";
 import {version} from "../../package.json";
-import {generateParleyMessages, interceptIndefinitely} from "../support/utils";
+import {generateParleyMessages, interceptIndefinitely, terminalLog} from "../support/utils";
 import {SUPPORTED_MEDIA_TYPES} from "../../src/Api/Constants/SupportedMediaTypes";
 import {STATUS_AVAILABLE} from "../../src/Api/Constants/Statuses";
 
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 const messagesUrlRegex = /.*\/messages(?:\/(?:after|before):\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
 
-function visitHome(parleyConfig, onBeforeLoad, onLoad) {
+function visitHome(parleyConfig, onBeforeLoad, onLoad, afterAccessibilityTest) {
 	cy.visit("/", {
 		onBeforeLoad: (window) => {
 			// eslint-disable-next-line no-param-reassign
@@ -28,6 +28,13 @@ function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	});
 	cy.get("[id=app]")
 		.as("app");
+
+	// Test accessibility once at initial load
+	cy.injectAxe({axeCorePath: "node_modules/axe-core/axe.min.js"});
+	testAccessibility();
+
+	if(afterAccessibilityTest)
+		afterAccessibilityTest();
 }
 
 function clickOnLauncher() {
@@ -66,6 +73,14 @@ function pretendToBeMobile(window) {
 	Object.defineProperty(window, "matchMedia", {value: arg => ({matches: Boolean(arg.includes("(pointer: coarse)"))})});
 }
 
+function testAccessibility() {
+	return cy.checkA11y("[id=app]", {
+		runOnly: [
+			"wcag21a", "wcag21aa",
+		],
+	}, terminalLog, true);
+}
+
 beforeEach(() => {
 	console.log("");
 	console.log(`=== BEGIN ${Cypress.currentTest.title} ===`);
@@ -84,6 +99,16 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+	// Restore the clock after each test before running the accessibility test.
+	// Otherwise, `checkA11y` would end up in an error:
+	// `CypressError: `cy.then()` timed out after waiting `4000ms`.
+	// Your callback function returned a promise that never resolved.`
+	cy.clock().then((clock) => {
+		clock.restore();
+	});
+	testAccessibility();
+
+
 	console.log("");
 	console.log(`=== END ${Cypress.currentTest.title} ===`);
 	console.log("");
@@ -2910,12 +2935,13 @@ describe("UI", () => {
 				const parleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 				const testMessage = `test message before switching room numbers ${Date.now()}`;
 
-				cy.visit("/", {
-					onBeforeLoad: (win) => {
-						// eslint-disable-next-line no-param-reassign
-						win.parleySettings = parleyConfig;
-					},
-				});
+				// cy.visit("/", {
+				// 	onBeforeLoad: (win) => {
+				// 		// eslint-disable-next-line no-param-reassign
+				// 		win.parleySettings = parleyConfig;
+				// 	},
+				// });
+				visitHome(parleyConfig);
 
 				cy.get("[id=app]")
 					.as("app");
@@ -3218,12 +3244,13 @@ describe("UI", () => {
 						interface: {hideChatAfterBusinessHours: true},
 					};
 
-					cy.visit("/", {
-						onBeforeLoad: (win) => {
-							// eslint-disable-next-line no-param-reassign
-							win.parleySettings = parleyConfig;
-						},
-					});
+					// cy.visit("/", {
+					// 	onBeforeLoad: (win) => {
+					// 		// eslint-disable-next-line no-param-reassign
+					// 		win.parleySettings = parleyConfig;
+					// 	},
+					// });
+					visitHome(parleyConfig);
 
 					cy.get("[id=app]")
 						.as("app");
@@ -3722,9 +3749,12 @@ describe("UI", () => {
 					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
-					cy.clock(new Date().getTime()); // Start the clock override
+					visitHome(parleyConfig, null, null, () => {
+						cy.clock(new Date().getTime()); // Start the clock override
 
-					visitHome(parleyConfig);
+						// The clock override must be done after the accessibility test
+						// otherwise it will crash the checkA11y()
+					});
 
 					clickOnLauncher();
 
@@ -3809,9 +3839,12 @@ describe("UI", () => {
 						cy.intercept("GET", messagesUrlRegex)
 							.as("getMessages");
 
-						cy.clock(new Date().getTime()); // Start the clock override
+						visitHome(parleyConfig, null, null, () => {
+							cy.clock(new Date().getTime()); // Start the clock override
 
-						visitHome(parleyConfig);
+							// The clock override must be done after the accessibility test
+							// otherwise it will crash the checkA11y()
+						});
 
 						clickOnLauncher();
 
@@ -3860,7 +3893,17 @@ describe("UI", () => {
 								ageUpdateIncrement: 0,
 							},
 						};
-						visitHome(parleyConfigWithoutInterval);
+
+						// Reset the clock before visiting home otherwise the accessibility test would crash
+						cy.clock().then((clock) => {
+							clock.restore();
+						});
+						visitHome(parleyConfigWithoutInterval, null, null, () => {
+							cy.clock(new Date().getTime()); // Start the clock override
+
+							// The clock override must be done after the accessibility test
+							// otherwise it will crash the checkA11y()
+						});
 
 						// Start the subscribe call
 						clickOnLauncher();
@@ -4147,11 +4190,12 @@ describe("UI", () => {
 	});
 	describe("component structure", () => {
 		beforeEach(() => {
-			cy.visit("/", {
-				onLoad: (window) => {
-					window.initParleyMessenger();
-				},
-			});
+			// cy.visit("/", {
+			// 	onLoad: (window) => {
+			// 		window.initParleyMessenger();
+			// 	},
+			// });
+			visitHome({}, () => window.initParleyMessenger);
 
 			cy.get("[id=app]")
 				.as("app");
