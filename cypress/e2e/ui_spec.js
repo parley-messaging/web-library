@@ -35,20 +35,16 @@ function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 }
 
 function clickOnLauncher() {
-	// eslint-disable-next-line cypress/no-assigning-return-values
-	const ret = cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=parley-messaging-launcher__]")
 		.find("button")
 		.should("be.visible")
-		.click();
-	testAccessibility();
-
-	return ret;
+		.click()
+		.then(testAccessibility);
 }
 
 function sendMessage(testMessage) {
-	// eslint-disable-next-line cypress/no-assigning-return-values
-	const ret = cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=parley-messaging-chat__]")
 		.should("be.visible")
 		.find("[class^=parley-messaging-footer__]")
@@ -57,24 +53,19 @@ function sendMessage(testMessage) {
 		.should("be.visible")
 		.find("textarea")
 		.should("have.focus")
-		.type(`${testMessage}{enter}`);
-	testAccessibility();
-
-	return ret;
+		.type(`${testMessage}{enter}`)
+		.then(testAccessibility);
 }
 
 function findMessage(testMessage) {
-	// eslint-disable-next-line cypress/no-assigning-return-values
-	const ret = cy.get("@app")
+	return cy.get("@app")
 		.find("[class^=parley-messaging-wrapper__]")
 		.should("be.visible")
 		.find("[class^=parley-messaging-body__]")
 		.should("be.visible")
 		.contains(testMessage)
-		.should("be.visible");
-	testAccessibility();
-
-	return ret;
+		.should("be.visible")
+		.then(testAccessibility);
 }
 
 function pretendToBeMobile(window) {
@@ -95,9 +86,12 @@ function testAccessibility(restoreClock = false) {
 	}
 
 	return cy.checkA11y("[id=app]", {
-		runOnly: [
-			"wcag21a", "wcag21aa",
-		],
+		runOnly: {
+			type: "tag",
+			values: [
+				"wcag21a", "wcag21aa", "wcag22aa",
+			],
+		},
 	}, terminalLog, true);
 }
 
@@ -3861,14 +3855,11 @@ describe("UI", () => {
 					cy.intercept("GET", messagesUrlRegex)
 						.as("getMessages");
 
-					visitHome(parleyConfig, null, null, () => {
-						cy.clock(new Date().getTime()); // Start the clock override
-
-						// The clock override must be done after the accessibility test
-						// otherwise it will crash the checkA11y()
-					});
+					visitHome(parleyConfig, null, null);
 
 					clickOnLauncher();
+
+					cy.clock(new Date().getTime()); // Start the clock override
 
 					cy.wait("@postDevices");
 					cy.wait("@getMessages");
@@ -3912,7 +3903,6 @@ describe("UI", () => {
 							win.parleySettings.devicePersistence.ageUpdateIncrement
 								= parleyConfig2.devicePersistence.ageUpdateIncrement;
 						});
-					testAccessibility();
 
 					cy.getCookies()
 						.its(0)
