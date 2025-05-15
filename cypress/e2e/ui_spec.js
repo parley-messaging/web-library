@@ -8,7 +8,7 @@ import {STATUS_AVAILABLE} from "../../src/Api/Constants/Statuses";
 const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 const messagesUrlRegex = /.*\/messages(?:\/(?:after|before):\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
 
-function visitHome(parleyConfig, onBeforeLoad, onLoad, afterAccessibilityTest) {
+function visitHome(parleyConfig, onBeforeLoad, onLoad) {
 	cy.visit("/", {
 		onBeforeLoad: (window) => {
 			// eslint-disable-next-line no-param-reassign
@@ -32,21 +32,23 @@ function visitHome(parleyConfig, onBeforeLoad, onLoad, afterAccessibilityTest) {
 	// Test accessibility once at initial load
 	cy.injectAxe({axeCorePath: "node_modules/axe-core/axe.min.js"});
 	testAccessibility();
-
-	if(afterAccessibilityTest)
-		afterAccessibilityTest();
 }
 
 function clickOnLauncher() {
-	return cy.get("@app")
+	// eslint-disable-next-line cypress/no-assigning-return-values
+	const ret = cy.get("@app")
 		.find("[class^=parley-messaging-launcher__]")
 		.find("button")
 		.should("be.visible")
 		.click();
+	testAccessibility();
+
+	return ret;
 }
 
 function sendMessage(testMessage) {
-	return cy.get("@app")
+	// eslint-disable-next-line cypress/no-assigning-return-values
+	const ret = cy.get("@app")
 		.find("[class^=parley-messaging-chat__]")
 		.should("be.visible")
 		.find("[class^=parley-messaging-footer__]")
@@ -56,16 +58,23 @@ function sendMessage(testMessage) {
 		.find("textarea")
 		.should("have.focus")
 		.type(`${testMessage}{enter}`);
+	testAccessibility();
+
+	return ret;
 }
 
 function findMessage(testMessage) {
-	return cy.get("@app")
+	// eslint-disable-next-line cypress/no-assigning-return-values
+	const ret = cy.get("@app")
 		.find("[class^=parley-messaging-wrapper__]")
 		.should("be.visible")
 		.find("[class^=parley-messaging-body__]")
 		.should("be.visible")
 		.contains(testMessage)
 		.should("be.visible");
+	testAccessibility();
+
+	return ret;
 }
 
 function pretendToBeMobile(window) {
@@ -73,7 +82,18 @@ function pretendToBeMobile(window) {
 	Object.defineProperty(window, "matchMedia", {value: arg => ({matches: Boolean(arg.includes("(pointer: coarse)"))})});
 }
 
-function testAccessibility() {
+function testAccessibility(restoreClock = false) {
+	// Restore the clock after each test before running the accessibility test.
+	// Otherwise, `checkA11y` would end up in an error:
+	// `CypressError: `cy.then()` timed out after waiting `4000ms`.
+	// Your callback function returned a promise that never resolved.`
+	if(restoreClock) {
+		cy.clock()
+			.then((clock) => {
+				clock.restore();
+			});
+	}
+
 	return cy.checkA11y("[id=app]", {
 		runOnly: [
 			"wcag21a", "wcag21aa",
@@ -99,14 +119,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	// Restore the clock after each test before running the accessibility test.
-	// Otherwise, `checkA11y` would end up in an error:
-	// `CypressError: `cy.then()` timed out after waiting `4000ms`.
-	// Your callback function returned a promise that never resolved.`
-	cy.clock().then((clock) => {
-		clock.restore();
-	});
-	testAccessibility();
+	testAccessibility(true);
 
 
 	console.log("");
@@ -307,6 +320,7 @@ describe("UI", () => {
 				.find("[class^=parley-messaging-error__]")
 				.should("be.visible")
 				.should("have.text", "Something went wrong while sending your message, please try again later");
+			testAccessibility();
 
 			cy.intercept("POST", "*/**/messages"); // Remove handler
 
@@ -319,6 +333,7 @@ describe("UI", () => {
 				.find("[class^=parley-messaging-closeButton__]")
 				.should("be.visible")
 				.click();
+			testAccessibility();
 
 			// Validate that the error disappeared
 			cy.get("@app")
@@ -649,6 +664,7 @@ describe("UI", () => {
 					cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 						.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
 						.should("be.visible");
+					testAccessibility();
 				});
 			});
 			it("should show the `uploadMediaInvalidTypeError` error when we upload an invalid media file", () => {
@@ -685,6 +701,7 @@ describe("UI", () => {
 
 				cy.get("div[class^=parley-messaging-error__]")
 					.should("have.text", "You can not upload this type of file");
+				testAccessibility();
 			});
 			it("should show the `uploadMediaTooLargeError` error when we upload a media file that is larger than 10mb", () => {
 				// We don't really need to upload anything,
@@ -720,6 +737,7 @@ describe("UI", () => {
 
 				cy.get("div[class^=parley-messaging-error__]")
 					.should("have.text", "You can not upload files with sizes that exceed the 10mb limit");
+				testAccessibility();
 			});
 			it("should show the `uploadMediaNotUploadedError` error when we uploading goes wrong", () => {
 				// We don't really need to upload anything,
@@ -755,6 +773,7 @@ describe("UI", () => {
 
 				cy.get("div[class^=parley-messaging-error__]")
 					.should("have.text", "Something went wrong while uploading this file, please try again later");
+				testAccessibility();
 			});
 		});
 		it("should hide the media upload button when the submit button should be shown", () => {
@@ -770,6 +789,7 @@ describe("UI", () => {
 				.find("[class^=parley-messaging-text__]")
 				.find("textarea")
 				.type(`This is some text`);
+			testAccessibility();
 
 			cy.get("label[class^=parley-messaging-uploadLabel__]")
 				.should("not.exist");
@@ -899,6 +919,7 @@ describe("UI", () => {
 							});
 						});
 					});
+				testAccessibility();
 			});
 			it("should show the payload as the button title if no title is supplied", () => {
 				visitHome();
@@ -927,6 +948,7 @@ describe("UI", () => {
 				clickOnLauncher();
 
 				cy.wait("@getMessages");
+				testAccessibility();
 
 				// Check that every button rendered correctly
 				cy.get("@getMessageWithButtonsResponseFixture")
@@ -973,6 +995,7 @@ describe("UI", () => {
 					.find("button[name='WebUrlButton']")
 					.first()
 					.click();
+				testAccessibility();
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
@@ -1005,6 +1028,7 @@ describe("UI", () => {
 					.find("button[name='CallButton']")
 					.first()
 					.click();
+				testAccessibility();
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
@@ -1048,8 +1072,10 @@ describe("UI", () => {
 				cy.get("@clickedButton")
 					.click()
 					.should("be.disabled");
+				testAccessibility();
 
 				cy.wait("@postMessage");
+				testAccessibility();
 
 				cy.get("@clickedButton")
 					.should("be.enabled");
@@ -1065,6 +1091,7 @@ describe("UI", () => {
 				cy.get("div[class^=parley-messaging-footer__]")
 					.find("textarea")
 					.click();
+				testAccessibility();
 
 				cy.get("@getMessageWithButtonFixture")
 					.then((fixture) => {
@@ -1082,6 +1109,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.wait("@getMessages");
+			testAccessibility();
 
 			cy.get("article[class^=parley-messaging-message__]")
 				.children()
@@ -1169,6 +1197,7 @@ describe("UI", () => {
 				clickOnLauncher();
 
 				cy.wait("@getMessages");
+				testAccessibility();
 
 				cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 					.should("have.text", fileName)
@@ -1202,6 +1231,7 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.wait("@getMessages");
+			testAccessibility();
 
 			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 				.should("have.text", fileName);
@@ -1251,6 +1281,7 @@ describe("UI", () => {
 					.realHover({});
 				cy.get("[class^=parley-messaging-navButton__]")
 					.should("be.visible");
+				testAccessibility();
 
 				// Next button click
 				cy.get("button[name=next]")
@@ -1261,6 +1292,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("be.visible");
+				testAccessibility();
 
 				// Previous button click
 				cy.get("button[name=previous]")
@@ -1271,6 +1303,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("not.be.visible");
+				testAccessibility();
 
 				// Mouse horizontal scroll right
 				cy.get("[class^=parley-messaging-carouselContainer__]")
@@ -1281,6 +1314,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("be.visible");
+				testAccessibility();
 
 				// Mouse horizontal scroll left
 				cy.get("[class^=parley-messaging-carouselContainer__]")
@@ -1291,12 +1325,14 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("not.be.visible");
+				testAccessibility();
 
 				// Stop hovering navigation
 				cy.get("body")
 					.realHover({});
 				cy.get("[class^=parley-messaging-navButton__]")
 					.should("not.be.visible");
+				testAccessibility();
 			});
 			it("should show carousel with multiple items and can navigate using swipe on mobile", () => {
 				// According to https://gs.statcounter.com/screen-resolution-stats/mobile/worldwide
@@ -1335,6 +1371,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("be.visible");
+				testAccessibility();
 
 				// Previous button touch
 				cy.get("button[name=previous]")
@@ -1345,6 +1382,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("not.be.visible");
+				testAccessibility();
 
 				// Swipe right
 				cy.get("[class^=parley-messaging-carouselContainer__]")
@@ -1355,6 +1393,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("be.visible");
+				testAccessibility();
 
 				// Swipe left
 				cy.get("[class^=parley-messaging-carouselContainer__]")
@@ -1365,6 +1404,7 @@ describe("UI", () => {
 				cy.get("@messages")
 					.eq(1)
 					.should("not.be.visible");
+				testAccessibility();
 			});
 			[
 				{
@@ -1641,6 +1681,7 @@ describe("UI", () => {
 						.contains(lastMessage)
 						.should("be.visible");
 				});
+			testAccessibility();
 		});
 		it("should not scroll to the newest message if the chat has been scrolled manually", () => {
 			// Return a bunch of messages initially
@@ -1669,10 +1710,12 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.wait("@getMessages");
+			testAccessibility();
 
 			// Scroll a bit up
 			cy.get("[class^=parley-messaging-body__]")
 				.realMouseWheel({deltaY: -500});
+			testAccessibility();
 
 			// Return a new message
 			const newMessageText = `This message should NOT be visible ${Date.now()}`;
@@ -1694,6 +1737,7 @@ describe("UI", () => {
 				});
 
 			cy.wait("@getNewMessage");
+			testAccessibility();
 
 			// Validate that we have scrolled to that message
 			cy.get("@app")
@@ -1703,6 +1747,7 @@ describe("UI", () => {
 				.should("be.visible")
 				.contains(newMessageText)
 				.should("not.be.visible");
+			testAccessibility();
 		});
 		describe("history", () => {
 			it("should fetch and show older messages when scrolling to the top", () => {
@@ -1742,40 +1787,49 @@ describe("UI", () => {
 				clickOnLauncher();
 
 				cy.wait("@fetchInitialMessages");
+				testAccessibility();
 
 				// Scroll to oldest message
 				cy.get("[class^=parley-messaging-message__")
 					.contains(initialMessages[0].message)
 					.scrollIntoView();
+				testAccessibility();
 
 				// Validate that the older messages are being fetch
 				cy.wait("@fetchFirstBatch");
+				testAccessibility();
 
 				// Scroll to the oldest message again
 				cy.get("[class^=parley-messaging-message__")
 					.contains(firstBatchOldMessages[0].message)
 					.scrollIntoView();
+				testAccessibility();
 
 				// Validate that the older messages are being fetch
 				cy.wait("@fetchSecondBatch");
+				testAccessibility();
 
 				// Scroll to the oldest message again
 				cy.get("[class^=parley-messaging-message__")
 					.contains(secondBatchOldMessages[0].message)
 					.scrollIntoView();
+				testAccessibility();
 
 				// Validate that we try to fetch older messages (this returns an empty array)
 				cy.wait("@fetchEmptyBatch");
+				testAccessibility();
 
 				// Scroll down a bit
 				cy.get("[class^=parley-messaging-message__")
 					.contains(initialMessages[0].message)
 					.scrollIntoView();
+				testAccessibility();
 
 				// Scroll back up
 				cy.get("[class^=parley-messaging-message__")
 					.contains(secondBatchOldMessages[0].message)
 					.scrollIntoView();
+				testAccessibility();
 
 				// This should NOT trigger another fetch since the last fetch
 				// resulted in an empty array so the chat knows it should stop
@@ -1845,6 +1899,7 @@ describe("UI", () => {
 								.should("exist")
 								.and("have.attr", "src", newIcon);
 						});
+					testAccessibility();
 
 					// We don't really need an extra check for the absence of the svg "icon"
 					// since that is already checked above
@@ -1894,6 +1949,7 @@ describe("UI", () => {
 								.should("exist")
 								.and("have.attr", "src", newIcon);
 						});
+					testAccessibility();
 
 					// Remove custom icon during runtime
 					cy.window()
@@ -1909,6 +1965,7 @@ describe("UI", () => {
 					cy.get("#launcher")
 						.find("img")
 						.should("not.exist");
+					testAccessibility();
 				});
 			});
 			describe("interfaceTexts", () => {
@@ -1938,6 +1995,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-title__]")
 							.should("have.text", newTitle);
+						testAccessibility();
 					});
 				});
 				describe("title (new name for 'desc')", () => {
@@ -1966,6 +2024,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-title__]")
 							.should("have.text", newTitle);
+						testAccessibility();
 					});
 				});
 				describe("infoText", () => {
@@ -2004,11 +2063,13 @@ describe("UI", () => {
 							});
 
 						cy.wait("@getMessages");
+						testAccessibility();
 
 						cy.get("@app")
 							.find("[class*=parley-messaging-announcement__]")
 							.first()
 							.should("have.text", newInfoText);
+						testAccessibility();
 					});
 					it("should get overridden by API's welcomeMessage", () => {
 						const parleyConfig = {runOptions: {interfaceTexts: {infoText: "This is the info text"}}};
@@ -2035,6 +2096,7 @@ describe("UI", () => {
 							.find("[class*=parley-messaging-announcement__]")
 							.first()
 							.should("have.text", welcomeMessage);
+						testAccessibility();
 					});
 					it("should only show welcomeMessage after GET /messages call", () => {
 						// Force a long delay on the response to pretend we are "loading"
@@ -2064,6 +2126,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class*=parley-messaging-announcement__]")
 							.should("not.exist");
+						testAccessibility();
 					});
 				});
 				describe("welcomeMessage (new name for 'infoText')", () => {
@@ -2104,6 +2167,7 @@ describe("UI", () => {
 							.find("[class*=parley-messaging-announcement__]")
 							.first()
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 				describe("placeholderMessenger", () => {
@@ -2134,6 +2198,7 @@ describe("UI", () => {
 							.find("[class^=parley-messaging-text__]")
 							.find("textarea")
 							.should("have.attr", "placeholder", newPlaceholder);
+						testAccessibility();
 					});
 				});
 				describe("inputPlaceholder (new name for 'placeholderMessenger')", () => {
@@ -2164,6 +2229,7 @@ describe("UI", () => {
 							.find("[class^=parley-messaging-text__]")
 							.find("textarea")
 							.should("have.attr", "placeholder", newPlaceholder);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelButtonMinimize", () => {
@@ -2190,6 +2256,7 @@ describe("UI", () => {
 						cy.get("@minimizeButton")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelButtonLauncher", () => {
@@ -2216,6 +2283,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelButtonErrorClose", () => {
@@ -2249,6 +2317,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelTextInput", () => {
@@ -2277,6 +2346,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelMessageTitle", () => {
@@ -2308,6 +2378,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelMessageBody", () => {
@@ -2339,6 +2410,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelMessageMedia", () => {
@@ -2371,6 +2443,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("ariaLabelMessageButtons", () => {
@@ -2402,6 +2475,7 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("retrievingMessagesFailedError", () => {
@@ -2442,6 +2516,7 @@ describe("UI", () => {
 
 						cy.get("@elementUnderTest")
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 				describe("subscribeDeviceFailedError", () => {
@@ -2465,6 +2540,7 @@ describe("UI", () => {
 						visitHome(parleyConfig);
 						clickOnLauncher();
 						cy.wait("@postDevices");
+						testAccessibility();
 
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
@@ -2482,9 +2558,12 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.find("button")
 							.click(); // Close alert first
+						testAccessibility();
+
 						clickOnLauncher(); // Close chat
 						clickOnLauncher(); // Open chat
 						cy.wait("@postDevices");
+						testAccessibility();
 
 						cy.get("@elementUnderTest")
 							.should("have.text", newValue);
@@ -2504,6 +2583,7 @@ describe("UI", () => {
 						clickOnLauncher();
 						sendMessage("test message");
 						cy.wait("@postMessage");
+						testAccessibility();
 
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
@@ -2521,10 +2601,13 @@ describe("UI", () => {
 						cy.get("@elementUnderTest")
 							.find("button")
 							.click(); // Close alert first
+						testAccessibility();
+
 						clickOnLauncher(); // Close chat
 						clickOnLauncher(); // Open chat
 						sendMessage("test message 2");
 						cy.wait("@postMessage");
+						testAccessibility();
 
 						cy.get("@elementUnderTest")
 							.should("have.text", newValue);
@@ -2560,6 +2643,7 @@ describe("UI", () => {
 							.should("have.text", parleyConfig.runOptions.interfaceTexts.deviceRequiresAuthorizationError)
 							.find("button")
 							.click(); // Close the error
+						testAccessibility();
 
 						// Test if it changes during runtime
 						const newErrorText = "This is the error deviceRequiresAuthorizationError text #2";
@@ -2606,6 +2690,7 @@ describe("UI", () => {
 						cy.get("@uploadLabel")
 							.should("have.attr", "aria-label")
 							.should("equal", newValue);
+						testAccessibility();
 					});
 				});
 				describe("messageSendFailed", () => {
@@ -2646,6 +2731,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 				describe("sendingMessageFailedError (new name for 'messageSendFailed')", () => {
@@ -2686,6 +2772,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 				describe("serviceUnreachableNotification", () => {
@@ -2715,6 +2802,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 				describe("serviceUnreachableError (new name for 'serviceUnreachableNotification')", () => {
@@ -2744,6 +2832,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-error__]")
 							.should("have.text", newValue);
+						testAccessibility();
 					});
 				});
 			});
@@ -2785,6 +2874,7 @@ describe("UI", () => {
 					cy.get("@app")
 						.find("[class^=parley-messaging-title__]")
 						.should("have.text", parleyConfig.runOptions.interfaceTexts.desc);
+					testAccessibility();
 				});
 			});
 			describe("allowedMediaTypes", () => {
@@ -2828,6 +2918,7 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-actions__]")
 						.find("input")
 						.should("have.attr", "accept", newAllowedMediaTypes.join(","));
+					testAccessibility();
 				});
 				it("should fallback to our supported file types if the array is empty", () => {
 					const parleyConfig = {runOptions: {allowedMediaTypes: []}};
@@ -2843,6 +2934,7 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-actions__]")
 						.find("input")
 						.should("have.attr", "accept", SUPPORTED_MEDIA_TYPES.join(","));
+					testAccessibility();
 				});
 				it("should fallback to our supported file types if the setting is not set", () => {
 					const parleyConfig = {runOptions: {}};
@@ -2858,6 +2950,7 @@ describe("UI", () => {
 						.find("[class^=parley-messaging-actions__]")
 						.find("input")
 						.should("have.attr", "accept", SUPPORTED_MEDIA_TYPES.join(","));
+					testAccessibility();
 				});
 			});
 			describe("allowFileUpload", () => {
@@ -2893,6 +2986,7 @@ describe("UI", () => {
 					cy.get("@app")
 						.find("[class^=parley-messaging-uploadLabel__]")
 						.should("exist");
+					testAccessibility();
 				});
 			});
 		});
@@ -2930,6 +3024,7 @@ describe("UI", () => {
 					});
 
 				cy.wait("@createDevice");
+				testAccessibility();
 			});
 			it("should clear the messages when switching accounts", () => {
 				const parleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
@@ -2964,6 +3059,7 @@ describe("UI", () => {
 					.find("[class^=parley-messaging-body__]")
 					.should("be.visible")
 					.should("not.contain", testMessage);
+				testAccessibility();
 			});
 		});
 		describe("xIrisIdentification", () => {
@@ -3001,6 +3097,7 @@ describe("UI", () => {
 					});
 
 				cy.wait("@createDevice");
+				testAccessibility();
 			});
 		});
 		describe("authHeader", () => {
@@ -3034,6 +3131,7 @@ describe("UI", () => {
 					});
 
 				cy.wait("@createDevice");
+				testAccessibility();
 			});
 		});
 		describe("userAdditionalInformation", () => {
@@ -3072,6 +3170,7 @@ describe("UI", () => {
 					});
 
 				cy.wait("@createDevice");
+				testAccessibility();
 			});
 			it("should not re-register the device when the changes contains no differences", () => {
 				// eslint-disable-next-line no-unused-vars
@@ -3102,6 +3201,7 @@ describe("UI", () => {
 							.to
 							.equal(1);
 					});
+				testAccessibility();
 			});
 		});
 		describe("weekdays", () => {
@@ -3404,6 +3504,7 @@ describe("UI", () => {
 							.to
 							.equal(version);
 					});
+				testAccessibility();
 			});
 		});
 		describe("apiCustomHeaders", () => {
@@ -3425,6 +3526,7 @@ describe("UI", () => {
 							.deep
 							.equal(parleyConfig.apiCustomHeaders);
 					});
+				testAccessibility();
 			});
 			it("should update the custom headers during runtime", () => {
 				const parleyConfig = {apiCustomHeaders: {"x-custom-1": "1"}};
@@ -3436,6 +3538,7 @@ describe("UI", () => {
 					.as("app");
 
 				cy.waitFor("@app");
+				testAccessibility();
 
 				cy.window()
 					.then((win) => {
@@ -3463,6 +3566,7 @@ describe("UI", () => {
 									.include(newCustomHeader);
 							});
 					});
+				testAccessibility();
 			});
 			it("should not update the custom headers when the new header contains no differences", () => {
 				const log = "[parley-web-library:DEBUG] Api custom headers changed, setting new custom headers";
@@ -3489,6 +3593,7 @@ describe("UI", () => {
 							.to
 							.equal(0);
 					});
+				testAccessibility();
 			});
 		});
 		describe("devicePersistence", () => {
@@ -3533,6 +3638,7 @@ describe("UI", () => {
 										.property("value", `${parleyConfig.xIrisIdentification}`);
 								});
 						});
+					testAccessibility();
 				});
 				it("should update the devicePersistence.domain during runtime", () => {
 					const parleyConfig = {devicePersistence: {domain: "parley.nu"}};
@@ -3587,6 +3693,7 @@ describe("UI", () => {
 								.have
 								.property("domain", `.${newPersistDeviceBetweenDomain}`);
 						});
+					testAccessibility();
 				});
 
 				describe("switching between domains", () => {
@@ -3646,6 +3753,7 @@ describe("UI", () => {
 											.property("x-iris-identification", `${defaultParleyConfig.roomNumber}:${deviceIdentificationFromCookie}`);
 									});
 							});
+						testAccessibility();
 					});
 				});
 			});
@@ -3672,6 +3780,7 @@ describe("UI", () => {
 						.then(() => {
 							return cy.wait("@getMessages");
 						});
+					testAccessibility();
 
 					cy.getCookies()
 						.its(0)
@@ -3685,6 +3794,7 @@ describe("UI", () => {
 						.its(0)
 						.its("expiry")
 						.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
+					testAccessibility(true);
 				});
 			});
 			describe("ageUpdateIncrement", () => {
@@ -3710,6 +3820,7 @@ describe("UI", () => {
 						.then(() => {
 							return cy.wait("@getMessages");
 						});
+					testAccessibility();
 
 					cy.getCookies()
 						.its(0)
@@ -3723,6 +3834,7 @@ describe("UI", () => {
 						.its(0)
 						.its("expiry")
 						.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
+					testAccessibility(true);
 				});
 			});
 			describe("ageUpdateInterval + ageUpdateIncrement", () => {
@@ -3800,6 +3912,7 @@ describe("UI", () => {
 							win.parleySettings.devicePersistence.ageUpdateIncrement
 								= parleyConfig2.devicePersistence.ageUpdateIncrement;
 						});
+					testAccessibility();
 
 					cy.getCookies()
 						.its(0)
@@ -3850,6 +3963,7 @@ describe("UI", () => {
 
 						cy.wait("@postDevices");
 						cy.wait("@getMessages");
+						testAccessibility();
 
 						// region: Simulate opening the chat on a different domain.
 
@@ -3894,16 +4008,7 @@ describe("UI", () => {
 							},
 						};
 
-						// Reset the clock before visiting home otherwise the accessibility test would crash
-						cy.clock().then((clock) => {
-							clock.restore();
-						});
-						visitHome(parleyConfigWithoutInterval, null, null, () => {
-							cy.clock(new Date().getTime()); // Start the clock override
-
-							// The clock override must be done after the accessibility test
-							// otherwise it will crash the checkA11y()
-						});
+						visitHome(parleyConfigWithoutInterval, null, null);
 
 						// Start the subscribe call
 						clickOnLauncher();
@@ -3922,6 +4027,7 @@ describe("UI", () => {
 											.equal(cookieIdentification);
 									});
 							});
+						testAccessibility();
 					});
 				});
 			});
@@ -3975,6 +4081,7 @@ describe("UI", () => {
 					cy.get("@app")
 						.get("[class^=parley-messaging-launcher__]")
 						.should("not.exist");
+					testAccessibility();
 				});
 			});
 			describe("unreadMessagesAction", () => {
@@ -4073,6 +4180,7 @@ describe("UI", () => {
 
 						// Validate that the message statuses have been updated
 						cy.wait("@putMessageStatus");
+						testAccessibility();
 
 						// From this point on the counter should return 0 since all messages
 						// have been marked as read
@@ -4106,6 +4214,7 @@ describe("UI", () => {
 									.as("getUnreadMessagesCount");
 							});
 						cy.wait("@getUnreadMessagesCount");
+						testAccessibility();
 						cy.get("@app")
 							.find("[class^=parley-messaging-launcher__]")
 							.find("[class^=parley-messaging-unreadMessagesBadge__]")
@@ -4115,6 +4224,7 @@ describe("UI", () => {
 							.find("[class^=parley-messaging-chat__]")
 							.should("not.be.visible");
 						cy.get("@getMessagesSpy2").should("not.have.been.called");
+						testAccessibility();
 					});
 				});
 				describe("using value 1 (showMessageCounterBadge)", () => {
@@ -4132,6 +4242,7 @@ describe("UI", () => {
 							.should("be.visible");
 
 						cy.wait("@getUnseenMessagesCount");
+						testAccessibility();
 
 						// Validate that the unread messages badge counter shows up
 						// and shows the correct number
@@ -4173,6 +4284,7 @@ describe("UI", () => {
 
 						cy.wait("@getMessages");
 						cy.wait("@putMessageStatus");
+						testAccessibility();
 
 						// Validate that the unread messages badge counter hides
 						// when opening the main screen
@@ -4183,6 +4295,7 @@ describe("UI", () => {
 						cy.get("@app")
 							.find("[class^=parley-messaging-chat__]")
 							.should("be.visible");
+						testAccessibility();
 					});
 				});
 			});
@@ -4202,6 +4315,7 @@ describe("UI", () => {
 		});
 
 		describe("launcher", () => {
+			// noinspection ignore-missing-accessibility-test
 			it("should have an id", () => {
 				cy.get("@app")
 					.find("[class^=parley-messaging-launcher__]")
@@ -4274,6 +4388,7 @@ describe("UI", () => {
 					visitHome();
 					clickOnLauncher();
 					cy.wait("@fetchMessages");
+					testAccessibility();
 
 					cy.get("[class*=parley-messaging-announcement__]")
 						.should("be.visible")
@@ -4314,6 +4429,7 @@ describe("UI", () => {
 						.should("be.visible")
 						.find("textarea")
 						.click();
+					testAccessibility();
 
 					cy.wait("@fetchMessages");
 					findMessage(testMessage)
@@ -4335,6 +4451,7 @@ describe("UI", () => {
 						// eslint-disable-next-line no-unused-expressions
 						expect(comparePos).to.be.ok;
 					});
+					testAccessibility();
 				});
 				it("should be shown above the sticky message if the date is not available", () => {
 					// Create an empty conversation
@@ -4372,6 +4489,7 @@ describe("UI", () => {
 						// eslint-disable-next-line no-unused-expressions
 						expect(comparePos).to.be.ok;
 					});
+					testAccessibility();
 				});
 				it("should be shown even if there is no sticky message and no conversation messages", () => {
 					// Create an empty conversation
@@ -4392,6 +4510,7 @@ describe("UI", () => {
 					visitHome();
 					clickOnLauncher();
 					cy.wait("@fetchInitialMessages");
+					testAccessibility();
 
 					cy.get("[class*=parley-messaging-announcement__]").first()
 						.should("be.visible");
@@ -4448,6 +4567,7 @@ describe("UI", () => {
 									.should("not.exist");
 							});
 					});
+				testAccessibility();
 			});
 		});
 	});
@@ -4476,7 +4596,7 @@ describe("UI", () => {
 						.to
 						.equal("open");
 				});
-			cy.reload();
+			visitHome(); // Dont use cy.reload() as this can crash the accessibility test
 
 			// Check if the localStorage value open still exists after refresh
 			cy.window()
@@ -4509,7 +4629,7 @@ describe("UI", () => {
 						.to
 						.equal("minimize");
 				});
-			cy.reload();
+			visitHome();
 
 			// Check if the localStorage value minimize still exists after refresh
 			cy.window()
@@ -4585,7 +4705,7 @@ describe("UI", () => {
 					.should("not.be.visible");
 
 				// Refresh page
-				cy.reload();
+				visitHome();
 
 				cy.get("@app")
 					.find("[class^=parley-messaging-launcher__]")
@@ -4626,6 +4746,7 @@ describe("UI", () => {
 				.find("input[type=image]")
 				.first()
 				.click();
+			testAccessibility();
 
 			// Find fullscreen image container
 			// and close it
@@ -4638,6 +4759,7 @@ describe("UI", () => {
 				.find("button[class^=parley-messaging-closeButton__]")
 				.should("be.visible")
 				.click();
+			testAccessibility();
 
 			// Make sure image container is gone
 			cy.get("@app")
@@ -4669,11 +4791,13 @@ describe("UI", () => {
 			clickOnLauncher();
 
 			cy.wait("@getMessages");
+			testAccessibility();
 
 			cy.get("div[class^=parley-messaging-messageBoxMedia__]")
 				.find("button[class^=parley-messaging-messageBoxMediaDownload__]")
 				.as("downloadButton")
 				.click();
+			testAccessibility();
 
 			// Loading animation should show
 			cy.get("@downloadButton")
