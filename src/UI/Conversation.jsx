@@ -12,6 +12,7 @@ import Api from "../Api/Api";
 import Message from "./Message";
 import Carousel from "./Carousel";
 import {STATUS_SEEN} from "../Api/Constants/Statuses";
+import {announce, clearAnnouncer} from "@react-aria/live-announcer";
 
 class Conversation extends Component {
 	constructor(props) {
@@ -141,6 +142,11 @@ class Conversation extends Component {
 						return; // Ignore messages we already have in our state
 
 					newState.messages.push(message);
+
+					// Announce new agent message but only if this is not the first time we get all messages.
+					// We only want to announce new messages after the "initial load"
+					if(this.state.messages.length > 0 && message.typeId === MessageTypes.Agent)
+						this.announceMessageForScreenReaders(message);
 				});
 
 				// Sort messages again after pushing to the array
@@ -307,6 +313,13 @@ class Conversation extends Component {
 
 		this.welcomeMessageAnnouncementRendered = true;
 		return <Announcement message={this.state.welcomeMessage} />;
+	}
+
+	announceMessageForScreenReaders = (message) => {
+		const agentName = message.agent?.name || "agent"; // TODO: Translate
+
+		clearAnnouncer("assertive");
+		announce(`${agentName} says: ${message.message}`, "assertive");
 	}
 
 	render() {
