@@ -100,7 +100,8 @@ class ReplyActions extends Component {
 		})
 
 	render() {
-		const showMobileSubmit = this.props.isMobile && this.state.reply.length > 0;
+		const showMobileSubmit = (this.props.isMobile || this.props.alwaysShowSendButton)
+			&& this.state.reply.length > 0;
 		const showMediaUpload = this.props.allowMediaUpload;
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -139,6 +140,7 @@ ReplyActions.propTypes = {
 	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
 	allowMediaUpload: PropTypes.bool,
+	alwaysShowSendButton: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	fitToIDeviceScreen: PropTypes.func,
 	isMobile: PropTypes.bool,

@@ -235,6 +235,7 @@ class Chat extends Component {
 					allowEmoji={this.props.allowEmoji}
 					allowMediaUpload={this.props.allowMediaUpload}
 					allowedMediaTypes={this.props.allowedMediaTypes}
+					alwaysShowSendButton={this.props.alwaysShowSendButton}
 					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
@@ -253,6 +254,7 @@ Chat.propTypes = {
 	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
 	allowMediaUpload: PropTypes.bool,
+	alwaysShowSendButton: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	isiOSMobile: PropTypes.bool,
 	isMobile: PropTypes.bool,

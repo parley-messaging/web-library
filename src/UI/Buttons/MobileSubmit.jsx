@@ -10,11 +10,13 @@ class MobileSubmit extends Component {
 	render() {
 		const typeButton = "button";
 		const ariaLabel = "send message";
+		const id = "submitButton";
 
 		return (
 			<button
 				aria-label={ariaLabel}
 				className={styles.mobile}
+				id={id}
 				onClick={this.props.onClick}
 				type={typeButton}
 			>

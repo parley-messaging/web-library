@@ -4289,6 +4289,41 @@ describe("UI", () => {
 					});
 				});
 			});
+			describe("alwaysShowSendButton", () => {
+				it("should show the send button when enabled", () => {
+					const parleyConfig = {interface: {alwaysShowSendButton: true}};
+					const testMessage = "Only Chuck Norris can cause a Sonic Boom.";
+					visitHome(parleyConfig);
+					clickOnLauncher();
+
+					// Type some text to trigger the submit button visibility
+					cy.get("@app")
+						.find("[class^=parley-messaging-chat__]")
+						.should("be.visible")
+						.find("[class^=parley-messaging-footer__]")
+						.should("be.visible")
+						.find("[class^=parley-messaging-text__]")
+						.should("be.visible")
+						.find("textarea")
+						.should("have.focus")
+						.type(`${testMessage}`);
+
+					cy.get("@app")
+						.find("#submitButton")
+						.should("be.visible");
+
+					// Make sure it changes during runtime
+					cy.window()
+						.then((win) => {
+							// eslint-disable-next-line no-param-reassign
+							win.parleySettings.interface.alwaysShowSendButton = false;
+						});
+
+					cy.get("@app")
+						.find("#submitButton")
+						.should("not.exist");
+				});
+			});
 		});
 	});
 	describe("component structure", () => {
