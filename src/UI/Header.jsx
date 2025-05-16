@@ -4,6 +4,8 @@ import * as styles from "./Header.module.css";
 
 import HeaderButton, {minimizeType} from "./Buttons/HeaderButton";
 
+export const headerId = "header";
+
 class Header extends Component {
 	render() {
 		return (
@@ -14,7 +16,7 @@ class Header extends Component {
 					{/*	type={menuType}*/}
 					{/* />*/}
 				</div>
-				<span className={styles.title}>{this.props.title}</span>
+				<h1 className={styles.title} id={headerId}>{this.props.title}</h1>
 				<div className={styles.right}>
 					<HeaderButton
 						onClick={this.props.onMinimizeClick}

@@ -4542,6 +4542,24 @@ describe("UI", () => {
 				});
 			});
 		});
+		describe("Chat", () => {
+			it("should have a role attribute and aria attributes", () => {
+				// For WCAG21 Success Criterion 4.1.2: Name, Role, Value
+				// it is necessary to have some kind of role defined for the chat window.
+
+				visitHome();
+				clickOnLauncher();
+
+				cy.get("#chat")
+					.should("have.attr", "role", "dialog")
+					.should("have.attr", "aria-modal", "true")
+					.should("have.attr", "aria-labelledby", "header");
+
+				// Make sure the header is actually a valid header
+				cy.get("h1#header")
+					.should("be.visible");
+			});
+		});
 	});
 	describe("local storage", () => {
 		[
