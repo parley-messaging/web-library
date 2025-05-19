@@ -1,6 +1,8 @@
 import React from "react";
 import {v4 as uuidv4} from "uuid";
 
+const secondsToMS = 1000;
+
 export const ApiOptions = {
 	userAdditionalInformation: {},
 	accountIdentification: "0cce5bfcdbf07978b269",

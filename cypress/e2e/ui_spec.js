@@ -1835,6 +1835,36 @@ describe("UI", () => {
 					.should("have.been.calledThrice");
 			});
 		});
+		it("should announce messages to the screen reader", () => {
+			visitHome();
+
+			const generatedMessages = generateParleyMessages(2, Date.now(), 1);
+			cy.fixture("getMessagesResponse.json")
+				.then((fixture) => {
+					cy.intercept("GET", messagesUrlRegex, req => req.reply({
+						...fixture,
+						data: [generatedMessages[0]],
+					}))
+						.as("fetchInitialMessages");
+
+					cy.intercept("GET", `/**/messages/after:${generatedMessages[0].id}`, req => req.reply({
+						...fixture,
+						data: [generatedMessages[1]],
+					}))
+						.as("fetchNewMessages");
+				});
+
+			clickOnLauncher();
+
+			cy.wait("@fetchInitialMessages");
+			cy.wait("@fetchNewMessages");
+
+			cy.get("div[data-live-announcer='true']")
+				.should("exist")
+				.find("div[aria-live='assertive']")
+				.should("exist")
+				.should("contain", InterfaceTexts.english.screenReaderNewMessageAnnouncement(generatedMessages[1].agent.name, generatedMessages[1].message, generatedMessages[1].time));
+		});
 	});
 	describe("parley config settings", () => {
 		describe("runOptions", () => {

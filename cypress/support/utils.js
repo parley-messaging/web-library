@@ -25,11 +25,10 @@ export function interceptIndefinitely(method, routeMatcher, response = undefined
 	return {sendResponse};
 }
 
-export function generateParleyMessages(amount, dateMs = Date.now()) {
+export function generateParleyMessages(amount, dateMs = Date.now(), chanceForAgentMessage = 0.4) {
 	const messages = [];
 	const timeBetweenMessages = 30; // seconds
 	const beginTime = (dateMs / 1000) - (amount * timeBetweenMessages);
-	const chanceForAgentMessage = 0.4;
 
 	for(let i = 0; i < amount; i++) {
 		const newMessage = {
