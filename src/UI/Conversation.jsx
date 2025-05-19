@@ -13,8 +13,11 @@ import Message from "./Message";
 import Carousel from "./Carousel";
 import {STATUS_SEEN} from "../Api/Constants/Statuses";
 import {announce, clearAnnouncer} from "@react-aria/live-announcer";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Conversation extends Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
@@ -316,10 +319,10 @@ class Conversation extends Component {
 	}
 
 	announceMessageForScreenReaders = (message) => {
-		const agentName = message.agent?.name || "agent"; // TODO: Translate
+		const agentName = message.agent?.name || "agent";
 
 		clearAnnouncer("assertive");
-		announce(`${agentName} says: ${message.message}`, "assertive");
+		announce(this.context.screenReaderNewMessageAnnouncement(agentName, message.message, message.time), "assertive");
 	}
 
 	render() {

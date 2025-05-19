@@ -31,6 +31,10 @@ export const InterfaceTexts = {
 		retrievingMessagesFailedError: "Something went wrong while retrieving your messages, please re-open the chat if this keeps happening",
 		uploadMediaNotUploadedError: "Something went wrong while uploading this file, please try again later",
 		ariaLabelUploadFile: "Upload file",
+		screenReaderNewMessageAnnouncement: (agentName, message, time) => `On ${new Date(time * secondsToMS).toLocaleTimeString(undefined, {
+			hour12: false,
+			timeStyle: "short",
+		})} ${agentName} says: ${message}`,
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
@@ -59,6 +63,10 @@ export const InterfaceTexts = {
 		retrievingMessagesFailedError: "Er ging iets fout bij het ophalen van je berichten, open de chat opnieuw als dit zich voor blijft doen",
 		uploadMediaNotUploadedError: "Er ging iets fout tijdens het uploaden, probeer het later opnieuw",
 		ariaLabelUploadFile: "Bestand uploaden",
+		screenReaderNewMessageAnnouncement: (agentName, message, time) => `Om ${new Date(time * secondsToMS).toLocaleTimeString(undefined, {
+			hour12: false,
+			timeStyle: "short",
+		})} ${agentName} zegt: ${message}`,
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
