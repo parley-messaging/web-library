@@ -15,6 +15,7 @@ You can find more info on how to enable WSL on windows 10 here: https://docs.mic
 	```
 1. Copy chat-dev.parley.nu cert into `ssl/ssl.cert`
 1. Copy chat-dev.parley.nu key into `ssl/ssl.key`
+1. Copy/Paste/Rename `.env.example` -> `.env` and fill any needed values
 1. Set/Install the node version we use ([install nvm](https://github.com/nvm-sh/nvm#install--update-script) first if you do not have it)
 	```shell
 	nvm use

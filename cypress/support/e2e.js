@@ -20,8 +20,8 @@ import "./commands";
 // require('./commands')
 
 import "@cypress/code-coverage/support";
+import "@axe-core/watcher/dist/cypressCommands";
 
-import "cypress-axe";
 Cypress.on("window:before:load", (win) => {
 	// this lets React DevTools "see" components inside application's iframe
 	// eslint-disable-next-line no-param-reassign
@@ -46,4 +46,8 @@ Cypress.on("window:before:load", (win) => {
 	// Expose the capturedDebugMessages array globally
 	// eslint-disable-next-line no-param-reassign
 	win.__capturedDebugMessages = capturedDebugMessages;
+});
+
+afterEach(() => {
+	cy.axeWatcherFlush();
 });
