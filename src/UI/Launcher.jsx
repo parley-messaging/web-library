@@ -4,6 +4,7 @@ import * as styles from "./Launcher.module.css";
 import LauncherSVG from "./Resources/launcher.svg";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import {MessengerOpenState} from "./Scripts/MessengerOpenState";
+import {TAB_INDEX_4} from "./Scripts/TabIndexes";
 
 class Launcher extends Component {
 	render() {
@@ -31,6 +32,7 @@ class Launcher extends Component {
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
 								onClick={this.props.onClick}
+								tabIndex={TAB_INDEX_4}
 								type={buttonType}
 							>
 								{/* eslint-disable-next-line max-len */}

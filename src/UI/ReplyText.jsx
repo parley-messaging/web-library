@@ -4,6 +4,7 @@ import * as styles from "./ReplyText.module.css";
 import TextareaAutosize from "react-textarea-autosize";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import Logger from "js-logger";
+import {TAB_INDEX_1} from "./Scripts/TabIndexes";
 
 class ReplyText extends Component {
 	constructor(props) {
@@ -53,6 +54,7 @@ class ReplyText extends Component {
 								onKeyDown={this.handleKeyDown}
 								placeholder={this.props.placeholder}
 								ref={this.textArea}
+								tabIndex={TAB_INDEX_1}
 								value={this.props.value}
 							/>
 						</div>

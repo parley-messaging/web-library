@@ -14,6 +14,7 @@ import Carousel from "./Carousel";
 import {STATUS_SEEN} from "../Api/Constants/Statuses";
 import {announce, clearAnnouncer} from "@react-aria/live-announcer";
 import {InterfaceTextsContext} from "./Scripts/Context";
+import {TAB_INDEX_2} from "./Scripts/TabIndexes";
 
 class Conversation extends Component {
 	static contextType = InterfaceTextsContext;
@@ -337,7 +338,7 @@ class Conversation extends Component {
 					onScroll={this.handleScroll}
 					ref={this.bodyRef}
 					role={bodyRole}
-					tabIndex={-1} // tabIndex is required for onKeyDown to work
+					tabIndex={TAB_INDEX_2} // tabIndex is required for onKeyDown to work
 				>
 					{
 						this.state.messages.map((message, index, array) => (
