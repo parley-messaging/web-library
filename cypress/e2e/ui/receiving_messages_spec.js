@@ -980,6 +980,7 @@ describe("receiving messages", () => {
 			// Scroll to oldest message
 			cy.get("[class^=parley-messaging-message__")
 				.contains(initialMessages[0].message)
+				.parent()
 				.scrollIntoView();
 
 			// Validate that the older messages are being fetch
@@ -988,6 +989,7 @@ describe("receiving messages", () => {
 			// Scroll to the oldest message again
 			cy.get("[class^=parley-messaging-message__")
 				.contains(firstBatchOldMessages[0].message)
+				.parent()
 				.scrollIntoView();
 
 			// Validate that the older messages are being fetch
@@ -996,6 +998,7 @@ describe("receiving messages", () => {
 			// Scroll to the oldest message again
 			cy.get("[class^=parley-messaging-message__")
 				.contains(secondBatchOldMessages[0].message)
+				.parent()
 				.scrollIntoView();
 
 			// Validate that we try to fetch older messages (this returns an empty array)
@@ -1004,11 +1007,13 @@ describe("receiving messages", () => {
 			// Scroll down a bit
 			cy.get("[class^=parley-messaging-message__")
 				.contains(initialMessages[0].message)
+				.parent()
 				.scrollIntoView();
 
 			// Scroll back up
 			cy.get("[class^=parley-messaging-message__")
 				.contains(secondBatchOldMessages[0].message)
+				.parent()
 				.scrollIntoView();
 
 			// This should NOT trigger another fetch since the last fetch
