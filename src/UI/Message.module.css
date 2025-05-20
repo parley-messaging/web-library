@@ -52,7 +52,7 @@
 
 .message a {
 	background-color: transparent;
-	color: var(--parley-link-color, #4891F5);
+	color: var(--parley-link-color, #2E2EFF);
 	font-family: var(--parley-link-font, --parley-font, 'OpenSans', sans-serif);
 	font-size: var(--parley-link-font-size, 14px);
 	font-weight: var(--parley-link-font-weight, 400);
