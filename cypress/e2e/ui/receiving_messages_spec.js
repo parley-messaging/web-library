@@ -939,7 +939,7 @@ describe("receiving messages", () => {
 			.should("not.be.visible");
 	});
 	describe("history", () => {
-		it.only("should fetch and show older messages when scrolling to the top", () => {
+		it("should fetch and show older messages when scrolling to the top", () => {
 			const generatedMessages = generateParleyMessages(150);
 			const secondBatchOldMessages = generatedMessages.slice(0, 50);
 			const firstBatchOldMessages = generatedMessages.slice(50, 100);
