@@ -1,8 +1,11 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./Button.module.css";
+import {InterfaceTextsContext} from "../Scripts/Context";
 
 export default class CallButton extends Component {
+	static contextType = InterfaceTextsContext;
+
 	handleClick = (e) => {
 		e.preventDefault();
 
@@ -16,7 +19,12 @@ export default class CallButton extends Component {
 		const name = "CallButton";
 
 		return (
-			<button className={styles.button} name={name} onClick={this.handleClick}>
+			<button
+				aria-label={this.context.ariaLabelButtonCall}
+				className={styles.button}
+				name={name}
+				onClick={this.handleClick}
+			>
 				{this.props.title || this.props.payload}
 			</button>
 		);

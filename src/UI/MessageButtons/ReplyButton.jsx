@@ -2,8 +2,11 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import Api from "../../Api/Api";
 import * as styles from "./Button.module.css";
+import {InterfaceTextsContext} from "../Scripts/Context";
 
 export default class ReplyButton extends Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
@@ -21,15 +24,17 @@ export default class ReplyButton extends Component {
 
 	render() {
 		const name = "ReplyButton";
+		const body = this.props.title || this.props.payload;
 
 		return (
 			<button
+				aria-label={this.context.ariaLabelButtonPredefinedReply(body)}
 				className={styles.button}
 				disabled={this.state.disabled}
 				name={name}
 				onClick={this.handleClick}
 			>
-				{this.props.title || this.props.payload}
+				{body}
 			</button>
 		);
 	}
