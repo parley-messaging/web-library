@@ -15,6 +15,7 @@ import {STATUS_SEEN} from "../Api/Constants/Statuses";
 import {announce, clearAnnouncer} from "@react-aria/live-announcer";
 import {InterfaceTextsContext} from "./Scripts/Context";
 import {TAB_INDEX_2} from "./Scripts/TabIndexes";
+import {VisuallyHidden} from "@react-aria/visually-hidden";
 
 class Conversation extends Component {
 	static contextType = InterfaceTextsContext;
@@ -395,6 +396,12 @@ class Conversation extends Component {
 					{
 						this.state.stickyMessage
 						&& <Announcement message={this.state.stickyMessage} />
+					}
+					{
+						this.state.messages.length === 0
+						&& <VisuallyHidden>
+							<article>{this.context.noMessagesInConversation}</article>
+						</VisuallyHidden>
 					}
 					<div ref={this.conversationBottom} />
 				</div>

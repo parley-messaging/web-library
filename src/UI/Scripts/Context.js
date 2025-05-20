@@ -37,6 +37,7 @@ export const InterfaceTexts = {
 			hour12: false,
 			timeStyle: "short",
 		})} ${agentName} says: ${message}`,
+		noMessagesInConversation: "There are no messages sent yet in this conversation",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
@@ -69,6 +70,7 @@ export const InterfaceTexts = {
 			hour12: false,
 			timeStyle: "short",
 		})} ${agentName} zegt: ${message}`,
+		noMessagesInConversation: "Er zijn nog geen berichten verstuurd in deze conversatie",
 
 		// Old from v1 (but renamed)
 		title: "Messenger", // Was `desc`
