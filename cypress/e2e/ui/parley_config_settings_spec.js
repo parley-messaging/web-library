@@ -9,6 +9,12 @@ import {
 	interceptIndefinitely, messagesUrlRegex,
 	sendMessage, visitHome,
 } from "../../support/utils";
+import {version} from "../../../package.json";
+
+function getCookiesFiltered(cookies) {
+	// Filter out any cookies created by dev dependencies
+	return cookies.filter(x => x.name !== "_dd_s");
+}
 
 beforeEach(_beforeEach);
 afterEach(_afterEach);
@@ -1744,8 +1750,13 @@ describe("parley config settings", () => {
 					})
 					.then(() => {
 						return cy.getCookies()
-							.should("have.length", 1)
+							.then(cookies => getCookiesFiltered(cookies))
 							.then((cookies) => {
+								expect(cookies)
+									.to
+									.have
+									.length(1);
+
 								expect(cookies[0])
 									.to
 									.have
@@ -1782,8 +1793,10 @@ describe("parley config settings", () => {
 				cy.wait("@postDevices")
 					.then(() => cy.wait("@getMessages"))
 					.then(() => cy.getCookies())
-					.should("have.length", 1)
+					.then(cookies => getCookiesFiltered(cookies))
 					.then((cookies) => {
+						expect(cookies)
+							.to.have.length(1);
 						expect(cookies[0])
 							.to
 							.have
@@ -1803,8 +1816,10 @@ describe("parley config settings", () => {
 					.then(() => cy.wait("@postDevices"))
 					.then(() => cy.wait("@getMessages"))
 					.then(() => cy.getCookies())
-					.should("have.length", 1)
+					.then(cookies => getCookiesFiltered(cookies))
 					.then((cookies) => {
+						expect(cookies)
+							.to.have.length(1);
 						expect(cookies[0])
 							.to
 							.have
@@ -1901,6 +1916,7 @@ describe("parley config settings", () => {
 					});
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("not.exist");
@@ -1909,6 +1925,7 @@ describe("parley config settings", () => {
 					.tick(parleyConfig.devicePersistence.ageUpdateInterval * 10); // Go 10 times the interval into the future
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
@@ -1939,6 +1956,7 @@ describe("parley config settings", () => {
 					});
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("not.exist");
@@ -1947,6 +1965,7 @@ describe("parley config settings", () => {
 					.tick(60 * 60); // Go into the future
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("not.exist"); // By default, our cookie has no expiry time, so we know the interval didn't run if the expiry still doesn't exist
@@ -1976,16 +1995,17 @@ describe("parley config settings", () => {
 				cy.intercept("GET", messagesUrlRegex)
 					.as("getMessages");
 
+				cy.clock(new Date().getTime()); // Start the clock override
+
 				visitHome(parleyConfig, null, null);
 
 				clickOnLauncher();
-
-				cy.clock(new Date().getTime()); // Start the clock override
 
 				cy.wait("@postDevices");
 				cy.wait("@getMessages");
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("exist")
@@ -2004,6 +2024,7 @@ describe("parley config settings", () => {
 				cy.get("@oldExpiryTime")
 					.then((oldExpiryTime) => {
 						return cy.getCookies()
+							.then(cookies => getCookiesFiltered(cookies))
 							.its(0)
 							.its("expiry")
 							.should(
@@ -2026,6 +2047,7 @@ describe("parley config settings", () => {
 					});
 
 				cy.getCookies()
+					.then(cookies => getCookiesFiltered(cookies))
 					.its(0)
 					.its("expiry")
 					.should("exist")
@@ -2038,6 +2060,7 @@ describe("parley config settings", () => {
 				cy.get("@oldExpiryTime2")
 					.then((oldExpiryTime2) => {
 						return cy.getCookies()
+							.then(cookies => getCookiesFiltered(cookies))
 							.its(0)
 							.its("expiry")
 							.should(
@@ -2092,12 +2115,14 @@ describe("parley config settings", () => {
 
 					// Save the identification, so we can check if it is NOT used after it is expired
 					cy.getCookies()
+						.then(cookies => getCookiesFiltered(cookies))
 						.its(0)
 						.its("value")
 						.as("cookieIdentificationValue");
 
 					// Validate that we have successfully set the expiry time on the cookie
 					cy.getCookies()
+						.then(cookies => getCookiesFiltered(cookies))
 						.its(0)
 						.its("expiry")
 						.should("be.greaterThan", 0);
