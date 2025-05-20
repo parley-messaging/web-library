@@ -8,6 +8,9 @@ module.exports = defineConfig(
 	cypressConfig({
 		axe: {
 			apiKey: process.env.AXE_API_KEY,
+			runContext: {
+				include: "#app"
+			},
 		},
 		projectId: "wwda8d",
 		e2e: {
