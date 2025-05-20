@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import * as styles from "./Header.module.css";
 
 import HeaderButton, {minimizeType} from "./Buttons/HeaderButton";
-import {TAB_INDEX_3} from "./Scripts/TabIndexes";
 
 export const headerId = "header";
 
@@ -21,7 +20,7 @@ class Header extends Component {
 				<div className={styles.right}>
 					<HeaderButton
 						onClick={this.props.onMinimizeClick}
-						tabIndex={TAB_INDEX_3}
+						tabIndex={0}
 						type={minimizeType}
 					/>
 					{/* <HeaderButton*/}

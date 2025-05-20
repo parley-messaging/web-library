@@ -62,7 +62,7 @@ export default class Carousel extends Component {
 
 		return (
 			<div className={styles.carouselContainer}>
-				<div className={styles.carousel} ref={this.carouselRef} role={feedRole}>
+				<div className={styles.carousel} ref={this.carouselRef} role={feedRole} tabIndex={0}>
 					{
 						this.props.items.map((item, index) => (
 							// eslint-disable-next-line react/no-array-index-key
