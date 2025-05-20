@@ -337,7 +337,11 @@ class Conversation extends Component {
 					tabIndex={0} // tabIndex is required for onKeyDown to work
 				>
 					{
-						this.state.messages.map((message, index, array) => (
+						this.state.messages.length === 0
+						? <VisuallyHidden>
+							<article>{this.context.noMessagesInConversation}</article>
+						</VisuallyHidden>
+						: this.state.messages.map((message, index, array) => (
 							<React.Fragment key={message.id}>
 								{
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))
@@ -391,12 +395,6 @@ class Conversation extends Component {
 					{
 						this.state.stickyMessage
 						&& <Announcement message={this.state.stickyMessage} />
-					}
-					{
-						this.state.messages.length === 0
-						&& <VisuallyHidden>
-							<article>{this.context.noMessagesInConversation}</article>
-						</VisuallyHidden>
 					}
 					<div ref={this.conversationBottom} />
 				</div>
