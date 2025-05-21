@@ -30,5 +30,6 @@ module.exports = defineConfig(
 			},
 			retries: {runMode: 2},
 		},
+		defaultBrowser: "chrome"
 	}),
 );
