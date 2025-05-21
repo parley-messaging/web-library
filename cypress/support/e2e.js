@@ -49,5 +49,42 @@ Cypress.on("window:before:load", (win) => {
 });
 
 afterEach(() => {
+	// Hook into the AXE events to listen for violations before they are send to the cloud.
+	// This way we can show them in Cypress without waiting for the cloud process to complete.
+	cy.window().then((win) => {
+		win.addEventListener("axe:result", (event) => {
+			const testWithViolations = event.detail.filter(x => x.results.violations.length > 0);
+
+			if(testWithViolations.length > 0) {
+				testWithViolations.forEach((test) => {
+					test.results.violations.forEach((violation) => {
+						cy.task("log", `
+	AXE Violation
+	[id: ${violation.id}, impact: ${violation.impact}, help: ${violation.helpUrl}]
+	
+	${violation.description}
+	
+	${violation.nodes.map(node => `
+		${node.failureSummary}
+		Target: ${node.target}
+		XPath: ${node.xpath}
+	`)}
+	
+	Tags: [${violation.tags.join(", ")}]
+						`);
+					});
+				});
+			}
+
+			// Wrap this in cy.then() so it gets scheduled AFTER the cy.logs above
+			// otherwise the test interrupts without executing the cy.logs
+			cy.then(() => {
+				// Fail the test if there are AXE violations
+				expect(testWithViolations).to.have.lengthOf(0, "Expected 0 AXE violations. See logs above");
+			});
+		});
+	});
+
+	// Required by AXE
 	cy.axeWatcherFlush();
 });
