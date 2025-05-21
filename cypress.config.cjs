@@ -9,8 +9,7 @@ module.exports = defineConfig(
 		axe: {
 			apiKey: process.env.AXE_API_KEY,
 			runContext: {
-				include: "#app",
-				exclude: "meta[name=\"viewport\"]"
+				include: "#app"
 			},
 		},
 		projectId: "wwda8d",
