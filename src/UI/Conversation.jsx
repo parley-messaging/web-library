@@ -12,8 +12,13 @@ import Api from "../Api/Api";
 import Message from "./Message";
 import Carousel from "./Carousel";
 import {STATUS_SEEN} from "../Api/Constants/Statuses";
+import {announce, clearAnnouncer} from "@react-aria/live-announcer";
+import {InterfaceTextsContext} from "./Scripts/Context";
+import {VisuallyHidden} from "@react-aria/visually-hidden";
 
 class Conversation extends Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
@@ -141,6 +146,11 @@ class Conversation extends Component {
 						return; // Ignore messages we already have in our state
 
 					newState.messages.push(message);
+
+					// Announce new agent message but only if this is not the first time we get all messages.
+					// We only want to announce new messages after the "initial load"
+					if(this.state.messages.length > 0 && message.typeId === MessageTypes.Agent)
+						this.announceMessageForScreenReaders(message);
 				});
 
 				// Sort messages again after pushing to the array
@@ -195,12 +205,8 @@ class Conversation extends Component {
 			return false;
 
 		const previousMessage = this.state.messages[previousMessageId];
-		if(previousMessage?.typeId === MessageTypes.Agent) {
-			if(currentMessage?.agent?.name !== previousMessage?.agent?.name)
-				return true;
-
-			return false;
-		}
+		if(previousMessage?.typeId === MessageTypes.Agent)
+			return currentMessage?.agent?.name !== previousMessage?.agent?.name;
 
 		return true;
 	};
@@ -309,6 +315,13 @@ class Conversation extends Component {
 		return <Announcement message={this.state.welcomeMessage} />;
 	}
 
+	announceMessageForScreenReaders = (message) => {
+		const agentName = message.agent?.name || "agent";
+
+		clearAnnouncer("assertive");
+		announce(this.context.screenReaderNewMessageAnnouncement(agentName, message.message, message.time), "assertive");
+	}
+
 	render() {
 		this.renderedDates = []; // Reset the rendered dates
 		const bodyRole = "feed"; // Used to keep jsx-a11y/no-static-element-interactions happy, not sure if this is the best fitting role...
@@ -321,10 +334,14 @@ class Conversation extends Component {
 					onScroll={this.handleScroll}
 					ref={this.bodyRef}
 					role={bodyRole}
-					tabIndex={-1} // tabIndex is required for onKeyDown to work
+					tabIndex={0} // tabIndex is required for onKeyDown to work
 				>
 					{
-						this.state.messages.map((message, index, array) => (
+						this.state.messages.length === 0
+						? <VisuallyHidden>
+							<article>{this.context.noMessagesInConversation}</article>
+						</VisuallyHidden>
+						: this.state.messages.map((message, index, array) => (
 							<React.Fragment key={message.id}>
 								{
 									this.setRenderedDate(this.getDateFromTimestamp(message.time))

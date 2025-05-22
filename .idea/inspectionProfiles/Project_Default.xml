@@ -1,7 +1,30 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+    <option name="scopesOrder">
+      <list>
+        <option value="All Changed Files" />
+        <option value="All sources" />
+        <option value="Api sources" />
+        <option value="Open Files" />
+        <option value="Project Files" />
+        <option value="Scratches and Consoles" />
+        <option value="Tests" />
+        <option value="UI Tests" />
+        <option value="UI sources" />
+      </list>
+    </option>
+    <inspection_tool class="306945ce-9ad6-3428-ba14-447d87c86a02" enabled="true" level="ERROR" enabled_by_default="false" editorAttributes="ERRORS_ATTRIBUTES">
+      <scope name="UI Tests" level="ERROR" enabled="true" editorAttributes="ERRORS_ATTRIBUTES" />
+    </inspection_tool>
     <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SSBasedInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <searchConfiguration name="Missing accessibility test in cypress test" description="Checks cypress tests for missing calls to `testAccessibility()`" suppressId="ignore-missing-accessibility-test" text="it($NAME$, $FUNC$);" recursive="true" caseInsensitive="false" type="JavaScript">
+        <constraint name="__context__" within="" contains="" />
+        <constraint name="NAME" within="" contains="" />
+        <constraint name="FUNC" script="&quot;!(__context__.text.contains('testAccessibility(') || __context__.text.contains('visitHome(') || __context__.text.contains('clickOnLauncher(') || __context__.text.contains('sendMessage(') || __context__.text.contains('findMessage('))&quot;" within="" contains="" />
+      </searchConfiguration>
+    </inspection_tool>
     <inspection_tool class="Stylelint" enabled="true" level="ERROR" enabled_by_default="true" />
   </profile>
 </component>

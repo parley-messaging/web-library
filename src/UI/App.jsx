@@ -97,6 +97,7 @@ export default class App extends React.Component {
 			amountOfNewAgentMessagesFound: 0,
 			unreadMessagesAction: window?.parleySettings?.interface?.unreadMessagesAction
 				|| this.unreadMessagesActions.openChatWindow,
+			alwaysShowSendButton: window?.parleySettings?.interface?.alwaysShowSendButton || false,
 		};
 
 		this.Api = new Api(
@@ -713,6 +714,8 @@ export default class App extends React.Component {
 				objectToSaveIntoState = {hideChatOutsideWorkingHours: value};
 			else if(path[layer1] === "unreadMessagesAction")
 				objectToSaveIntoState = {unreadMessagesAction: value};
+			else if(path[layer1] === "alwaysShowSendButton")
+				objectToSaveIntoState = {alwaysShowSendButton: value};
 		} else if(path[layer0] === "roomNumber") {
 			objectToSaveIntoState = {accountIdentification: value};
 		} else if(path[layer0] === "authHeader") {
@@ -1019,6 +1022,7 @@ export default class App extends React.Component {
 					allowEmoji={true}
 					allowMediaUpload={this.state.allowMediaUpload}
 					allowedMediaTypes={this.state.allowedMediaTypes}
+					alwaysShowSendButton={this.state.alwaysShowSendButton}
 					api={this.Api}
 					closeButton={this.state.closeButton}
 					isMobile={this.state.isMobile}

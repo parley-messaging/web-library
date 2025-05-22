@@ -58,11 +58,11 @@ export default class Carousel extends Component {
 
 		const previousButtonText = "<";
 		const nextButtonText = ">";
-		const feedRole = "feed";
+		const containerRole = "article"; // Because the parent is a role=feed, this can only be an article
 
 		return (
-			<div className={styles.carouselContainer}>
-				<div className={styles.carousel} ref={this.carouselRef} role={feedRole}>
+			<div className={styles.carouselContainer} role={containerRole}>
+				<div className={styles.carousel} ref={this.carouselRef} role={containerRole} tabIndex={0}>
 					{
 						this.props.items.map((item, index) => (
 							// eslint-disable-next-line react/no-array-index-key
@@ -77,12 +77,14 @@ export default class Carousel extends Component {
 						<button
 							className={previousButtonStyle} name={this.previousButtonName}
 							onClick={this.handleNavigationClick}
+							tabIndex={0}
 						>
 							{previousButtonText}
 						</button>
 						<button
 							className={nextButtonStyle} name={this.nextButtonName}
 							onClick={this.handleNavigationClick}
+							tabIndex={0}
 						>
 							{nextButtonText}
 						</button>

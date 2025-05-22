@@ -53,6 +53,7 @@ class ReplyText extends Component {
 								onKeyDown={this.handleKeyDown}
 								placeholder={this.props.placeholder}
 								ref={this.textArea}
+								tabIndex={0}
 								value={this.props.value}
 							/>
 						</div>

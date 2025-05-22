@@ -31,6 +31,7 @@ class Launcher extends Component {
 								aria-label={interfaceTexts.ariaLabelButtonLauncher}
 								id={buttonId}
 								onClick={this.props.onClick}
+								tabIndex={0}
 								type={buttonType}
 							>
 								{/* eslint-disable-next-line max-len */}

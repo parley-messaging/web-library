@@ -38,6 +38,7 @@ class Message extends Component {
 			return null;
 		}
 		const buttonRenderError = "_Unable to show unsupported button_";
+		const groupRole = "group";
 
 		return (
 			<InterfaceTextsContext.Consumer>
@@ -92,7 +93,7 @@ class Message extends Component {
 								{/* Buttons */}
 								{
 									this.props.message.buttons
-									&& <div aria-label={interfaceTexts.ariaLabelMessageButtons}>
+									&& <div aria-label={interfaceTexts.ariaLabelMessageButtons} role={groupRole}>
 										{
 											this.props.message.buttons.map((button, index) => {
 												switch (button.type) {

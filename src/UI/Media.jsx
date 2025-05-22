@@ -17,8 +17,11 @@ import Logger from "js-logger";
 import ReactMarkdown from "react-markdown";
 import gfm from "remark-gfm";
 import mediaShape from "./shapes/media";
+import {InterfaceTextsContext} from "./Scripts/Context";
 
 class Media extends Component {
+	static contextType = InterfaceTextsContext;
+
 	constructor(props) {
 		super(props);
 
@@ -115,6 +118,7 @@ class Media extends Component {
 					{this.props.media.description || this.props.media.filename}
 				</label>
 				<button
+					aria-label={this.context.ariaLabelButtonDownloadMedia}
 					className={styles.messageBoxMediaDownload}
 					disabled={this.state.isLoading}
 					onClick={this.handleDownload}

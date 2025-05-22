@@ -25,11 +25,10 @@ export function interceptIndefinitely(method, routeMatcher, response = undefined
 	return {sendResponse};
 }
 
-export function generateParleyMessages(amount, dateMs = Date.now()) {
+export function generateParleyMessages(amount, dateMs = Date.now(), chanceForAgentMessage = 0.4) {
 	const messages = [];
 	const timeBetweenMessages = 30; // seconds
 	const beginTime = (dateMs / 1000) - (amount * timeBetweenMessages);
-	const chanceForAgentMessage = 0.4;
 
 	for(let i = 0; i < amount; i++) {
 		const newMessage = {
@@ -60,4 +59,88 @@ export function generateParleyMessages(amount, dateMs = Date.now()) {
 	}
 
 	return messages;
+}
+
+export const defaultParleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
+export const messagesUrlRegex = /.*\/messages(?:\/(?:after|before):\d+)?(?!\/)/u; // This matches /messages and /messages/after:123
+export function visitHome(parleyConfig, onBeforeLoad, onLoad) {
+	cy.visit("/", {
+		onBeforeLoad: (window) => {
+			// eslint-disable-next-line no-param-reassign
+			window.parleySettings = {
+				...defaultParleyConfig, // Always set default config
+				...parleyConfig,
+			};
+			if(onBeforeLoad)
+				onBeforeLoad(window);
+		},
+		onLoad: (window) => {
+			if(onLoad)
+				onLoad(window);
+
+
+			window.initParleyMessenger();
+		},
+	});
+	cy.get("[id=app]")
+		.as("app");
+}
+
+export function clickOnLauncher() {
+	return cy.get("@app")
+		.find("[class^=parley-messaging-launcher__]")
+		.find("button")
+		.should("be.visible")
+		.click();
+}
+
+export function sendMessage(testMessage) {
+	return cy.get("@app")
+		.find("[class^=parley-messaging-chat__]")
+		.should("be.visible")
+		.find("[class^=parley-messaging-footer__]")
+		.should("be.visible")
+		.find("[class^=parley-messaging-text__]")
+		.should("be.visible")
+		.find("textarea")
+		.should("have.focus")
+		.type(`${testMessage}{enter}`);
+}
+
+export function findMessage(testMessage) {
+	return cy.get("@app")
+		.find("[class^=parley-messaging-wrapper__]")
+		.should("be.visible")
+		.find("[class^=parley-messaging-body__]")
+		.should("be.visible")
+		.contains(testMessage)
+		.should("be.visible");
+}
+
+export function pretendToBeMobile(window) {
+	// Mock match media to return true
+	Object.defineProperty(window, "matchMedia", {value: arg => ({matches: Boolean(arg.includes("(pointer: coarse)"))})});
+}
+
+export function _beforeEach() {
+	console.log("");
+	console.log(`=== BEGIN ${Cypress.currentTest.title} ===`);
+	console.log("");
+
+	// This should not go in afterEach,
+	// see https://docs.cypress.io/guides/references/best-practices#Using-after-or-afterEach-hooks
+	cy.window()
+		.then((window) => {
+			if(window.destroyParleyMessenger)
+				window.destroyParleyMessenger();
+		})
+		.then(() => {
+			return cy.clearLocalStorage();
+		});
+}
+
+export function _afterEach() {
+	console.log("");
+	console.log(`=== END ${Cypress.currentTest.title} ===`);
+	console.log("");
 }

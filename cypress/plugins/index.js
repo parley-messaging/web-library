@@ -17,14 +17,14 @@
  */
 // eslint-disable-next-line no-unused-vars
 module.exports = (on, config) => {
-	require('@cypress/code-coverage/task')(on, config)
+	require("@cypress/code-coverage/task")(on, config);
 
 	on(
-		'file:preprocessor',
-		require('@cypress/code-coverage/use-babelrc')
-	)
+		"file:preprocessor",
+		require("@cypress/code-coverage/use-babelrc"),
+	);
 
 	// add other tasks to be registered here
 
-	return config
-}
+	return config;
+};

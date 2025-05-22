@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 import * as styles from "./Chat.module.css";
-import Header from "./Header";
+import Header, {headerId} from "./Header";
 import Conversation from "./Conversation";
 import ReplyActions from "./ReplyActions";
 import Api from "../Api/Api";
@@ -200,9 +200,18 @@ class Chat extends Component {
 		classNames += ` ${this.isiOSDevice ? styles.ios : ""}`;
 		classNames += ` ${this.props.showChat ? "" : styles.hidden}`;
 		const typeButton = "button";
+		const role = "dialog";
+		const ariaModal = true;
 
 		return (
-			<div className={classNames} id={this.idName} ref={this.chatRef}>
+			<div
+				aria-labelledby={headerId}
+				aria-modal={ariaModal}
+				className={classNames}
+				id={this.idName}
+				ref={this.chatRef}
+				role={role}
+			>
 				<Header
 					onCloseClick={this.props.onCloseClick}
 					onMenuClick={this.props.onMenuClick}
@@ -235,6 +244,7 @@ class Chat extends Component {
 					allowEmoji={this.props.allowEmoji}
 					allowMediaUpload={this.props.allowMediaUpload}
 					allowedMediaTypes={this.props.allowedMediaTypes}
+					alwaysShowSendButton={this.props.alwaysShowSendButton}
 					api={this.props.api}
 					fitToIDeviceScreen={this.fitToIDeviceScreen}
 					isMobile={this.isMobile}
@@ -253,6 +263,7 @@ Chat.propTypes = {
 	allowedMediaTypes: PropTypes.arrayOf(PropTypes.oneOf(SUPPORTED_MEDIA_TYPES)),
 	allowEmoji: PropTypes.bool,
 	allowMediaUpload: PropTypes.bool,
+	alwaysShowSendButton: PropTypes.bool,
 	api: PropTypes.instanceOf(Api),
 	isiOSMobile: PropTypes.bool,
 	isMobile: PropTypes.bool,
