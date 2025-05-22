@@ -5,11 +5,11 @@
 	border: none;
 	border: 1px;
 	border-style: solid;
-	border-color: var(--parley-link-color, #4891F5);
+	border-color: var(--parley-link-color, #2E2EFF);
 	margin: 0.3em 0;
 	background: inherit;
 	border-radius: 10px;
-	color: var(--parley-link-color, #4891F5);
+	color: var(--parley-link-color, #2E2EFF);
 	cursor: pointer; /* Somehow these buttons don't have this as the default */
 }
 
