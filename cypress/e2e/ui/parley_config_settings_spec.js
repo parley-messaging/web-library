@@ -1168,12 +1168,6 @@ describe("parley config settings", () => {
 			const parleyConfig = {roomNumber: "0cce5bfcdbf07978b269"};
 			const testMessage = `test message before switching room numbers ${Date.now()}`;
 
-			// cy.visit("/", {
-			// 	onBeforeLoad: (win) => {
-			// 		// eslint-disable-next-line no-param-reassign
-			// 		win.parleySettings = parleyConfig;
-			// 	},
-			// });
 			visitHome(parleyConfig);
 
 			cy.get("[id=app]")
@@ -1477,12 +1471,6 @@ describe("parley config settings", () => {
 					interface: {hideChatAfterBusinessHours: true},
 				};
 
-				// cy.visit("/", {
-				// 	onBeforeLoad: (win) => {
-				// 		// eslint-disable-next-line no-param-reassign
-				// 		win.parleySettings = parleyConfig;
-				// 	},
-				// });
 				visitHome(parleyConfig);
 
 				cy.get("[id=app]")

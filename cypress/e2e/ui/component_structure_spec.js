@@ -13,11 +13,6 @@ afterEach(_afterEach);
 
 describe("component structure", () => {
 	beforeEach(() => {
-		// cy.visit("/", {
-		// 	onLoad: (window) => {
-		// 		window.initParleyMessenger();
-		// 	},
-		// });
 		visitHome({}, () => window.initParleyMessenger);
 
 		cy.get("[id=app]")
