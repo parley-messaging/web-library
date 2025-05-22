@@ -24,19 +24,6 @@ module.exports = (on, config) => {
 		require("@cypress/code-coverage/use-babelrc"),
 	);
 
-	on("task", {
-		log(message) {
-			console.log(message);
-
-			return null;
-		},
-		table(message) {
-			console.table(message);
-
-			return null;
-		},
-	});
-
 	// add other tasks to be registered here
 
 	return config;
