@@ -1,45 +1,42 @@
 import React, {Component} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faPaperclip} from "@fortawesome/free-solid-svg-icons/faPaperclip";
 import PropTypes from "prop-types";
 import {SUPPORTED_MEDIA_TYPES} from "../../Api/Constants/SupportedMediaTypes";
-import * as styles from "./UploadMedia.module.css";
 import {InterfaceTextsContext} from "../Scripts/Context";
+import {Button, FileTrigger} from "react-aria-components";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPaperclip} from "@fortawesome/free-solid-svg-icons";
+import styles from "./UploadMedia.module.css";
+
 class UploadMedia extends Component {
 	static contextType = InterfaceTextsContext;
 
 	handleFileChange = (e) => {
 		this.props.onChange(e.target.files[0]);
-	}
+	};
 
 	render() {
-		const typeInput = "file";
 		const ariaLabel = this.context.ariaLabelUploadFile;
 		const inputId = "upload-file";
 		let allowedMediaTypes = SUPPORTED_MEDIA_TYPES;
 		if(this.props.allowedMediaTypes?.length > 0)
 			({allowedMediaTypes} = this.props);
 
+
 		return (
-			<>
-				<input
-					accept={allowedMediaTypes.join(",")}
-					id={inputId}
-					onChange={this.handleFileChange}
-					style={{display: "none"}}
-					type={typeInput}
-				/>
-				<label
+			<FileTrigger
+				acceptedFileTypes={allowedMediaTypes}
+				id={inputId}
+				onSelect={this.handleFileChange}
+			>
+				<Button
 					aria-label={ariaLabel}
-					className={styles.uploadLabel}
-					htmlFor={inputId}
+					className={styles.uploadButton}
 				>
 					<FontAwesomeIcon
 						icon={faPaperclip}
 					/>
-				</label>
-			</>
-
+				</Button>
+			</FileTrigger>
 		);
 	}
 }
