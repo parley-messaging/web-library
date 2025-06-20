@@ -1,7 +1,6 @@
-.uploadLabel {
-	display: flex;
-	align-items: center;
-	justify-content: center;
+.uploadButton {
+	border: none;
+	background: transparent;
 	color: var(--parley-reply-color, #535353);
 	cursor: pointer;
 	font-size: 18px;
