@@ -656,7 +656,7 @@ describe("sending messages", () => {
 		visitHome({}, null, pretendToBeMobile);
 		clickOnLauncher();
 
-		cy.get("label[class^=parley-messaging-uploadButton__]")
+		cy.get("button[class^=parley-messaging-uploadButton__]")
 			.should("exist");
 
 		cy.get("@app")
@@ -666,7 +666,7 @@ describe("sending messages", () => {
 			.find("textarea")
 			.type(`This is some text`);
 
-		cy.get("label[class^=parley-messaging-uploadButton__]")
+		cy.get("button[class^=parley-messaging-uploadButton__]")
 			.should("not.exist");
 		cy.get("button[class^=parley-messaging-mobile__]")
 			.should("exist");
