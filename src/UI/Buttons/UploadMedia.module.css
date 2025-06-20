@@ -1,9 +1,6 @@
 .uploadButton {
 	border: none;
 	background: transparent;
-	/*display: flex;*/
-	/*align-items: center;*/
-	/*justify-content: center;*/
 	color: var(--parley-reply-color, #535353);
 	cursor: pointer;
 	font-size: 18px;
