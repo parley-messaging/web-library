@@ -10,8 +10,8 @@ import styles from "./UploadMedia.module.css";
 class UploadMedia extends Component {
 	static contextType = InterfaceTextsContext;
 
-	handleFileChange = (e) => {
-		this.props.onChange(e.target.files[0]);
+	handleFileChange = (files) => {
+		this.props.onChange(files[0]);
 	};
 
 	render() {
