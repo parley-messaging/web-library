@@ -823,7 +823,7 @@ describe("parley config settings", () => {
 					clickOnLauncher();
 
 					cy.get("@app")
-						.find("[class^=parley-messaging-uploadLabel__]")
+						.find("[class^=parley-messaging-uploadButton__]")
 						.as("uploadLabel")
 						.should("have.attr", "aria-label")
 						.should("equal", parleyConfig.runOptions.interfaceTexts.ariaLabelUploadFile);
@@ -1109,7 +1109,7 @@ describe("parley config settings", () => {
 					.find("input")
 					.should("not.exist");
 				cy.get("@app")
-					.find("[class^=parley-messaging-uploadLabel__]")
+					.find("[class^=parley-messaging-uploadButton__]")
 					.should("not.exist");
 
 				// Test if it changes during runtime
@@ -1124,7 +1124,7 @@ describe("parley config settings", () => {
 					.find("input")
 					.should("exist");
 				cy.get("@app")
-					.find("[class^=parley-messaging-uploadLabel__]")
+					.find("[class^=parley-messaging-uploadButton__]")
 					.should("exist");
 			});
 		});
