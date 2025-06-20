@@ -5,7 +5,7 @@ import {InterfaceTextsContext} from "../Scripts/Context";
 import {Button, FileTrigger} from "react-aria-components";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPaperclip} from "@fortawesome/free-solid-svg-icons";
-import styles from "./UploadMedia.module.css";
+import * as styles from "./UploadMedia.module.css";
 
 class UploadMedia extends Component {
 	static contextType = InterfaceTextsContext;
