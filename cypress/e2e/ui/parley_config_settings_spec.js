@@ -7,7 +7,7 @@ import {
 	clickOnLauncher, defaultParleyConfig,
 	findMessage,
 	interceptIndefinitely, messagesUrlRegex,
-	sendMessage, visitHome,
+	sendMessage, visitHome, generateParleyMessages,
 } from "../../support/utils";
 import {version} from "../../../package.json";
 
@@ -1707,6 +1707,62 @@ describe("parley config settings", () => {
 					// We would not expect an API custom header log since it already was set
 					const actualCount = capturedDebugMessages.filter(msg => msg.includes(log)).length;
 					expect(actualCount)
+						.to
+						.equal(0);
+				});
+		});
+		it("should not update state when changing custom headers", () => {
+			visitHome();
+
+			const generatedMessages = generateParleyMessages(2, Date.now(), 1);
+			cy.fixture("getMessagesResponse.json")
+				.then((fixture) => {
+					cy.intercept("GET", messagesUrlRegex, req => req.reply({
+						...fixture,
+						data: [generatedMessages[0]],
+					}))
+						.as("fetchInitialMessages");
+
+					cy.intercept("GET", `/**/messages/after:${generatedMessages[0].id}`, req => req.reply({
+						...fixture,
+						data: [generatedMessages[1]],
+					}))
+						.as("fetchNewMessages");
+				});
+
+			clickOnLauncher();
+
+			cy.wait("@fetchInitialMessages");
+			cy.wait("@fetchNewMessages");
+
+			cy.window()
+				.then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": new Date().getTime()};
+				});
+
+			cy.window()
+				.then((win) => {
+					// eslint-disable-next-line no-param-reassign
+					win.parleySettings.apiCustomHeaders = {"X-CookiesOK": new Date().getTime()};
+				});
+
+			// Retrieve the captured debug messages
+			cy.window()
+				.then((win) => {
+					const capturedDebugMessages = win.__capturedDebugMessages;
+
+					// we would expect 2 header changes in total
+					const headerChanged = "[parley-web-library:DEBUG] Api custom headers changed, setting new custom headers";
+					const headerCount = capturedDebugMessages.filter(msg => msg.includes(headerChanged)).length;
+					expect(headerCount)
+						.to
+						.equal(2);
+
+					// we would expect 0 state changes in total
+					const stateChanged = "[parley-web-library:DEBUG] Saved into state: [object Object]";
+					const stateCount = capturedDebugMessages.filter(msg => msg.includes(stateChanged)).length;
+					expect(stateCount)
 						.to
 						.equal(0);
 				});

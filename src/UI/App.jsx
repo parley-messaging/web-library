@@ -42,6 +42,7 @@ export default class App extends React.Component {
 			openChatWindow: 0,
 			showMessageCounterBadge: 1,
 		};
+		this.customHeaders = window?.parleySettings?.apiCustomHeaders || undefined;
 
 		const interfaceLanguage = window?.parleySettings?.runOptions?.country || "en";
 		const interfaceTextsDefaults = interfaceLanguage === "nl" ? InterfaceTexts.dutch : InterfaceTexts.english;
@@ -81,7 +82,6 @@ export default class App extends React.Component {
 			hideChatOutsideWorkingHours: typeof window?.parleySettings?.interface?.hideChatAfterBusinessHours === "boolean"
 				? window?.parleySettings?.interface?.hideChatAfterBusinessHours
 				: false,
-			apiCustomHeaders: window?.parleySettings?.apiCustomHeaders || undefined,
 			devicePersistence: {
 				domain: window?.parleySettings?.devicePersistence?.domain || undefined,
 				ageUpdateInterval: window?.parleySettings?.devicePersistence?.ageUpdateInterval || undefined,
@@ -105,7 +105,7 @@ export default class App extends React.Component {
 			this.state.accountIdentification,
 			this.state.deviceIdentification,
 			ApiEventTarget,
-			this.state.apiCustomHeaders,
+			this.customHeaders,
 		);
 
 		this.initializePollingServices();
@@ -428,11 +428,6 @@ export default class App extends React.Component {
 			this.checkWorkingHours();
 		}
 
-		if(JSON.stringify(nextState.apiCustomHeaders) !== JSON.stringify(this.state.apiCustomHeaders)) {
-			Logger.debug("Api custom headers changed, setting new custom headers");
-			this.Api.setCustomHeaders(nextState.apiCustomHeaders);
-		}
-
 		if(nextState.messengerOpenState !== this.state.messengerOpenState) {
 			Logger.debug(`messengerOpenState state changed from '${this.state.messengerOpenState}' to '${nextState.messengerOpenState}'`);
 			this.saveMessengerOpenState(nextState.messengerOpenState);
@@ -748,8 +743,14 @@ export default class App extends React.Component {
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
 		} else if(path[layer0] === "apiCustomHeaders") {
-			const apiCustomHeaders = JSON.parse(JSON.stringify(window.parleySettings.apiCustomHeaders));
-			objectToSaveIntoState = {apiCustomHeaders};
+			const jsonApiCustomHeaders = JSON.stringify(window.parleySettings.apiCustomHeaders);
+			const apiCustomHeaders = JSON.parse(jsonApiCustomHeaders);
+			if(jsonApiCustomHeaders !== JSON.stringify(this.customHeaders)) {
+				const newCustomHeaders = deepMerge(this.customHeaders, apiCustomHeaders);
+				Logger.debug("Api custom headers changed, setting new custom headers");
+				this.customHeaders = newCustomHeaders;
+				this.Api.setCustomHeaders(newCustomHeaders);
+			}
 
 			// We're using JSON.parse(JSON.stringify()) to remove the Proxy
 			// from the object
