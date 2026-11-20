@@ -7,3 +7,4 @@ export const media = "media";
 export const mediaUploaded = "mediauploaded";
 export const unreadMessagesCount = "unreadMessagesCount";
 export const messageStatusUpdated = "messageStatusUpdated";
+export const chatOpened = "chatOpened";

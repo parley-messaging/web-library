@@ -316,7 +316,7 @@ export default class App extends React.Component {
 			}
 			if(this.Api.isDeviceRegistrationPending) {
 				Logger.debug("There is already a device registration pending, not registering a new one");
-				return Promise.resolve();
+				return this.Api.deviceRegistrationPromise || Promise.resolve();
 			}
 		}
 
@@ -825,6 +825,8 @@ export default class App extends React.Component {
 	showChat = () => {
 		Logger.debug("Show chat");
 
+		const wasAlreadyOpen = this.state.showChat;
+
 		if(this.activePollingService instanceof UnreadMessagesCountPollingService) {
 			Logger.debug(`Stopping active ${this.activePollingService.name}, because the chat is shown`);
 			this.switchActivePollingService(this.MessagePollingService);
@@ -838,7 +840,16 @@ export default class App extends React.Component {
 
 		// Try to re-register the device if it is not yet registered
 		Logger.debug("(re)registering device, because the chat is shown");
-		this.subscribeDevice();
+		this.subscribeDevice()
+			.then(() => {
+				// Only send the chatOpened event when the chat actually goes from closed to open
+				// and only after the device is registered, otherwise the API will reject it
+				if(wasAlreadyOpen || !this.Api.deviceRegistered)
+					return;
+
+				Logger.debug("Sending chatOpened event");
+				this.Api.sendChatOpened();
+			});
 	};
 
 	hideChat = () => {

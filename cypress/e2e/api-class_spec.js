@@ -6,6 +6,7 @@ import Api from "../../src/Api/Api";
 import ApiEventTarget from "../../src/Api/ApiEventTarget";
 import Config from "../../src/Api/Private/Config";
 import {
+	chatOpened,
 	media,
 	mediaUploaded,
 	messages,
@@ -803,6 +804,57 @@ describe("Api class", () => {
 						});
 
 						config.api.sendMessage(config.message);
+					});
+				});
+		});
+	});
+
+	describe("sendChatOpened()", () => {
+		const chatOpenedResponse = {
+			data: "event chatOpened executed",
+			notifications: [],
+			status: "SUCCESS",
+			metadata: {
+				values: {},
+				method: "post",
+				duration: 0.01,
+			},
+		};
+
+		beforeEach(() => {
+			cy.intercept("POST", `${config.apiDomain}/**/services/event/chatOpened`, (req) => {
+				requestExpectations(req);
+
+				req.reply(chatOpenedResponse);
+			})
+				.as("postChatOpened");
+		});
+
+		it("should fetch and return response using direct way", () => {
+			cy.wrap(null)
+				.then(async () => {
+					const data = await config.api.sendChatOpened();
+					expect(JSON.stringify(data))
+						.to
+						.be
+						.equal(JSON.stringify(chatOpenedResponse));
+				});
+			cy.wait("@postChatOpened");
+		});
+
+		it("should fetch and return response using ApiEventTarget", () => {
+			cy.wrap(null)
+				.then(() => {
+					return new Cypress.Promise((resolve) => {
+						ApiEventTarget.addEventListener(chatOpened, (data) => {
+							expect(JSON.stringify(data.detail))
+								.to
+								.be
+								.equal(JSON.stringify(chatOpenedResponse));
+							resolve();
+						});
+
+						config.api.sendChatOpened();
 					});
 				});
 		});
