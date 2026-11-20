@@ -13,6 +13,7 @@ import {
 } from "./Constants/Other";
 import ApiResponseEvent from "./Private/ApiResponseEvent";
 import {
+	chatOpened,
 	media,
 	mediaUploaded,
 	messages,
@@ -157,7 +158,7 @@ export default class Api {
 
 		this.isDeviceRegistrationPending = true;
 
-		return this.fetchWrapper(`${this.config.apiUrl}/devices`, {
+		this.deviceRegistrationPromise = this.fetchWrapper(`${this.config.apiUrl}/devices`, {
 			method: "POST",
 			body: JSON.stringify({
 				pushToken,
@@ -188,6 +189,8 @@ export default class Api {
 				// whether we succeeded or not
 				this.isDeviceRegistrationPending = false;
 			});
+
+		return this.deviceRegistrationPromise;
 	}
 
 	sendMessage(message, referer) {
@@ -344,6 +347,25 @@ export default class Api {
 			})
 			.catch((errorNotifications, warningNotifications) => {
 				this.eventTarget.dispatchEvent(new ApiResponseEvent(unreadMessagesCount, {
+					errorNotifications,
+					warningNotifications,
+					data: null,
+				}));
+			});
+	}
+
+	/**
+	 * Tells the service(s) that the client has opened the chat
+	 * @return {Promise<unknown>}
+	 */
+	sendChatOpened() {
+		return this.fetchWrapper(`${this.config.apiUrl}/services/event/chatOpened`, {method: "POST"})
+			.then((data) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(chatOpened, data));
+				return data;
+			})
+			.catch((errorNotifications, warningNotifications) => {
+				this.eventTarget.dispatchEvent(new ApiResponseEvent(chatOpened, {
 					errorNotifications,
 					warningNotifications,
 					data: null,

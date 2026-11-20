@@ -84,6 +84,31 @@ describe("chat open state", () => {
 		cy.get("#chat")
 			.should("not.be.visible");
 	});
+	it("should send the chatOpened event when the chat is opened, but not when it is minimized", () => {
+		cy.intercept("POST", "*/**/services/event/chatOpened", {
+			statusCode: 200,
+			body: {
+				data: "event chatOpened executed",
+				notifications: [],
+				status: "SUCCESS",
+			},
+		})
+			.as("postChatOpened");
+
+		visitHome();
+
+		// Open chat
+		clickOnLauncher();
+		cy.wait("@postChatOpened");
+
+		// Minimize and re-open chat
+		clickOnLauncher();
+		clickOnLauncher();
+		cy.wait("@postChatOpened");
+
+		cy.get("@postChatOpened.all")
+			.should("have.length", 2);
+	});
 	describe("launcher component css class", () => {
 		it("should contain the class name 'state-minimize' when the chat has not been opened'", () => {
 			visitHome();
